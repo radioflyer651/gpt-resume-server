@@ -1,0 +1,6 @@
+import { TokenPayload } from "./token-payload.model";
+
+/** A request that (possibly) has authenticated data about the user. */
+export interface AuthenticatedRequest extends Request {
+    user?: TokenPayload;
+}
