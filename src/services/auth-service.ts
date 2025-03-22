@@ -1,13 +1,12 @@
 import { ObjectId } from "mongodb";
-import { MongoHelper } from "./mongo-helper";
-import { isValidString } from "./utils/strings.utils";
-import { DbService } from "./database/db-service";
-import { TokenPayload } from "./model/token-payload.model";
+import { UserDbService } from "../database/user-db.service";
+import { isValidString } from "../utils/strings.utils";
+import { TokenPayload } from "../model/token-payload.model";
 
 
 export class AuthService {
     constructor(
-        private readonly dbService: DbService
+        private readonly dbService: UserDbService
     ) {
 
     }

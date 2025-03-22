@@ -13,6 +13,8 @@ export interface ChatInfo {
      *   have different types of interactions on the site. */
     chatType: string;
 
+    /** Gets or sets the date this chat was last updated. */
+    lastAccessDate: Date;
 }
 
 export interface Chat extends ChatInfo {

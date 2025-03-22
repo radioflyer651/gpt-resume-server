@@ -1,17 +1,10 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import { authRouter } from './server/auth.server';
-import { characterChatRouter } from './server/character-chat.server';
+import { initializeExpressApp } from "./setup-express";
 
-const app = express();
+// Initialize express, and create the app to listen on a port.
+const app = initializeExpressApp();
 
-app.use(bodyParser.json());
-
-// Servers (groups of endpoints).
-app.use(authRouter);
-app.use(characterChatRouter);
-
+// Set the port, and start listening.
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });

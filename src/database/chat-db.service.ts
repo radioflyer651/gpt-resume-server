@@ -21,8 +21,10 @@ export class ChatDbService extends DbService {
                 projection: {
                     _id: 1,
                     userId: 1,
-                    chatType: 1
-                }
+                    chatType: 1,
+                    lastAccessDate: 1
+                },
+                sort: { chatType: 1, lastAccessDate: -1 }
             }).toArray();
         });
     }
@@ -31,6 +33,18 @@ export class ChatDbService extends DbService {
     async getChatById(chatId: ObjectId) {
         return await this.dbHelper.makeCall(async db => {
             return nullToUndefined(await db.collection(DbCollectionNames.Chats).findOne<Chat>({ _id: chatId }));
+        });
+    }
+
+    /** Returns the chat of a specified type, for a specified userID, that was accessed last. */
+    async getLastAccessedChat(userId: ObjectId, chatType: string): Promise<Chat | undefined> {
+        return await this.dbHelper.makeCall(async db => {
+            return nullToUndefined(await db.collection(DbCollectionNames.Chats).findOne<Chat>({
+                userId,
+                chatType
+            }, {
+                sort: { lastAccessDate: -1 }
+            }));
         });
     }
 
