@@ -1,0 +1,366 @@
+{
+    "name": "Richard Olson",
+    "professionalSummary": "Full-stack, senior developer with over 15 years of experience focused on resolving unique and challenging obstacles using modern technologies such as C#, VB.NET, Angular, React, NodeJS, and AWS Services. Devoted to delivering maintainable, cost-effective solutions without compromising on quality or customer commitment.",
+    "technologies": {
+      "languages": [
+        "TypeScript",
+        "JavaScript",
+        "HTML5",
+        "CSS",
+        "SCSS",
+        "C#",
+        "VB.NET",
+        "XAML/WPF",
+        "VBA",
+        "VB6",
+        "AutoLISP",
+        "AeroBasic",
+        "XML"
+      ],
+      "webTechnology": [
+        "Angular 2+",
+        "ASP.NET",
+        "React",
+        "Web API",
+        ".NET Core 3",
+        ".NET 6-8",
+        "SSL Certificates",
+        "MVC",
+        "Entity Framework"
+      ],
+      "serverFrameworks": [
+        "NodeJS",
+        "ExpressJS",
+        ".NET Web API"
+      ],
+      "awsCloud": [
+        "EC2",
+        "S3",
+        "Amazon Linux",
+        "SES",
+        "SNS",
+        "Route53"
+      ],
+      "databases": [
+        "MongoDB",
+        "MySQL",
+        "MS SQL Server"
+      ],
+      "developmentTools": [
+        "MS DevOps",
+        "R#",
+        "Rider",
+        "WebStorm",
+        "VS Code",
+        "Blend",
+        "InstallShield",
+        "SSH",
+        "Docker",
+        "SSMS"
+      ],
+      "versionControl": [
+        "GIT",
+        "SVN"
+      ],
+      "testing": [
+        "NUnit",
+        "Mocha",
+        "XUnit",
+        "FluentAssertions",
+        "Autofixture",
+        "Faker.js"
+      ],
+      "designTools": [
+        "Webpack",
+        "node-sass"
+      ]
+    },
+    "experience": [
+      {
+        "company": "Intertech Inc.",
+        "duration": "October 2019 – Present",
+        "role": "Sr. Software Consultant / Lead / Solution Architect",
+        "projects": [
+          {
+            "name": "Eden Prairie Police Department - CIS",
+            "duration": "September 2020 – Present",
+            "summary": "Maintained and enhanced the CIS application serving the Eden Prairie Police Department by providing access to core management data via an MVC-based front-end.",
+            "achievements": [
+              "Maintained the CIS application to ensure smooth daily operations.",
+              "Implemented minor improvements as requested by the department."
+            ]
+          },
+          {
+            "name": "Big Gain - BeefBooks",
+            "duration": "January 2025 – Present",
+            "summary": "Updated an online cattle farm management application for planning and tracking cattle feed, growth projections, and integrating accounting elements.",
+            "achievements": [
+              "Updated the backend built in .NET 4.7 and modernized the front-end using Angular 15.",
+              "Implemented heavy use of observables and integrated NGRX for robust state management.",
+              "Configured CI/CD pipelines, Scrum Boards, and Git repositories through Azure DevOps."
+            ]
+          },
+          {
+            "name": "RSM - Unclaimed Property And Asset Recovery (UPAR)",
+            "duration": "November 2024 – December 2024",
+            "summary": "Acted as the solution architect for a preliminary design project focusing on asset recovery using Azure AI Search, React, and SQL Database integrations.",
+            "achievements": [
+              "Collaborated with a team including a PO, BAs, and SMEs to gather requirements.",
+              "Developed a high-level system architecture and project backlog.",
+              "Established timelines and budget estimations for the project development cycle."
+            ]
+          },
+          {
+            "name": "RSM - Investor Portal – Split",
+            "duration": "July 2021 – December 2024",
+            "summary": "Led the architectural redesign and separation of the Investor Portal from the TSA, rebuilding the UI in React and managing offshore development teams.",
+            "achievements": [
+              "Designed major features, including role-based permissions for GLBA compliance.",
+              "Implemented a caching system using Azure Cosmos DB with a MongoDB interface.",
+              "Developed a complex Excel data import scheme with detailed error feedback.",
+              "Created a generalized SMTP email messaging system."
+            ]
+          },
+          {
+            "name": "RSM - TSA/Investor Portal",
+            "duration": "September 2020 – July 2021",
+            "summary": "Contributed to building robust tax and investor portal applications within a microservice ecosystem, enhancing file processing and tax software functionality.",
+            "achievements": [
+              "Built solutions on .NET Web API and React within the Azure cloud infrastructure.",
+              "Utilized Azure Functions and Service Bus for serverless processing of large tasks.",
+              "Implemented XML transforms for interoperable output generation."
+            ]
+          },
+          {
+            "name": "RSM - DMS Manager (Document Management System)",
+            "duration": "September 2020 – April 2021",
+            "summary": "Developed a document management web-application to replace legacy systems in the tax preparation domain, integrating third-party APIs for document storage.",
+            "achievements": [
+              "Developed SQL scripts, API logic, and UI components to support client-specific operations.",
+              "Pioneered Docker usage within the development environment for Azure Kubernetes Service integration.",
+              "Created NodeJS scripts for maintenance functions against the IManage API."
+            ]
+          }
+        ]
+      },
+      {
+        "company": "Intertech Inc.",
+        "duration": "August 2020 (Contract)",
+        "role": "Software Consultant",
+        "projects": [
+          {
+            "name": "Closed Captoining Demo App",
+            "duration": "August 2020",
+            "summary": "Developed a Progressive Web Application (PWA) demo to showcase capabilities in real-time captioning, installation as a native app, and cross-platform performance.",
+            "achievements": [
+              "Built the front-end using React with a custom NodeJS/ExpressJS backend.",
+              "Implemented real-time caption updates via Socket.IO.",
+              "Hosted the application on Microsoft Azure VMs running Ubuntu Linux."
+            ]
+          }
+        ]
+      },
+      {
+        "company": "CTW Automation",
+        "duration": "February 2020 – July 2020",
+        "role": "Software Consultant",
+        "projects": [
+          {
+            "name": "Probe Automated Shock Testing Software",
+            "duration": "February 2020 – July 2020",
+            "summary": "Enhanced an automated testing application for shock and spring testing by developing new commands and analysis routines for improved test accuracy.",
+            "achievements": [
+              "Developed new commands to control test machines and generate detailed test outputs.",
+              "Created analysis routines that delivered intuitive data representations for users.",
+              "Enhanced graphical interfaces with zooming, panning, and data analysis features using SciChart libraries.",
+              "Extended event-based data collection routines for better testing outcomes."
+            ]
+          }
+        ]
+      },
+      {
+        "company": "The Menta Group",
+        "duration": "November 2019 – February 2020",
+        "role": "Software Developer",
+        "projects": [
+          {
+            "name": "MSIS School Management Software",
+            "duration": "November 2019 – February 2020",
+            "summary": "Integrated Angular-based features into an existing ASP.NET webforms school management application to modernize scheduling and gradebook functionalities.",
+            "achievements": [
+              "Implemented an Angular-based gradebook feature.",
+              "Developed an Angular-powered scheduling tool on top of legacy ASP.NET webforms.",
+              "Created supporting SQL stored procedures to enable new functionalities."
+            ]
+          }
+        ]
+      },
+      {
+        "company": "Triple J Consulting",
+        "duration": "December 2019 – February 2020",
+        "role": "Software Consultant",
+        "projects": [
+          {
+            "name": "Kaleidoscope Ticketing Sales Portal",
+            "duration": "December 2019 – February 2020",
+            "summary": "Provided bug fixes and enhancements for an online ticketing sales portal transitioning from ASP.NET/VB to a React-based application.",
+            "achievements": [
+              "Upgraded the application to .NET Core.",
+              "Integrated GrapeCity Active Reports within the .NET Core environment.",
+              "Resolved critical bugs in the React-based implementation."
+            ]
+          }
+        ]
+      },
+      {
+        "company": "FingerCraft Software",
+        "duration": "November 2004 – October 2019",
+        "role": "Freelance Developer / Owner",
+        "projects": [
+          {
+            "name": "Chamber",
+            "duration": "Various",
+            "summary": "Developed an interactive product design application integrating Autodesk Forge and Stripe API to facilitate product customization and online sales.",
+            "achievements": [
+              "Handled full stack development of both front-end and backend components.",
+              "Integrated Autodesk Forge for generating AutoCAD drawings from user designs.",
+              "Implemented Stripe API for managing subscriptions and credit card processing."
+            ]
+          },
+          {
+            "name": "Oldcastle DVS Configurator",
+            "duration": "Various",
+            "summary": "Created a configurator tool to recommend wastewater separator configurations based on job parameters and generate technical drawings via email.",
+            "achievements": [
+              "Conducted an in-depth needs analysis to tailor solutions for client requirements.",
+              "Implemented raw email formatting and integrated AWS SES for attachments.",
+              "Automated technical drawing outputs based on user inputs."
+            ]
+          },
+          {
+            "name": "Locke Solutions’ Edge",
+            "duration": "Various",
+            "summary": "Developed a dynamic matrix-based analysis tool to replace manual Excel estimations for structural load and design analysis.",
+            "achievements": [
+              "Crafted a matrix analysis library for finite element analysis.",
+              "Automated the translation of manual load estimations into structured design data.",
+              "Enhanced the efficiency and accuracy of engineering cost estimates."
+            ]
+          },
+          {
+            "name": "Halfen FK4 Layout Tool",
+            "duration": "Various",
+            "summary": "Designed an AutoCAD plugin to automate layout design and material estimation for FK4 products, significantly improving manufacturing efficiency.",
+            "achievements": [
+              "Developed complex algorithms for determining inside/outside regions in closed figures.",
+              "Automated optimal product placement and generated accurate bills of materials.",
+              "Produced extensive instructional materials including over 60 minutes of video training."
+            ]
+          }
+        ]
+      },
+      {
+        "company": "Oldcastle Infrastructure",
+        "duration": "January 2000 – November 2017",
+        "role": "National CAD Manager & Developer",
+        "projects": [
+          {
+            "name": "Catalyst",
+            "duration": "Various",
+            "summary": "Led the development of a desktop application for interactive product design that integrated design, structural analysis, and ERP data exports.",
+            "achievements": [
+              "Served as the primary technical lead and mentor for in-house operations.",
+              "Developed interactive 3D user interfaces along with data serialization components.",
+              "Integrated structural analysis features and automated ERP bill-of-material exports."
+            ]
+          },
+          {
+            "name": "ETO Language Extension for VS Code",
+            "duration": "Various",
+            "summary": "Developed a VS Code extension to enable IntelliSense and syntax highlighting for Autodesk's ETO language, significantly improving developer productivity.",
+            "achievements": [
+              "Implemented advanced token coloring and IntelliSense for the ETO language.",
+              "Enabled VS Code as a viable alternative for developing in ETO."
+            ]
+          },
+          {
+            "name": "CastleStorm",
+            "duration": "Various",
+            "summary": "Developed a dual-purpose tool for finite element analysis and for distributing design files, thereby streamlining engineering workflows.",
+            "achievements": [
+              "Designed a registry/file-based system to detect date tampering.",
+              "Built a matrix analysis system to conduct finite element analysis.",
+              "Implemented comprehensive file serialization and printing systems for design data."
+            ]
+          },
+          {
+            "name": "Extensions",
+            "duration": "Various",
+            "summary": "Re-engineered a suite of AutoCAD add-ins to standardize document detailing and streamline concrete reinforcement take-off processes.",
+            "achievements": [
+              "Migrated legacy AutoLISP and VBA tools to modern VB.NET add-ins.",
+              "Facilitated new hire training and improved daily operational efficiency with standardized tools."
+            ]
+          },
+          {
+            "name": "Chloe",
+            "duration": "Various",
+            "summary": "Developed an Autodesk Inventor add-in that provided advanced 3D functionality, overcoming limitations in design and rebar detailing.",
+            "achievements": [
+              "Implemented functionality for 3D intersection of model geometry.",
+              "Enabled cutting of rebar around openings to support advanced design requirements."
+            ]
+          },
+          {
+            "name": "Spark",
+            "duration": "Various",
+            "summary": "Designed a standalone application for salespeople to generate accurate material usage estimates, reducing the dependency on engineering input.",
+            "achievements": [
+              "Provided conservative design estimates to support accurate quoting.",
+              "Streamlined the material estimation process for non-technical users."
+            ]
+          },
+          {
+            "name": "CircleWeight",
+            "duration": "Various",
+            "summary": "Built a straightforward application enabling rapid calculation of product weights, assisting both sales and CAD personnel.",
+            "achievements": [
+              "Developed a user-friendly tool for quick weight calculations.",
+              "Enhanced productivity and accuracy for technical and non-technical users alike."
+            ]
+          },
+          {
+            "name": "Regex Tool",
+            "duration": "Various",
+            "summary": "Created a sophisticated tool to aid in constructing complex regex patterns, enhancing pattern readability and maintainability.",
+            "achievements": [
+              "Enabled the construction of large regex patterns from smaller, manageable components.",
+              "Provided visual test feedback and generated C# constants for seamless integration."
+            ]
+          },
+          {
+            "name": "Production Label Generator",
+            "duration": "Various",
+            "summary": "Developed a VBA-based solution that automated product label generation, reducing manual entry errors in production scheduling.",
+            "achievements": [
+              "Automated label creation by reading and processing production schedule data from Excel.",
+              "Streamlined the production labeling process, enhancing overall operational efficiency."
+            ]
+          }
+        ]
+      }
+    ],
+    "education": [
+      {
+        "institution": "Anoka-Ramsey Community College",
+        "field": "Software Development"
+      },
+      {
+        "institution": "Minneapolis Drafting School",
+        "field": "Mechanical Drafting"
+      }
+    ],
+    "contact": {
+      "name": "Richard Olson"
+    }
+  }

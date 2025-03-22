@@ -7,3 +7,4 @@ characterChatRouter.post('/characters', async (req: AuthenticatedRequest, res) =
     // Get the user info from the request.
     const user = req;
 });
+

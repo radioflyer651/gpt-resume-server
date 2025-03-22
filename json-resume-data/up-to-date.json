@@ -1,0 +1,521 @@
+{
+    "personal": {
+      "name": "Richard Olson",
+      "address": "259 141st Ave, Andover, MN 55304",
+      "phone": "720-384-3388",
+      "email": "richard@richardolson.org"
+    },
+    "technicalSkills": {
+      "Languages": [
+        "TypeScript",
+        "JavaScript",
+        "HTML5",
+        "CSS",
+        "SCSS",
+        "C#",
+        "VB.NET",
+        "XAML/WPF",
+        "VBA",
+        "VB6",
+        "AutoLISP",
+        "AeroBasic",
+        "XML"
+      ],
+      "Web Technology": [
+        "Angular 2+",
+        "ASP.NET",
+        "React",
+        "Web API",
+        ".NET Core 3",
+        ".NET 6-8",
+        "SSL Certificates",
+        "MVC",
+        "Entity Framework"
+      ],
+      "Server Technologies": [
+        "NodeJS",
+        "ExpressJS",
+        ".NET Web API"
+      ],
+      "AWS Cloud": [
+        "EC2",
+        "S3",
+        "Amazon Linux",
+        "SES",
+        "SNS",
+        "Route53",
+        "WorkMail"
+      ],
+      "Azure Cloud": [
+        "YAML Pipelines",
+        "SignalR",
+        "Azure SQL Server",
+        "CosmosDB",
+        "ServiceBus",
+        "Azure Functions",
+        "App Service"
+      ],
+      "Database": [
+        "MySQL",
+        "MS SQL Server",
+        "MongoDB"
+      ],
+      "Development Tools": [
+        "Azure DevOps",
+        "R#",
+        "Rider",
+        "WebStorm",
+        "VS Code",
+        "Blend",
+        "InstallShield",
+        "SSH",
+        "Docker",
+        "SSMS"
+      ],
+      "Version Control": [
+        "GIT",
+        "SVN"
+      ],
+      "Unit Testing": [
+        "NUnit",
+        "Mocha",
+        "XUnit",
+        "FluentAssertions",
+        "Autofixture",
+        "Faker.js",
+        "FluentAssertions"
+      ],
+      "Build Tools": [
+        "Webpack"
+      ]
+    },
+    "experience": [
+      {
+        "company": "Intertech",
+        "title": "Sr. Software Consultant",
+        "date": "October, 2019 - March, 2025",
+        "projects": [
+          {
+            "projectCompany": "Big Gain",
+            "role": "Sr. Developer",
+            "duration": "3 Month Project",
+            "projectName": "BeefBooks Cattle Feeding Management System",
+            "contributions": [
+              "Participated in updates to angular application.",
+              "Developed functionality in both frontend and backend systems.",
+              "Significant RXJS work throughout the Angular application.",
+              "Performed upgrade from Angular v15 to v19.",
+              "Collaborated with team using Azure DevOps for CI/CD pipelines and Scrum processes."
+            ],
+            "technologies": [
+              ".NET 4.7",
+              "Web API",
+              "Angular 15",
+              "RXJS",
+              "NGRX",
+              "NGX-Bootstrap",
+              "Bootstrap",
+              "Azure App Service Plans",
+              "Azure App Services",
+              "Azure MS SQL Server",
+              "Azure Function Apps",
+              "App Insights",
+              "Entity Framework",
+              "CSS",
+              "HTML"
+            ]
+          },
+          {
+            "projectCompany": "Eden Prairie Police Dept",
+            "role": "Maintenance & Support",
+            "duration": "5 years (As-Needed Support)",
+            "projectName": "CIS Management Application",
+            "contributions": [
+              "Provided part-time maintenance and support for CIS application.",
+              "Implemented minor improvements to enhance department-specific access to New World (Police Management Application) data.",
+              "Collaborated with police department staff to understand requirements.",
+              "Maintained legacy codebase while implementing incremental improvements."
+            ],
+            "technologies": [
+              ".NET 4.7",
+              "MS SQL Server",
+              "SSMS",
+              "Visual Studio",
+              "VS Code",
+              "JQuery",
+              "CSS",
+              "HTML",
+              "MVC"
+            ]
+          },
+          {
+            "projectCompany": "RSM",
+            "role": "Solution Architect",
+            "duration": "2 Month Project",
+            "projectName": "Unclaimed Property Asset Recovery (UPAR)",
+            "contributions": [
+              "Functioned as solution architect for the preliminary design of the UPAR project",
+              "Participated in a team with a PO, two BAs, and two SMEs",
+              "Collected functional and non-functional requirements of SMEs and developed a system architecture",
+              "Developed high-level backlog and effort estimation to create timeline and budget",
+              "Completed task in approximately one month",
+              "Final design used: Azure AI Search on top of SQL Database, React UI, and others",
+              "Outcome: Project artifacts intended for review board approval"
+            ],
+            "technologies": [
+              "Azure AI Search"
+            ]
+          },
+          {
+            "projectCompany": "RSM",
+            "role": "Solution Architect, Lead Dev",
+            "duration": "2 years, 9 Months",
+            "projectName": "Investor Portal Improvements and Maintenance",
+            "contributions": [
+              "Led an off-shore development team.",
+              "Provided training and coaching to development team.",
+              "Conducted performance reviews of team members.",
+              "Conducted Vericode scans to resolve security issues and reported updates to the security and penetration testing teams.",
+              "Designed new features with varying complexity.",
+              "Decoupled the Investor Portal from the TSA platform by creating separate codebases.",
+              "Eliminated shared services between the two applications.",
+              "Set up new environments for the independent applications.",
+              "Migrated from App Services to Kubernetes.",
+              "Streamlined the codebase to retain only essential components."
+            ],
+            "technologies": [
+              ".NET Core 3.1 through .NET 8",
+              "React",
+              "Azure Key Vault",
+              "Azure MS SQL Server",
+              "SSMS",
+              "Azure Functiuons",
+              "Azure Service Bus",
+              "Azure App Service",
+              "Azure Application Insights",
+              "Visual Studio",
+              "VS Code",
+              "NodeJS",
+              "TypeScript",
+              "NPM",
+              "Linux",
+              "Azure DevOps",
+              "Material-UI",
+              "DevExtreme",
+              "Recoil",
+              "SignalR",
+              "Faker.js",
+              "AutoFixture",
+              "XUnit",
+              "FluentAssertions",
+              "Vericode",
+              "Entity Framework",
+              "CSS",
+              "HTML"
+            ]
+          },
+          {
+            "projectCompany": "RSM",
+            "role": "Sr Developer",
+            "duration": "8 Month Project",
+            "projectName": "DMS (Document Manager System)",
+            "contributions": [
+              "Full involvement in project development",
+              "Created SQL scripts for data maintenance",
+              "Developed API logic and user interface",
+              "Implemented Docker for use in Azure’s Kubernetes Service (AKS)",
+              "Pioneered Docker usage in the development environment",
+              "Created custom Docker image for NGINX",
+              "Developed logic to pass environment variables from the Pod to the React app",
+              "Provided Node.js scripts for maintenance functions with the IManage API"
+            ],
+            "technologies": [
+              ".NET Core 3.1",
+              "React",
+              "Docker",
+              "Azure App Configuration",
+              "Azure Key Vault",
+              "AKS (Kubernetes)",
+              "Azure SQL Databases",
+              "MS SQL Server",
+              "SSMS",
+              "Azure SQL Studio",
+              "Visual Studio",
+              "VS Code",
+              "NodeJS",
+              "TypeScript",
+              "NPM",
+              "Linux",
+              "Docker Compose",
+              "Azure DevOps",
+              "Material-UI",
+              "Entity Framework"
+            ]
+          },
+          {
+            "projectCompany": "CTW Automation",
+            "role": "Sr Developer",
+            "duration": "8 Month Project",
+            "projectName": "Probe (WPF Based Hardware Data Collection & Analysis Tool)",
+            "contributions": [
+              "Developed new commands for test machine operations and output generation",
+              "Created analysis routines to present data meaningfully to users",
+              "Enhanced graphic displays with functionalities such as zooming and panning",
+              "Implemented data point analysis on graphs using SciChart libraries",
+              "Extended event-based data collection routines",
+              "Utilized WPF control libraries for diverse data display options, including graphs and formatted print output"
+            ],
+            "technologies": [
+              "Visual Studio",
+              "WPF/XAML",
+              "C#",
+              "R#",
+              "MS DevOps",
+              "SciChart WPF Library",
+              "Infragistics Control Library",
+              "Actipro WPF Library",
+              "AeroBasic"
+            ]
+          },
+          {
+            "projectCompany": "The Menta Group",
+            "role": "Sr Developer",
+            "duration": "4 Month Project",
+            "projectName": "MSIS School Management Application",
+            "contributions": [
+              "Routine updates to enhance functionality",
+              "Implemented Angular-based gradebook feature into existing webforms pages.",
+              "Developed Angular-based scheduling feature on top of webforms pages.",
+              "Created database stored procedures to support new front-end features."
+            ],
+            "technologies": [
+              "Visual Studio",
+              "VS Code",
+              "SQL Server Management Studio",
+              "PrimeNG Control Library",
+              "Angular 8",
+              "JQuery",
+              "MS SQL Server",
+              "ASP.NET",
+              "WebForms"
+            ]
+          }
+        ]
+      },
+      {
+        "company": "FingerCraft Software",
+        "title": "Freelance Developer/Owner",
+        "date": "November 2017 - October 2019",
+        "projects": [
+          {
+            "projectCompany": "Chamber",
+            "role": "Full-Stack Developer",
+            "duration": "Product Development",
+            "projectName": "Interactive Product Design Web Application",
+            "contributions": [
+              "Developed an application for resale enabling users to interactively design products via web interface",
+              "Integrated with Autodesk Forge to generate AutoCAD drawings",
+              "Implemented Stripe REST-based API for user subscription and credit card processing",
+              "Built complete frontend and backend systems",
+              "Collaborated with industry professionals for usability feedback and improvements"
+            ],
+            "technologies": [
+              "WebStorm",
+              "TypeScript",
+              "NodeJS",
+              "C#",
+              "MongoDB 3.6",
+              "Angular v2-v8",
+              "PrimeNG",
+              "REST APIs",
+              "AWS EC2",
+              "AWS S3",
+              "AWS Linux",
+              "Studio 3T",
+              "Autodesk Forge",
+              "Autodesk ObjectARX"
+            ]
+          },
+          {
+            "projectCompany": "Oldcastle",
+            "role": "Full-Stack Developer",
+            "duration": "Client Project",
+            "projectName": "DVS Configurator",
+            "contributions": [
+              "Created tool to recommend specific size/configuration of Dual Vortex Separator products based on job parameters",
+              "Conducted customer needs analysis",
+              "Implemented technical drawing distribution via email",
+              "Developed custom email format to support attachments in AWS SES service"
+            ],
+            "technologies": [
+              "WebStorm",
+              "TypeScript",
+              "NodeJS",
+              "MongoDB",
+              "Angular v2-v8",
+              "PrimeNG",
+              "AWS EC2",
+              "AWS SES",
+              "AWS Linux",
+              "Studio 3T"
+            ]
+          },
+          {
+            "projectCompany": "Locke Solutions",
+            "role": "Application Developer",
+            "duration": "Client Project",
+            "projectName": "Edge Structural Analysis Tool",
+            "contributions": [
+              "Replaced Excel-based tool with application that provides matrix analysis of structural forces",
+              "Created TypeScript-based matrix analysis library for finite element analysis of structures",
+              "Implemented iterative load positioning for accurate structural evaluation"
+            ],
+            "technologies": [
+              "WebStorm",
+              "TypeScript",
+              "NodeJS",
+              "MongoDB",
+              "Angular v2-v8",
+              "Angular Material",
+              "AWS EC2",
+              "AWS Linux",
+              "Studio 3T"
+            ]
+          },
+          {
+            "projectCompany": "Halfen",
+            "role": "CAD Plugin Developer",
+            "duration": "Client Project",
+            "projectName": "FK4 Layout Tool",
+            "contributions": [
+              "Developed AutoCAD plugin that positions FK4 products around structure profiles",
+              "Created complex mathematical algorithms to determine inside/outside of closed figures",
+              "Automated product placement and chamfer angle calculations",
+              "Implemented bill of materials generation with accurate counts",
+              "Provided regular feature demonstrations throughout development lifecycle",
+              "Created over 60 minutes of instructional video tutorials"
+            ],
+            "technologies": [
+              "C#",
+              "VB.NET",
+              "Autodesk ObjectARX",
+              "InstallShield",
+              "AutoCAD",
+              "Rider",
+              "WPF"
+            ]
+          }
+        ]
+      },
+      {
+        "company": "Oldcastle Infrastructure",
+        "title": "National CAD Manager & Developer",
+        "date": "January 2000 - November 2017",
+        "projects": [
+          {
+            "projectCompany": "Catalyst",
+            "role": "Lead Developer",
+            "duration": "Internal Application",
+            "projectName": "Interactive Product Design System",
+            "contributions": [
+              "Led development of desktop application for interactive product design by non-technical users",
+              "Mentored structural engineers in C# and ETO programming languages",
+              "Developed interactive 3D frontend UI elements with WPF",
+              "Implemented data serialization between UI and backend systems",
+              "Created tools to extract classes from ETO code and reproduce them in C#",
+              "Developed 3D geometry extraction applications to simplify CAD data for frontend graphics"
+            ],
+            "technologies": [
+              "Visual Studio",
+              "C#",
+              "VB.NET",
+              "WPF/XAML",
+              "WIX Toolset",
+              "ETO Studio",
+              ".NET Reflection"
+            ]
+          },
+          {
+            "projectCompany": "CastleStorm",
+            "role": "Developer",
+            "duration": "Internal Application",
+            "projectName": "Structural Analysis & Design Tool",
+            "contributions": [
+              "Developed design tool for box culvert and 3-sided bridge products",
+              "Implemented finite element analysis for structural loading scenarios",
+              "Created sophisticated registry/file-based system for security",
+              "Built matrix analysis system for finite element calculations",
+              "Developed custom printing system for application output",
+              "Created multiple serialization formats for project data using reflection",
+              "Integrated with company's Active Directory for user authorization"
+            ],
+            "technologies": [
+              "Visual Studio",
+              "C#",
+              "VB.NET",
+              "WPF/XAML",
+              "Active Directory",
+              "InstallShield",
+              ".NET Reflection"
+            ]
+          },
+          {
+            "projectCompany": "Extensions",
+            "role": "CAD Plugin Developer",
+            "duration": "Internal Application",
+            "projectName": "AutoCAD Standardization Add-in",
+            "contributions": [
+              "Developed 2D AutoCAD add-in for company CAD standardization",
+              "Created efficient detailing and take-off tools for concrete reinforcement",
+              "Rewrote application through multiple generations: AutoLISP → VBA → VB.NET",
+              "Tool became company standard included in new hire training"
+            ],
+            "technologies": [
+              "Visual Studio",
+              "VB.NET",
+              "WPF/XAML",
+              "InstallShield Express",
+              "VBA",
+              "AutoLISP",
+              "AutoCAD"
+            ]
+          },
+          {
+            "projectCompany": "Specialized Development",
+            "role": "Application Developer",
+            "duration": "Internal Applications",
+            "projectName": "Multiple Engineering Tools",
+            "contributions": [
+              "Chloe - Autodesk Inventor add-in providing 3D functionality for complex intersections and rebar cutting around openings",
+              "ETO Extension for VS Code - Created extension enabling intellisense and token coloring for ETO language",
+              "Spark - Developed application for salespeople to create conservative product designs for accurate quoting",
+              "Regex Tool - Built application for constructing complex regex patterns with visual testing and C# code generation",
+              "Production Label Generator - Created VBA automation that read production schedules and generated product labels"
+            ],
+            "technologies": [
+              "Visual Studio",
+              "C#",
+              "VB.NET",
+              "WPF/XAML",
+              "WinForms",
+              "VBA",
+              "Excel",
+              "TypeScript",
+              "VS Code",
+              "Autodesk Inventor"
+            ]
+          }
+        ]
+      }
+    ],
+    "education": [
+      {
+        "field": "Software Development",
+        "institution": "Anoka-Ramsey Community College"
+      },
+      {
+        "field": "Mechanical Drafting",
+        "institution": "Minneapolis Drafting School"
+      }
+    ]
+  }
