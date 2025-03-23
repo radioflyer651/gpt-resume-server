@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import openAi from 'openai';
+import { ResponseInputItem } from 'openai/resources/responses/responses';
 
 /** A shortened data set for a Chat so it can be returned for lists.*/
 export interface ChatInfo {
@@ -8,6 +8,8 @@ export interface ChatInfo {
 
     /** Gets or sets the ID of the user who owns this chat. */
     userId: ObjectId;
+
+    model: string;
 
     /** Gets or sets the type of chat this is.  Different types of chats
      *   have different types of interactions on the site. */
@@ -24,14 +26,14 @@ export interface Chat extends ChatInfo {
     systemMessages: string[];
 
     /** Gets or sets the chat messages that were sent in this interaction. */
-    chatMessages: ChatMessage[];
+    chatMessages: ResponseInputItem[];
 }
 
 
 export interface ChatMessage {
     /** Gets or sets the message that was sent. */
-    message: string;
+    content: string;
 
     /** Gets or sets the role that sent the message. */
-    role: openAi.Chat.ChatCompletionRole;
+    role: 'system' | 'user' | 'assistant';
 }
