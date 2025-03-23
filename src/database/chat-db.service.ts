@@ -5,6 +5,7 @@ import { User } from "../model/user.model";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { Chat, ChatInfo, ChatMessage } from "../model/chat-models.model";
+import { isNewDbItem, NewDbItem } from "../model/db-operation-types.model";
 
 
 export class ChatDbService extends DbService {
@@ -59,16 +60,31 @@ export class ChatDbService extends DbService {
     }
 
     /** Upserts a specified chat. */
-    async upsertChat(chat: Chat): Promise<Chat> {
+    async upsertChat(chat: Chat | NewDbItem<Chat>): Promise<Chat> {
         return await this.dbHelper.makeCall(async db => {
-            const result = await db.collection(DbCollectionNames.Chats).updateOne(
-                { _id: chat._id },
-                { $set: chat },
-                { upsert: true }
-            );
+            // Determine if this is a new chat, or an existing one.
+            if ('_id' in chat) {
+                const result = await db.collection(DbCollectionNames.Chats).updateOne(
+                    { _id: chat._id },
+                    { $set: chat },
+                    { upsert: true }
+                );
 
-            chat._id = result.upsertedId || chat._id;
-            return chat;
+                chat._id = result.upsertedId || chat._id;
+                return chat;
+            } else {
+                // Insert the chat into the databse.
+                const opResult = await db.collection<Chat>(DbCollectionNames.Chats).insertOne(chat as Chat);
+
+                // Silly, but recast to an actual chat, because TypeScript can't figure it out.
+                const newChat = chat as Chat;
+
+                // Set the new ID from the database.
+                newChat._id = opResult.insertedId;
+
+                // Return the old object.
+                return newChat;
+            }
         });
     }
 

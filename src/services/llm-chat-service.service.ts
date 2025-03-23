@@ -7,7 +7,7 @@ import { Chat } from "../model/chat-models.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
-export type ChatProcessAsyncMessage = (message: string) => void | Promise<void>;
+export type LlmChatProcessAsyncMessage = (message: string) => void | Promise<void>;
 
 /** Provides functionality needed to communicate with the LLM (probably ChatGPT). */
 export class ChatService {
@@ -63,7 +63,6 @@ export class ChatService {
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
     private async callChatResponse(chat: Chat, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void | Promise<void>): Promise<Chat> {
-
         // Assemble the system messages.
         const systemMessages = chat.systemMessages.map(msg => ({
             role: 'system' as const,
