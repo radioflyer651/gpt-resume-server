@@ -4,6 +4,7 @@ import { ChatDbService } from "../database/chat-db.service";
 import { FunctionCallOutput, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
 import { ToolDefinition } from "../model/tool-definition.model";
 import { Chat } from "../model/chat-models.model";
+import { OpenAiConfig } from "../model/app-config.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -11,8 +12,8 @@ export type LlmChatProcessAsyncMessage = (message: string) => void | Promise<voi
 
 /** Provides functionality needed to communicate with the LLM (probably ChatGPT). */
 export class LlmChatService {
-    constructor(apiKey: string, private readonly chatDbService: ChatDbService) {
-        this.openAi = new OpenAI({ apiKey });
+    constructor(config: OpenAiConfig, private readonly chatDbService: ChatDbService) {
+        this.openAi = new OpenAI({ apiKey: config.openAiKey, organization: config.openAiOrg });
     }
 
     private readonly openAi: OpenAI;
