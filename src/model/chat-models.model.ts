@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { ResponseInputItem } from 'openai/resources/responses/responses';
+import { ResponseInputItem } from '../forwarded-types.model';
 
 /** A shortened data set for a Chat so it can be returned for lists.*/
 export interface ChatInfo {
@@ -9,6 +9,7 @@ export interface ChatInfo {
     /** Gets or sets the ID of the user who owns this chat. */
     userId: ObjectId;
 
+    /** The LLM model to use for this chat interaction. */
     model: string;
 
     /** Gets or sets the type of chat this is.  Different types of chats

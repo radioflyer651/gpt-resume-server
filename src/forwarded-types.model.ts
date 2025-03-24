@@ -5,4 +5,5 @@ export type Tool = ResponseTypes.Tool;
 export type FunctionTool = ResponseTypes.FunctionTool;
 export type ResponseFunctionToolCall = ResponseTypes.ResponseFunctionToolCall;
 export type FunctionCallOutput = ResponseTypes.ResponseInputItem.FunctionCallOutput;
+export type ResponseInputItem = ResponseTypes.ResponseInputItem;
 export type ResponseOutputMessage = ResponseTypes.ResponseOutputMessage;

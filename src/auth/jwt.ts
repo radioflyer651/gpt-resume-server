@@ -1,15 +1,22 @@
 import jwt from 'jsonwebtoken';
 import { TokenPayload } from '../model/token-payload.model';
+import { getAppConfig } from '../config';
 
-const secretKey = 'we have some secret here, and it is not what you think it is!'; // This needs to be a config property.
+/** Returns the secret key from the AppConfig. */
+async function loadSecretKey(): Promise<string> {
+    const config = await getAppConfig();
+    return config.tokenSecret;
+}
 
 // Generate a token
-export function generateToken(payload: TokenPayload): string {
+export async function generateToken(payload: TokenPayload): Promise<string> {
+    const secretKey = await loadSecretKey();
     return jwt.sign(payload, secretKey, { expiresIn: '4h' });
 }
 
 // Verify a token
-export function verifyToken(token: string): TokenPayload | null {
+export async function verifyToken(token: string): Promise<TokenPayload | null> {
+    const secretKey = await loadSecretKey();
     try {
         return jwt.verify(token, secretKey) as TokenPayload;
     } catch (error) {

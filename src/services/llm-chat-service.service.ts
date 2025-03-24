@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import OpenAI from "openai";
 import { ChatDbService } from "../database/chat-db.service";
-import { FunctionCallOutput, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../model/forwarded-types.model";
+import { FunctionCallOutput, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
 import { ToolDefinition } from "../model/tool-definition.model";
 import { Chat } from "../model/chat-models.model";
 
