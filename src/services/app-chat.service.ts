@@ -22,13 +22,23 @@ export class AppChatService {
         }
 
         // Create a new one.
-        let newChat: Chat | NewDbItem<Chat> = this.initializeNewMainChat(userId);
+        let newChat: Chat | NewDbItem<Chat> = this.initializeNewChatOfType(userId, chatType);
 
         // Save it to the database.
         newChat = await this.chatDbService.upsertChat(newChat);
 
         // Return the new chat.
         return newChat as Chat;
+    }
+
+    /** Creates and initializes a specified chat type for a specified user ID. */
+    initializeNewChatOfType(ownerUserId: ObjectId, chatType: ChatTypes): NewDbItem<Chat> {
+        switch (chatType) {
+            case ChatTypes.Main:
+                return this.initializeNewMainChat(ownerUserId);
+            default:
+                throw new Error(`The chat type '${chatType}' is not supported.`);
+        }
     }
 
     /** Returns a new Chat object for the 'Main" type. */

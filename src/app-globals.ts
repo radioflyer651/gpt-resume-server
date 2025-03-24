@@ -3,7 +3,9 @@ import { UserDbService } from "./database/user-db.service";
 import { MongoHelper } from "./mongo-helper";
 import { AppChatService } from "./services/app-chat.service";
 import { AuthService } from "./services/auth-service";
+import { LlmChatService } from "./services/llm-chat-service.service";
 
+throw new Error(`The API Key is required for the ChatService, and not yet supplied.`);
 
 /** If we were using dependency injection, this would be the DI services we'd inject in the necessary places. */
 
@@ -14,6 +16,7 @@ export const dbHelper = new MongoHelper();
 export const userDbService = new UserDbService(dbHelper);
 export const chatDbService = new ChatDbService(dbHelper);
 export const appChatService = new AppChatService(chatDbService);
+export const chatService = new LlmChatService('', chatDbService);
 
 /* App Services. */
 export const authService = new AuthService(userDbService);

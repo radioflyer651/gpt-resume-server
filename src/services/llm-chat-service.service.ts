@@ -10,7 +10,7 @@ import { Chat } from "../model/chat-models.model";
 export type LlmChatProcessAsyncMessage = (message: string) => void | Promise<void>;
 
 /** Provides functionality needed to communicate with the LLM (probably ChatGPT). */
-export class ChatService {
+export class LlmChatService {
     constructor(apiKey: string, private readonly chatDbService: ChatDbService) {
         this.openAi = new OpenAI({ apiKey });
     }

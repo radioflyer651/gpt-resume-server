@@ -4,3 +4,7 @@ import { TokenPayload } from "./token-payload.model";
 export interface AuthenticatedRequest extends Request {
     user?: TokenPayload;
 }
+
+export type AuthenticatedSpecialRequest<T> = T & {
+    user?: TokenPayload;
+};
