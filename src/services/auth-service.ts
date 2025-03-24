@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { UserDbService } from "../database/user-db.service";
 import { isValidString } from "../utils/strings.utils";
-import { TokenPayload } from "../model/token-payload.model";
+import { TokenPayload } from "../model/shared-models/token-payload.model";
 
 
 export class AuthService {

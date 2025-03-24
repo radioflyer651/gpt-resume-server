@@ -1,4 +1,4 @@
-import { FunctionTool, Tool } from "../forwarded-types.model";
+import { FunctionTool } from "../../forwarded-types.model";
 
 export interface ToolDefinition {
     /** Gets or sets the tool description for the LLM, as an option that can be called. */

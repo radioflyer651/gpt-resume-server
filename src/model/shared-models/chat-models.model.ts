@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { ResponseInputItem } from '../forwarded-types.model';
+import { ResponseInputItem } from '../../forwarded-types.model';
 
 /** A shortened data set for a Chat so it can be returned for lists.*/
 export interface ChatInfo {
@@ -31,6 +31,7 @@ export interface Chat extends ChatInfo {
 }
 
 
+/** Simplified ResponseInputItem object, where only a role and content is emitted. */
 export interface ChatMessage {
     /** Gets or sets the message that was sent. */
     content: string;

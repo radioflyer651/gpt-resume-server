@@ -1,8 +1,9 @@
 import express from "express";
 import { ObjectId } from "mongodb";
 import { appChatService, chatDbService, chatService } from "../app-globals";
-import { ChatTypes } from "../model/chat-types.model";
+import { ChatTypes } from "../model/shared-models/chat-types.model";
 import { AuthenticatedRequest, AuthenticatedSpecialRequest } from "../model/authenticated-request.model";
+import { convertChatsToMessages } from "../utils/convert-chat-to-messages.utils";
 
 export const chatRouter = express.Router();
 
@@ -23,6 +24,9 @@ chatRouter.get('/chats/main-chat/:userId', async (req, res) => {
 
     // Get the chat from the chat service, which will create one if it was missing.
     const chatResult = await appChatService.getOrCreateChatOfType(userObjId, ChatTypes.Main);
+
+    // Convert the messages to chat messages.
+    chatResult.chatMessages = convertChatsToMessages(chatResult.chatMessages);
 
     // Send the chat to the caller.
     res.json(chatResult);
@@ -55,7 +59,7 @@ chatRouter.post('/chats/main-chat', async (req, res) => {
 
     // Make the call for the chat.
     const chatResponse = await chatService.createChatResponse(mainChat._id, message);
-    
+
     // Send the chat to the caller.
     res.json(chatResponse);
 });

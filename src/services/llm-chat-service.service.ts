@@ -2,8 +2,8 @@ import { ObjectId } from "mongodb";
 import OpenAI from "openai";
 import { ChatDbService } from "../database/chat-db.service";
 import { FunctionCallOutput, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
-import { ToolDefinition } from "../model/tool-definition.model";
-import { Chat } from "../model/chat-models.model";
+import { ToolDefinition } from "../model/shared-models/tool-definition.model";
+import { Chat } from "../model/shared-models/chat-models.model";
 import { OpenAiConfig } from "../model/app-config.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function

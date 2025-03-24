@@ -1,7 +1,7 @@
 
 import express, { Request, Response } from 'express';
 import { generateToken } from '../auth/jwt';
-import { TokenPayload } from '../model/token-payload.model';
+import { TokenPayload } from '../model/shared-models/token-payload.model';
 import { authService } from '../app-globals';
 
 export const authRouter = express.Router();

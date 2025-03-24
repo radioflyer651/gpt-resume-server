@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { TokenPayload } from '../model/token-payload.model';
+import { TokenPayload } from '../model/shared-models/token-payload.model';
 import { getAppConfig } from '../config';
 
 /** Returns the secret key from the AppConfig. */

@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
 import { ChatDbService } from "../database/chat-db.service";
-import { Chat } from "../model/chat-models.model";
-import { NewDbItem } from "../model/db-operation-types.model";
-import { ChatTypes } from "../model/chat-types.model";
+import { Chat } from "../model/shared-models/chat-models.model";
+import { NewDbItem } from "../model/shared-models/db-operation-types.model";
+import { ChatTypes } from "../model/shared-models/chat-types.model";
 
 /** Provides application-context specific chat functionality. */
 export class AppChatService {
