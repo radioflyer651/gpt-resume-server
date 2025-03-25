@@ -5,4 +5,5 @@ export enum DbCollectionNames {
     Companies = 'companies',
     Characters = 'characters',
     Chats = 'chat',
+    ChatCallCache = 'chat-call-cache'
 }

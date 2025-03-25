@@ -60,4 +60,24 @@ export class MongoHelper {
             }
         }
     }
+
+
+    async makeCallWithCollection<T>(collectionName: string, callback: (db: mongo.Db, collection: mongo.Collection) => Promise<T>): Promise<T> {
+        let makeConnection = !this.isConnected;
+        if (makeConnection) {
+            await this.connect();
+        }
+
+        try {
+            // Get the collection.
+            const collection = this.db!.collection(collectionName);
+
+            // Return the result from the callback.
+            return await callback(this.db!, collection) as T;
+        } finally {
+            if (makeConnection) {
+                await this.disconnect();
+            }
+        }
+    }
 }

@@ -1,66 +1,160 @@
-import express from "express";
-import { ObjectId } from "mongodb";
-import { appChatService, chatDbService, chatService } from "../app-globals";
-import { ChatTypes } from "../model/shared-models/chat-types.model";
-import { AuthenticatedRequest, AuthenticatedSpecialRequest } from "../model/authenticated-request.model";
-import { convertChatsToMessages } from "../utils/convert-chat-to-messages.utils";
+import http from 'http';
+import { Socket, Server as SocketIOServer } from 'socket.io';
+import { IAppConfig } from '../model/app-config.model';
+import { ISocketServerFunction, ISocketServerFunctions } from '../model/shared-models/socket-functions.model';
+import { ObjectId } from 'mongodb';
+import { TokenPayload } from '../model/shared-models/token-payload.model';
+import { verifyToken } from '../auth/jwt';
+import { nullToUndefined } from '../utils/empty-and-null.utils';
+import { LlmChatService } from '../services/llm-chat-service.service';
+import { ChatMessage } from '../model/shared-models/chat-models.model';
+import { ChatDbService } from '../database/chat-db.service';
+import { ChatTypes } from '../model/shared-models/chat-types.model';
+import { AppChatService } from '../services/app-chat.service';
 
-export const chatRouter = express.Router();
+/** All functions in the ChatServer that must be registered with socket.io. 
+ *   NOTE: ServerFunctions must be defined as () => xxx to preserve 'this'.
+*/
+const socketFunctions = [] as string[];
+function SocketFunction(target: any, propertyKey: string) {
+    // Add the property to the socket function list.
+    socketFunctions.push(propertyKey);
+}
 
-/** Returns the main chat for a specified UserID, and if one does not exist, then one is created and sent. */
-chatRouter.get('/chats/main-chat/:userId', async (req, res) => {
-    // Get the user ID from the params.
-    const userId = req.params.userId;
+/** Performs chat interactions with the UI, using socket.io. This setup
+ *   is only intended to support a single back-end server. */
+export class ChatServer implements ISocketServerFunctions {
+    constructor(
+        readonly llmChatService: LlmChatService,
+        readonly chatDbServer: ChatDbService,
+        readonly appChatService: AppChatService
+    ) {
 
-    // Validate this.
-    if (!ObjectId.isValid(userId)) {
-        res.status(400)
-            .end();
-        return;
     }
 
-    // Convert the object ID to an object id.
-    const userObjId = new ObjectId(userId);
+    registerWithServer(config: IAppConfig, server: http.Server<any, any>) {
+        const io = new SocketIOServer(server, {
+            cors: {
+                origin: config.corsAllowed ?? [],
+                methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']
+            }
+        });
 
-    // Get the chat from the chat service, which will create one if it was missing.
-    const chatResult = await appChatService.getOrCreateChatOfType(userObjId, ChatTypes.Main);
+        // Register the socket functions with socket.io.
+        io.on('connection', async (socket) => {
+            // Determine if they can connect or not.
+            if (!(await this.onConnect(socket))) {
+                // Disconnect and exit.
+                socket.disconnect();
+                return;
+            }
 
-    // Convert the messages to chat messages.
-    chatResult.chatMessages = convertChatsToMessages(chatResult.chatMessages);
+            // Register the disconnection.
+            socket.on('disconnect', () => this.onDisconnect(socket));
 
-    // Send the chat to the caller.
-    res.json(chatResult);
-});
-
-/** Sends a specified chat message to the main chat for a specified user ID. */
-chatRouter.post('/chats/main-chat', async (req, res) => {
-
-    // Get the user ID from the request.
-    const userId = (req as AuthenticatedSpecialRequest<typeof req>).user?.userId ?? '';
-
-    // Validate this.
-    if (!ObjectId.isValid(userId)) {
-        res.status(400)
-            .end();
-        return;
+            // Register all SocketFunctions.
+            socketFunctions.forEach(fName => {
+                // Register this function as a server function.
+                socket.on(fName, (...args) => this.callFunction(fName, socket, args));
+            });
+        });
     }
 
-    // Convert the object ID to an object id.
-    const userObjId = new ObjectId(userId);
+    private callFunction = async (fName: string, socket: Socket, args: any[]) => {
+        // The last argument is always a callback to send the response to the client.
+        const actArgs = [] as any[];
 
-    // Get the chat from the chat service, which will create one if it was missing.
-    const chatResult = await appChatService.getOrCreateChatOfType(userObjId, ChatTypes.Main);
+        // Variable to hold the response callback.
+        let responseCallback!: (res: any) => void;
 
-    // Get the message from the body.
-    const message = req.body as string;
+        // Rebuild the argument list, since we can't have the response call back inside it.
+        args.forEach((arg, i) => {
+            if (i !== args.length - 1) {
+                // Add this to the arg list.
+                actArgs.push(arg);
+            } else {
+                // Set the return callback.
+                responseCallback = arg;
+            }
+        });
 
-    // Get/create the main chat for this user.
-    const mainChat = await appChatService.getOrCreateChatOfType(userObjId, ChatTypes.Main);
+        // Get the function for this.
+        const thisServer = (this as unknown) as { [key: string]: ISocketServerFunction; };
+        const serverFunction = thisServer[fName];
 
-    // Make the call for the chat.
-    const chatResponse = await chatService.createChatResponse(mainChat._id, message);
+        // Call the function, and get the response.
+        const result = await serverFunction(socket, ...actArgs);
+        // Send the result to the caller.
+        responseCallback(result);
+    };
 
-    // Send the chat to the caller.
-    res.json(chatResponse);
-});
+    private sendChatMessageToUser(socket: Socket, chatId: ObjectId, message: ChatMessage): void {
+        socket.emit('receiveChatMessage', chatId.toHexString(), message);
+    }
 
+    private receiveServerStatusMessage(socket: Socket, type: 'info' | 'success' | 'warn' | 'error', message: string): void {
+        socket.emit('receiveServerStatusMessage', type, message);
+    }
+
+    sendMainChatMessage = async (socket: Socket, message: string): Promise<void> => {
+        // Get the user's Id
+        const userId = await this.getUserIdForSocket(socket);
+
+        // Validate the user ID.
+        if (!userId) {
+            throw new Error('UserID is invalid.');
+        }
+
+        // Get the main chat for this user. (This could be improved to just get the ID.)
+        const mainChat = await this.appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
+
+        // Function to deal with messages received during the API call.
+        const chatStream$ = this.llmChatService.createChatResponse(mainChat._id, message);
+
+        // Subscribe tot he stream, and send messages to the front end as they come in.
+        chatStream$.subscribe(msg => {
+            if (typeof msg === 'string') {
+                this.receiveServerStatusMessage(socket, 'info', msg);
+            } else {
+                this.sendChatMessageToUser(socket, mainChat._id, msg);
+            }
+        });
+    };
+
+    /** Returns the user's ID that owns a specified socket. */
+    private getUserIdForSocket = async (socket: Socket): Promise<ObjectId | undefined> => {
+        // Get the token.
+        const token = await this.getTokenPayloadForSocket(socket);
+
+        // Return the right thing.
+        return token?.userId;
+    };
+
+    /** Returns the TokenPayload for a specified socket, if there is one. */
+    private async getTokenPayloadForSocket(socket: Socket): Promise<TokenPayload | undefined> {
+        const token = socket.handshake.auth.token as string | undefined;
+
+        // If there's no token, then there's no payload.
+        if (!token) {
+            return undefined;
+        }
+
+        // Return the parsed value.
+        return nullToUndefined(await verifyToken(token));
+    }
+
+    /** Called when a socket connects to the server.  This method will
+     *   return a boolean value indicating whether or not the socket has the
+     *   appropriate credentials. */
+    private async onConnect(socket: Socket): Promise<boolean> {
+        // Get the TokenPayload for the socket.
+        const payload = await this.getTokenPayloadForSocket(socket);
+
+        // Convert the result to a boolean.
+        return !!payload;
+    }
+
+    private async onDisconnect(socket: Socket): Promise<void> {
+
+    }
+}

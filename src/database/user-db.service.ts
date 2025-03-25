@@ -68,4 +68,11 @@ export class UserDbService extends DbService {
             return user;
         });
     }
+
+    /** Returns a user specified by their user ID, if one exists. */
+    async getUserById(userId: ObjectId): Promise<User | undefined> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.Users, async (db, collection) => {
+            return nullToUndefined(await collection.findOne<User>({ _id: userId }));
+        });
+    }
 }

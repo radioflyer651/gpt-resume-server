@@ -3,8 +3,9 @@ import OpenAI from "openai";
 import { ChatDbService } from "../database/chat-db.service";
 import { FunctionCallOutput, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
 import { ToolDefinition } from "../model/shared-models/tool-definition.model";
-import { Chat } from "../model/shared-models/chat-models.model";
+import { Chat, ChatMessage } from "../model/shared-models/chat-models.model";
 import { OpenAiConfig } from "../model/app-config.model";
+import { Observable } from "rxjs";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -21,48 +22,81 @@ export class LlmChatService {
     /** Creates a new ChatResponse (like a chat completion) against the LLM with a specified new message
      *   for a specified chat.  Optionally, tools (custom functions) may be supplied for the LLM to call.
      *   Optionally, a function may be provided to send a message back to the UI if a tool is called along with a message. */
-    async createChatResponse(chatId: ObjectId, prompt: string, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void): Promise<string> {
-        // Get the specified chat.
-        let chat = await this.chatDbService.getChatById(chatId);
+    createChatResponse(chatId: ObjectId, prompt: string, toolList?: ToolDefinition[]): Observable<ChatMessage | string> {
+        return new Observable<ChatMessage | string>((subscriber) => {
+            // Status to indicate if we've aborted somehow.
+            let unsubscribed = false;
 
-        // If we don't have a chat then we can't do anything.
-        if (!chat) {
-            throw new Error(`No chat with the specified ID exists.`);
-        }
+            const internals = async () => {
+                // Get the specified chat.
+                let chat = await this.chatDbService.getChatById(chatId);
 
-        // Add the new prompt to the message list.
-        chat.chatMessages.push(
-            {
-                role: 'user' as const,
-                content: prompt
-            });
+                // If we don't have a chat then we can't do anything.
+                if (!chat) {
+                    subscriber.error('No chat with the specified ID exists.');
+                    return;
+                }
 
-        // Update the chat in the DB.
-        chat = await this.chatDbService.upsertChat(chat);
+                // Add the new prompt to the message list.
+                chat.chatMessages.push(
+                    {
+                        role: 'user' as const,
+                        content: prompt
+                    });
 
-        // Call the LLM API, and process the results.
-        const chatResult = await this.callChatResponse(chat, toolList, asyncProcessMessage);
+                // Update the chat in the DB.
+                chat = await this.chatDbService.upsertChat(chat);
 
-        // Get the response recast to the right type.
-        const resultMessage = chatResult.chatMessages[chatResult.chatMessages.length - 1] as ResponseOutputMessage;
+                // Create the callback function that will send status messages to the UI
+                //  through the observable, when status updates are being made.
+                const asyncProcessMessage = (message: string) => {
+                    // Only send this if we're not unsubscribed.
+                    if (!unsubscribed) {
+                        subscriber.next(message);
+                    }
+                };
 
-        // Figure out the response.  I doubt there's going to be multiple
-        //  items coming out of this.
-        let response = resultMessage.content.map(x => {
-            if (x.type === 'output_text') {
-                return x.text;
-            } else {
-                return x.refusal;
-            }
-        }).join(', ');
+                let chatResult: Chat;
+                try {
+                    // Call the LLM API, and process the results.
+                    chatResult = await this.callChatResponse(chat, toolList, asyncProcessMessage);
+                } catch (err) {
+                    subscriber.error(err);
+                    return;
+                }
 
-        // Return the result.
-        return response;
+                // If we're unsubscribed, we don't have to do anything else.
+                if (unsubscribed) {
+                    return;
+                }
+
+                // Get the response recast to the right type.
+                const resultMessage = chatResult.chatMessages[chatResult.chatMessages.length - 1] as ResponseOutputMessage;
+
+                // Figure out the response.  I doubt there's going to be multiple
+                //  items coming out of this.
+                let response = resultMessage.content.map(x => {
+                    if (x.type === 'output_text') {
+                        return x.text;
+                    } else {
+                        return x.refusal;
+                    }
+                }).join(', ');
+
+                // Send the messages through the observable.
+                subscriber.next({ role: 'assistant', content: response });
+
+                // And we're done!
+                subscriber.complete();
+            };
+
+            internals();
+        });
     }
 
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
-    private async callChatResponse(chat: Chat, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void | Promise<void>): Promise<Chat> {
+    private async callChatResponse(chat: Chat, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
         // Assemble the system messages.
         const systemMessages = chat.systemMessages.map(msg => ({
             role: 'system' as const,
@@ -103,7 +137,8 @@ export class LlmChatService {
         if (asyncProcessMessage && functionCalls.length > 0) {
             // Get the messages for each function call.
             const messages = functionCalls
-                .map(fc => this.getToolForFunctionCall(fc, toolList!)).filter(x => !!x)
+                .map(fc => this.getToolForFunctionCall(fc, toolList!))
+                .filter(x => !!x)
                 .map(fc => fc.processingMessage);
 
             // Call the callback for each message, and collect the promises.

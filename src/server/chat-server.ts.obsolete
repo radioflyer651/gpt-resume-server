@@ -1,0 +1,97 @@
+import express from "express";
+import { ObjectId } from "mongodb";
+import { appChatService, chatDbService, chatService, userDbService } from "../app-globals";
+import { ChatTypes } from "../model/shared-models/chat-types.model";
+import { AuthenticatedRequest, AuthenticatedSpecialRequest } from "../model/authenticated-request.model";
+import { convertChatsToMessages } from "../utils/convert-chat-to-messages.utils";
+import { getTokenPayloadFromRequest, getUserIdFromRequest } from "../utils/get-user-from-request.utils";
+
+export const chatRouter = express.Router();
+
+/** Returns the main chat for a specified UserID, and if one does not exist, then one is created and sent. */
+chatRouter.get('/chats/main-chat/:userId', async (req, res) => {
+    // Get the user ID from the params.
+    const userId = req.params.userId;
+
+    // Validate this.
+    if (!ObjectId.isValid(userId)) {
+        res.status(400)
+            .end();
+        return;
+    }
+
+    // Convert the object ID to an object id.
+    const userObjId = new ObjectId(userId);
+
+    // Get the chat from the chat service, which will create one if it was missing.
+    const chatResult = await appChatService.getOrCreateChatOfType(userObjId, ChatTypes.Main);
+
+    // Convert the messages to chat messages.
+    chatResult.chatMessages = convertChatsToMessages(chatResult.chatMessages);
+
+    // Send the chat to the caller.
+    res.json(chatResult);
+});
+
+/* Chats are done in two parts.  Sending and receiving the response in a second call, since that
+ *   may require multiple replies from the LLM, and requires Server-Side-Events (which only uses GET calls). */
+
+/** The first call in performing a chat, storing the message in the message cache. */
+chatRouter.post('/chats/main-chat/send-message', async (req, res) => {
+    // Get the user ID from the request.
+    const userId = getUserIdFromRequest(req);
+
+    // Validate this.
+    if (!userId) {
+        res.status(400)
+            .end();
+        return;
+    }
+
+    // Get the user from the ID.
+    const user = userDbService.getUserById(userId);
+
+    // If we don't have a user, then we can't do anything.
+    if (!user) {
+        res.status(400).end('No user exists with the specified ID.');
+    }
+
+    // Get the message from the body.
+    const message = req.body as string;
+
+    // Store the message in the cache.
+    const cacheId = await chatDbService.pushChatCallToCache(userId, message);
+
+    // Send the chat to the caller.
+    res.json(cacheId);
+});
+
+/** Sends a specified chat message to the main chat for a specified user ID, and a
+ *   Cached Message, which was made by the '/chats/main-chat/send-message' call. */
+chatRouter.get('/chats/main-chat/:cacheId', async (req, res) => {
+    // Get the user ID from the request.
+    const userId = getUserIdFromRequest(req);
+
+    // Validate this.
+    if (!userId) {
+        res.status(400)
+            .end();
+        return;
+    }
+
+    // Convert the object ID to an object id.
+    const userObjId = new ObjectId(userId);
+
+    // Get the message from the body.
+    const message = req.body as string;
+
+    // Get/create the main chat for this user.
+    const mainChat = await appChatService.getOrCreateChatOfType(userObjId, ChatTypes.Main);
+
+    // Make the call for the chat.
+    const chatResponse = await chatService.createChatResponse(mainChat._id, message);
+
+    // Send the chat to the caller.
+    res.json(chatResponse);
+});
+
