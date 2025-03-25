@@ -1,3 +1,4 @@
+import { getAppConfig } from "./config";
 import { ChatDbService } from "./database/chat-db.service";
 import { UserDbService } from "./database/user-db.service";
 import { MongoHelper } from "./mongo-helper";
@@ -5,18 +6,35 @@ import { AppChatService } from "./services/app-chat.service";
 import { AuthService } from "./services/auth-service";
 import { LlmChatService } from "./services/llm-chat-service.service";
 
-throw new Error(`The API Key is required for the ChatService, and not yet supplied.`);
-
 /** If we were using dependency injection, this would be the DI services we'd inject in the necessary places. */
 
 /** The mongo helper used in all DB Services. */
-export const dbHelper = new MongoHelper();
+export let dbHelper: MongoHelper;
 
 /* All DB Services. */
-export const userDbService = new UserDbService(dbHelper);
-export const chatDbService = new ChatDbService(dbHelper);
-export const appChatService = new AppChatService(chatDbService);
-export const chatService = new LlmChatService('', chatDbService);
+export let userDbService: UserDbService;
+export let chatDbService: ChatDbService;
+export let appChatService: AppChatService;
+export let chatService: LlmChatService;
+
 
 /* App Services. */
-export const authService = new AuthService(userDbService);
+export let authService: AuthService;
+
+/** Initializes the services used in the application. */
+export async function initializeServices(): Promise<void> {
+    // Load the configuration.
+    const config = await getAppConfig();
+
+    /** The mongo helper used in all DB Services. */
+    dbHelper = new MongoHelper(config.mongo.connectionString, config.mongo.databaseName);
+
+    /* All DB Services. */
+    userDbService = new UserDbService(dbHelper);
+    chatDbService = new ChatDbService(dbHelper);
+    appChatService = new AppChatService(chatDbService);
+    chatService = new LlmChatService(config.openAiConfig, chatDbService);
+
+    /* App Services. */
+    authService = new AuthService(userDbService);
+}

@@ -4,6 +4,8 @@ export interface IAppConfig {
     openAiConfig: OpenAiConfig;
     mongo: MongoConfig;
     tokenSecret: string;
+    port: number;
+    corsAllowed?: string[];
 }
 
 export interface OpenAiConfig {

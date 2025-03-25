@@ -20,8 +20,7 @@ export class LlmChatService {
 
     /** Creates a new ChatResponse (like a chat completion) against the LLM with a specified new message
      *   for a specified chat.  Optionally, tools (custom functions) may be supplied for the LLM to call.
-     *   Optionally, a function may be provided to send a message back to the UI if a tool is called along with a message.
-     */
+     *   Optionally, a function may be provided to send a message back to the UI if a tool is called along with a message. */
     async createChatResponse(chatId: ObjectId, prompt: string, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void): Promise<string> {
         // Get the specified chat.
         let chat = await this.chatDbService.getChatById(chatId);

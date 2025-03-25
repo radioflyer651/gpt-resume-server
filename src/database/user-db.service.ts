@@ -16,7 +16,9 @@ export class UserDbService extends DbService {
 
         return await this.dbHelper.makeCall(async db => {
             // Try to get the company for this website.
-            const company = await db.collection(DbCollectionNames.Companies).findOne<Company>({ website: { $eq: webSite } });
+            const company = await db.collection(DbCollectionNames.Companies).findOne<Company>({ website: { $eq: lcWebsite } });
+
+            console.log(`company: ${company?.name}`);
 
             // If we didn't find one, then we don't have a user for the company.
             if (!company) {
@@ -24,7 +26,9 @@ export class UserDbService extends DbService {
             }
 
             // Try to find the user.
-            const user = nullToUndefined(await db.collection(DbCollectionNames.Users).findOne<User>({ name: { $eq: lcUserName }, companyId: { $eq: company._id } }));
+            const user = nullToUndefined(await db.collection(DbCollectionNames.Users).findOne<User>({ userName: { $eq: lcUserName }, companyId: { $eq: company._id } }));
+
+            console.log(`user: ${user?.userName}`, user);
 
             // If there's no user, then we don't have a user for the company.
             if (!user) {
