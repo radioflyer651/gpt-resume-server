@@ -6,6 +6,8 @@ import { characterChatRouter } from './server/character-chat.server';
 import { bodyObjectIdsToStringMiddleware } from './server/middleware/body-object-ids-to-string.middleware';
 import { bodyStringsToObjectIdsMiddleware } from './server/middleware/body-strings-to-object-ids.middleware';
 import { getAppConfig } from './config';
+import { chatRouter } from './server/chat.server';
+import { authMiddleware } from './auth/auth-middleware';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -14,6 +16,8 @@ export async function initializeExpressApp() {
 
   // Setup CORS.
   await setupCors(app);
+
+  app.use(authMiddleware);
 
   // Add the JSON body parser.
   app.use(bodyParser.json());
@@ -27,6 +31,7 @@ export async function initializeExpressApp() {
   // Servers (groups of endpoints).
   app.use(authRouter);
   app.use(characterChatRouter);
+  app.use(chatRouter);
 
   app.use((req, res) => {
     res.status(404).send('Not Found');

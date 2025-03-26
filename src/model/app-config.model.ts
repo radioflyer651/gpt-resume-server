@@ -6,6 +6,8 @@ export interface IAppConfig {
     tokenSecret: string;
     corsAllowed?: string[];
     serverConfig: ServerConfig;
+    /** The full path to the socket.io endpoint for chatting. */
+    chatSocketIoEndpoint: string;
 }
 
 export interface OpenAiConfig {

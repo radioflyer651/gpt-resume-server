@@ -2,7 +2,7 @@ import { getAppConfig } from "./config";
 import { ChatDbService } from "./database/chat-db.service";
 import { UserDbService } from "./database/user-db.service";
 import { MongoHelper } from "./mongo-helper";
-import { ChatServer } from "./server/chat.server";
+import { ChatSocketServer } from "./server/chat-socket.server";
 import { AppChatService } from "./services/app-chat.service";
 import { AuthService } from "./services/auth-service";
 import { LlmChatService } from "./services/llm-chat-service.service";
@@ -17,7 +17,7 @@ export let userDbService: UserDbService;
 export let chatDbService: ChatDbService;
 export let appChatService: AppChatService;
 export let chatService: LlmChatService;
-export let chatServer: ChatServer;
+export let chatServer: ChatSocketServer;
 
 
 /* App Services. */
@@ -39,6 +39,6 @@ export async function initializeServices(): Promise<void> {
 
     /* App Services. */
     authService = new AuthService(userDbService);
-    chatServer = new ChatServer(chatService, chatDbService, appChatService);
+    chatServer = new ChatSocketServer(chatService, chatDbService, appChatService);
 
 }

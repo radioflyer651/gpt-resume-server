@@ -1,9 +1,11 @@
-import { Response, NextFunction } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { verifyToken } from './jwt';
 import { AuthenticatedRequest } from '../model/authenticated-request.model';
 
-export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    const token = req.headers.get('authorization') || req.headers.get('Authorization');
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const token: string | undefined = req.headers['authorization'] as string || req.headers['Authorization'] as string;
+
+    console.log(req.headers);
 
     if (!token) {
         res.status(401).json({ message: 'Access denied. No token provided.' });
@@ -16,6 +18,6 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
         return;
     }
 
-    req.user = decoded;
+    (req as any).user = decoded;
     next();
 }

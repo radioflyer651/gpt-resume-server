@@ -30,6 +30,8 @@ export interface Chat extends ChatInfo {
     chatMessages: ResponseInputItem[];
 }
 
+/** The representation of a Chat on the client side. */
+export type ClientChat = Omit<Chat, 'chatMessages'> & { chatMessages: ChatMessage[]; };
 
 /** Simplified ResponseInputItem object, where only a role and content is emitted. */
 export interface ChatMessage {

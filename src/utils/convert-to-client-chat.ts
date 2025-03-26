@@ -1,5 +1,11 @@
 import { MessageType, ResponseInputItem } from "../forwarded-types.model";
-import { ChatMessage } from "../model/shared-models/chat-models.model";
+import { Chat, ChatMessage, ClientChat } from "../model/shared-models/chat-models.model";
+
+
+/** Converts the messages in a chat to ChatMessages, and returns a copy of the chat as a ClientChat. */
+export function convertChatToClientChat(chat: Chat): ClientChat {
+    return { ...chat, chatMessages: convertChatsToMessages(chat.chatMessages) };
+}
 
 /** Given a specified set of ResponseInputItem objects, filters to messages, and returns only the
  *   ChatMessage content from the source. */
