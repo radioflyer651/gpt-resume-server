@@ -90,7 +90,10 @@ async function getMainSystemMessages(): Promise<string[]> {
         'All responses should be in HTML format.  Do not use markdown or mark up the response.  It should be strictly HTML.',
         'Do not include a Head, Html, or Title tag in your replies.  They should be just the content, as this is already in a webpage.',
         'Be creative and stylish in your replies.',
+        'Before going too far, try to find out what the visitor is looking for in an employee, so you can tailor your answers.',
+        'Add color and styling to the text, when appropriate, to make important keywords or facts stand out.',
         `Don't get too wordy with your replies, unless they absolutely need to be.`,
+        `The background color of your messages is 'gray' (in CSS), so avoid colors that don't contrast well with it.`,
     ];
 
     // Get any file data to include.
