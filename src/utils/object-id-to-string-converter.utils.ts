@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 /** Converts any ObjectId property, or nested property, of a specified target to a string.
  *   If the target is not an object, then it is returned as-is.  If it's an ObjectId itself
  *   then it is converted to a string. */
-export function objectIdToStringConverter(target: any, cloneObject: boolean = true) {
+export function objectIdToStringConverter(target: any) {
     // If this isn't an object, then we can't convert it.
     if (!target || typeof target !== "object") {
         return target;
@@ -16,9 +16,7 @@ export function objectIdToStringConverter(target: any, cloneObject: boolean = tr
     }
 
     // Unless indicated otherwise, clone the object so we don't modify the original.
-    let obj = cloneObject
-        ? structuredClone(target)
-        : target;
+    let obj = target;
 
     // Examine each property.
     for (let prop in obj) {
@@ -33,12 +31,12 @@ export function objectIdToStringConverter(target: any, cloneObject: boolean = tr
         } else if (Array.isArray(value)) {
             // If this is an array, then recurse.  No need to clone,
             //  as we're already cloning the parent.
-            obj[prop] = value.map(v => objectIdToStringConverter(v, false));
+            obj[prop] = value.map(v => objectIdToStringConverter(v));
 
         } else if (type === "object") {
             // If this is an object, then recurse.  No need to clone,
             //  as we're already cloning the parent.
-            obj[prop] = objectIdToStringConverter(value, false);
+            obj[prop] = objectIdToStringConverter(value);
 
         } else {
             // Otherwise, do nothing - this is a primitive type.

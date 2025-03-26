@@ -4,7 +4,10 @@ import { Chat, ChatMessage, ChatMessageRoleTypes, ClientChat } from "../model/sh
 
 /** Converts the messages in a chat to ChatMessages, and returns a copy of the chat as a ClientChat. */
 export function convertChatToClientChat(chat: Chat): ClientChat {
-    return { ...chat, chatMessages: convertChatsToMessages(chat.chatMessages) };
+    const result = { ...chat, chatMessages: convertChatsToMessages(chat.chatMessages) };
+    delete (result as any).systemMessages;
+    return result;
+
 }
 
 /** Given a specified set of ResponseInputItem objects, filters to messages, and returns only the

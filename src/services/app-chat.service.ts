@@ -33,6 +33,18 @@ export class AppChatService {
         return newChat as Chat;
     }
 
+    /** Creates a new chat, of a specified type, for a specified user. */
+    async startNewChatOfType(userId: ObjectId, chatType: ChatTypes): Promise<Chat> {
+        // Create the new chat of the specified type.
+        const newChat = await this.initializeNewChatOfType(userId, chatType);
+
+        // Save it.
+        await this.chatDbService.upsertChat(newChat);
+
+        // Return it.  (Recast, because we know it has an ID now.)
+        return newChat as Chat;
+    }
+
     /** Creates and initializes a specified chat type for a specified user ID. */
     async initializeNewChatOfType(ownerUserId: ObjectId, chatType: ChatTypes): Promise<NewDbItem<Chat>> {
         switch (chatType) {
@@ -51,7 +63,8 @@ export class AppChatService {
             chatMessages: [],
             lastAccessDate: new Date(),
             model: 'gpt-4o-mini',
-            systemMessages: await getSystemMessagesForChatType(ChatTypes.Main)
+            systemMessages: await getSystemMessagesForChatType(ChatTypes.Main),
+            creationDate: new Date(),
         };
     }
 }
@@ -77,6 +90,7 @@ async function getMainSystemMessages(): Promise<string[]> {
         'All responses should be in HTML format.  Do not use markdown or mark up the response.  It should be strictly HTML.',
         'Do not include a Head, Html, or Title tag in your replies.  They should be just the content, as this is already in a webpage.',
         'Be creative and stylish in your replies.',
+        `Don't get too wordy with your replies, unless they absolutely need to be.`,
     ];
 
     // Get any file data to include.

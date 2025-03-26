@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { stringToObjectIdConverter } from '../../utils/object-id-to-string-converter.utils';
+import { objectIdToStringConverter, stringToObjectIdConverter } from '../../utils/object-id-to-string-converter.utils';
 
 
 /**
@@ -13,18 +13,12 @@ import { stringToObjectIdConverter } from '../../utils/object-id-to-string-conve
  * @param next - The next middleware function in the stack.
  */
 export function bodyStringsToObjectIdsMiddleware(req: Request, res: Response, next: NextFunction) {
-
-    // Get the existing json method, so we make our own, but continue using that one.
-    const json = res.json;
-
-    // Override the json method.
-    res.json = function (body: any) {
-        // Convert any object IDs to strings.
-        body = stringToObjectIdConverter(body);
-
-        // Call the original json method.
-        return json.call(this, body);
-    };
+    // If the request body exists and is an object, convert any string properties
+    //  This has a little risk, since a string could be misinterpreted as an ObjectId, 
+    //  but it's a low risk.
+    if (req.body && typeof req.body === 'object') {
+        req.body = stringToObjectIdConverter(req.body);
+    }
 
     next();
 }

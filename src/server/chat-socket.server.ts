@@ -10,7 +10,7 @@ import { ChatMessage } from '../model/shared-models/chat-models.model';
 import { ChatDbService } from '../database/chat-db.service';
 import { ChatTypes } from '../model/shared-models/chat-types.model';
 import { AppChatService } from '../services/app-chat.service';
-import { stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
+import { objectIdToStringConverter, stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
 
 /** All functions in the ChatServer that must be registered with socket.io. */
 const socketFunctions = [] as string[];
@@ -53,10 +53,19 @@ export class ChatSocketServer {
 
             console.log(`Connection established.`);
 
-            socket.onAny((...args) => {
+            socket.onAnyOutgoing((...args) => {
+                args.forEach(a => {
+                    objectIdToStringConverter(a);
+                });
+            });
+
+            // We must convert object IDs of strings to ObjectIds.
+            socket.use(([event, ...args], next) => {
                 args.forEach(a => {
                     stringToObjectIdConverter(a, false);
                 });
+
+                next();
             });
 
             // Register the disconnection.

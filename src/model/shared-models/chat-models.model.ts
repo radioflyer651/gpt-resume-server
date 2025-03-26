@@ -18,6 +18,9 @@ export interface ChatInfo {
 
     /** Gets or sets the date this chat was last updated. */
     lastAccessDate: Date;
+
+    /** The date/time this chat was created. */
+    creationDate: Date;
 }
 
 export interface Chat extends ChatInfo {
@@ -31,7 +34,7 @@ export interface Chat extends ChatInfo {
 }
 
 /** The representation of a Chat on the client side. */
-export type ClientChat = Omit<Chat, 'chatMessages'> & { chatMessages: ChatMessage[]; };
+export type ClientChat = Omit<Chat, 'chatMessages' | 'systemMessages'> & { chatMessages: ChatMessage[]; };
 
 /** The possible values for roles in a ChatMessage. */
 export type ChatMessageRoleTypes = 'system' | 'user' | 'assistant';
