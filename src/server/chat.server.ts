@@ -19,8 +19,18 @@ chatRouter.get('/chat/main', async (req, res) => {
     // Get or create the main chat.
     const chat = await appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
 
+    console.log(`Messages: ${chat.chatMessages.length}`);
+    chat.chatMessages.forEach(m => {
+        const x = m as any;
+        console.log(x.role, x.content);
+    });
     // Convert it to a client chat.
     const result = convertChatToClientChat(chat);
+
+    console.log(`Messages: ${result.chatMessages.length}`);
+    result.chatMessages.forEach(m => {
+        console.log(m.role, m.content);
+    });
 
     // Return the main chat.
     res.json(result);

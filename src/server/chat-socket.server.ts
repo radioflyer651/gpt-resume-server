@@ -41,11 +41,6 @@ export class ChatSocketServer {
             }
         });
 
-        io.use((socket, next) => {
-            console.log(socket);
-            next();
-        });
-
         // Register the socket functions with socket.io.
         io.on('connection', async (socket) => {
             // Determine if they can connect or not.
@@ -130,7 +125,7 @@ export class ChatSocketServer {
         const result = nullToUndefined(await verifyToken(token));
 
         // Ensure the IDs are ObjectIds.
-        stringToObjectIdConverter(result);
+        stringToObjectIdConverter(result, false);
 
         // Return the result.
         return result;
@@ -176,7 +171,6 @@ export class ChatSocketServer {
         if (!userId) {
             throw new Error('UserID is invalid.');
         }
-
         // Get the main chat for this user. (This could be improved to just get the ID.)
         const mainChat = await this.appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
 
