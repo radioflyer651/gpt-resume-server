@@ -1,7 +1,6 @@
 import http from 'http';
 import { Socket, Server as SocketIOServer } from 'socket.io';
 import { IAppConfig } from '../model/app-config.model';
-import { ISocketServerFunction, ISocketServerFunctions } from '../model/shared-models/socket-functions.model';
 import { ObjectId } from 'mongodb';
 import { TokenPayload } from '../model/shared-models/token-payload.model';
 import { verifyToken } from '../auth/jwt';
@@ -12,9 +11,7 @@ import { ChatDbService } from '../database/chat-db.service';
 import { ChatTypes } from '../model/shared-models/chat-types.model';
 import { AppChatService } from '../services/app-chat.service';
 
-/** All functions in the ChatServer that must be registered with socket.io. 
- *   NOTE: ServerFunctions must be defined as () => xxx to preserve 'this'.
-*/
+/** All functions in the ChatServer that must be registered with socket.io. */
 const socketFunctions = [] as string[];
 function SocketFunction(target: any, propertyKey: string) {
     // Add the property to the socket function list.
@@ -23,7 +20,7 @@ function SocketFunction(target: any, propertyKey: string) {
 
 /** Performs chat interactions with the UI, using socket.io. This setup
  *   is only intended to support a single back-end server. */
-export class ChatServer implements ISocketServerFunctions {
+export class ChatServer {
     constructor(
         readonly llmChatService: LlmChatService,
         readonly chatDbServer: ChatDbService,
@@ -31,6 +28,9 @@ export class ChatServer implements ISocketServerFunctions {
     ) {
 
     }
+
+
+    // #region Internals
 
     registerWithServer(config: IAppConfig, server: http.Server<any, any>) {
         const io = new SocketIOServer(server, {
@@ -79,46 +79,13 @@ export class ChatServer implements ISocketServerFunctions {
         });
 
         // Get the function for this.
-        const thisServer = (this as unknown) as { [key: string]: ISocketServerFunction; };
+        const thisServer = (this as unknown) as { [key: string]: any; };
         const serverFunction = thisServer[fName];
 
         // Call the function, and get the response.
         const result = await serverFunction(socket, ...actArgs);
         // Send the result to the caller.
         responseCallback(result);
-    };
-
-    private sendChatMessageToUser(socket: Socket, chatId: ObjectId, message: ChatMessage): void {
-        socket.emit('receiveChatMessage', chatId.toHexString(), message);
-    }
-
-    private receiveServerStatusMessage(socket: Socket, type: 'info' | 'success' | 'warn' | 'error', message: string): void {
-        socket.emit('receiveServerStatusMessage', type, message);
-    }
-
-    sendMainChatMessage = async (socket: Socket, message: string): Promise<void> => {
-        // Get the user's Id
-        const userId = await this.getUserIdForSocket(socket);
-
-        // Validate the user ID.
-        if (!userId) {
-            throw new Error('UserID is invalid.');
-        }
-
-        // Get the main chat for this user. (This could be improved to just get the ID.)
-        const mainChat = await this.appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
-
-        // Function to deal with messages received during the API call.
-        const chatStream$ = this.llmChatService.createChatResponse(mainChat._id, message);
-
-        // Subscribe tot he stream, and send messages to the front end as they come in.
-        chatStream$.subscribe(msg => {
-            if (typeof msg === 'string') {
-                this.receiveServerStatusMessage(socket, 'info', msg);
-            } else {
-                this.sendChatMessageToUser(socket, mainChat._id, msg);
-            }
-        });
     };
 
     /** Returns the user's ID that owns a specified socket. */
@@ -157,4 +124,47 @@ export class ChatServer implements ISocketServerFunctions {
     private async onDisconnect(socket: Socket): Promise<void> {
 
     }
+
+    //#endregion
+
+    // #region Messaging To Client
+
+    /** Sends a chat message to the UI for a specified chat. */
+    receiveChatMessage(socket: Socket, chatId: ObjectId, message: ChatMessage): void {
+        socket.emit('receiveChatMessage', chatId.toHexString(), message);
+    }
+
+    receiveServerStatusMessage(socket: Socket, type: 'info' | 'success' | 'warn' | 'error', message: string): void {
+        socket.emit('receiveServerStatusMessage', type, message);
+    }
+
+    //#endregion
+
+    //#region Messaging From Client
+    @SocketFunction
+    sendMainChatMessage = async (socket: Socket, message: string): Promise<void> => {
+        // Get the user's Id
+        const userId = await this.getUserIdForSocket(socket);
+
+        // Validate the user ID.
+        if (!userId) {
+            throw new Error('UserID is invalid.');
+        }
+
+        // Get the main chat for this user. (This could be improved to just get the ID.)
+        const mainChat = await this.appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
+
+        // Function to deal with messages received during the API call.
+        const chatStream$ = this.llmChatService.createChatResponse(mainChat._id, message);
+
+        // Subscribe tot he stream, and send messages to the front end as they come in.
+        chatStream$.subscribe(msg => {
+            if (typeof msg === 'string') {
+                this.receiveServerStatusMessage(socket, 'info', msg);
+            } else {
+                this.receiveChatMessage(socket, mainChat._id, msg);
+            }
+        });
+    };
+    //#endregion
 }

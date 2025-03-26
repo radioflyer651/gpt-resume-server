@@ -2,7 +2,7 @@ import { getAppConfig } from "./config";
 import { ChatDbService } from "./database/chat-db.service";
 import { UserDbService } from "./database/user-db.service";
 import { MongoHelper } from "./mongo-helper";
-import { ChatServer } from "./server/chat-server";
+import { ChatServer } from "./server/chat.server";
 import { AppChatService } from "./services/app-chat.service";
 import { AuthService } from "./services/auth-service";
 import { LlmChatService } from "./services/llm-chat-service.service";

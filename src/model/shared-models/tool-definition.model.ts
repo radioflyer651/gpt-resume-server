@@ -11,4 +11,8 @@ export interface ToolDefinition {
     /** When this function is being called, this is the message
      *   to return to the user. */
     processingMessage: string;
+
+    /** Boolean value indicating whether or not this tool
+     *   controls a client-side function. */
+    isClientTool: boolean;
 }
