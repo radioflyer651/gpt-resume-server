@@ -10,6 +10,7 @@ import { ChatMessage } from '../model/shared-models/chat-models.model';
 import { ChatDbService } from '../database/chat-db.service';
 import { ChatTypes } from '../model/shared-models/chat-types.model';
 import { AppChatService } from '../services/app-chat.service';
+import { stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
 
 /** All functions in the ChatServer that must be registered with socket.io. */
 const socketFunctions = [] as string[];
@@ -33,23 +34,41 @@ export class ChatSocketServer {
 
     registerWithServer(config: IAppConfig, server: http.Server<any, any>) {
         const io = new SocketIOServer(server, {
+            // path: 'chat-io',
             cors: {
                 origin: config.corsAllowed ?? [],
                 methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']
             }
         });
 
+        io.use((socket, next) => {
+            console.log(socket);
+            next();
+        });
+
         // Register the socket functions with socket.io.
         io.on('connection', async (socket) => {
             // Determine if they can connect or not.
             if (!(await this.onConnect(socket))) {
+                console.log(`Connection made, but with bad credentials.  Disconnecting.`);
                 // Disconnect and exit.
                 socket.disconnect();
                 return;
             }
 
+            console.log(`Connection established.`);
+
+            socket.onAny((...args) => {
+                args.forEach(a => {
+                    stringToObjectIdConverter(a, false);
+                });
+            });
+
             // Register the disconnection.
-            socket.on('disconnect', () => this.onDisconnect(socket));
+            socket.on('disconnect', () => {
+                console.log('Socket disconnected.');
+                this.onDisconnect(socket);
+            });
 
             // Register all SocketFunctions.
             socketFunctions.forEach(fName => {
@@ -68,7 +87,7 @@ export class ChatSocketServer {
 
         // Rebuild the argument list, since we can't have the response call back inside it.
         args.forEach((arg, i) => {
-            if (i !== args.length - 1) {
+            if (i !== args.length - 1 || typeof arg !== 'function') {
                 // Add this to the arg list.
                 actArgs.push(arg);
             } else {
@@ -84,7 +103,9 @@ export class ChatSocketServer {
         // Call the function, and get the response.
         const result = await serverFunction(socket, ...actArgs);
         // Send the result to the caller.
-        responseCallback(result);
+        if (responseCallback) {
+            responseCallback(result);
+        }
     };
 
     /** Returns the user's ID that owns a specified socket. */
@@ -105,8 +126,14 @@ export class ChatSocketServer {
             return undefined;
         }
 
-        // Return the parsed value.
-        return nullToUndefined(await verifyToken(token));
+        // Get the parsed token.
+        const result = nullToUndefined(await verifyToken(token));
+
+        // Ensure the IDs are ObjectIds.
+        stringToObjectIdConverter(result);
+
+        // Return the result.
+        return result;
     }
 
     /** Called when a socket connects to the server.  This method will

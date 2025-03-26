@@ -1,12 +1,9 @@
 import { ObjectId } from "mongodb";
-import { Company } from "../model/shared-models/company.model";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
-import { User } from "../model/shared-models/user.model";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { Chat, ChatInfo, ChatMessage } from "../model/shared-models/chat-models.model";
 import { isNewDbItem, NewDbItem } from "../model/shared-models/db-operation-types.model";
-import { CachedChatMessage } from "../model/chached-chat-message.model";
 
 
 export class ChatDbService extends DbService {

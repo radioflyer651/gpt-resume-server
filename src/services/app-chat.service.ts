@@ -3,6 +3,8 @@ import { ChatDbService } from "../database/chat-db.service";
 import { Chat } from "../model/shared-models/chat-models.model";
 import { NewDbItem } from "../model/shared-models/db-operation-types.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
+import { getAppConfig } from "../config";
+import * as fs from 'fs/promises';
 
 /** Provides application-context specific chat functionality. */
 export class AppChatService {
@@ -22,7 +24,7 @@ export class AppChatService {
         }
 
         // Create a new one.
-        let newChat: Chat | NewDbItem<Chat> = this.initializeNewChatOfType(userId, chatType);
+        let newChat: Chat | NewDbItem<Chat> = await this.initializeNewChatOfType(userId, chatType);
 
         // Save it to the database.
         newChat = await this.chatDbService.upsertChat(newChat);
@@ -32,7 +34,7 @@ export class AppChatService {
     }
 
     /** Creates and initializes a specified chat type for a specified user ID. */
-    initializeNewChatOfType(ownerUserId: ObjectId, chatType: ChatTypes): NewDbItem<Chat> {
+    async initializeNewChatOfType(ownerUserId: ObjectId, chatType: ChatTypes): Promise<NewDbItem<Chat>> {
         switch (chatType) {
             case ChatTypes.Main:
                 return this.initializeNewMainChat(ownerUserId);
@@ -42,14 +44,47 @@ export class AppChatService {
     }
 
     /** Returns a new Chat object for the 'Main" type. */
-    initializeNewMainChat(ownerUserId: ObjectId): NewDbItem<Chat> {
+    async initializeNewMainChat(ownerUserId: ObjectId): Promise<NewDbItem<Chat>> {
         return {
             userId: ownerUserId,
             chatType: ChatTypes.Main,
             chatMessages: [],
             lastAccessDate: new Date(),
-            model: '',
-            systemMessages: []
+            model: 'gpt-4o-mini',
+            systemMessages: await getSystemMessagesForChatType(ChatTypes.Main)
         };
     }
+}
+
+async function getSystemMessagesForChatType(chatType: ChatTypes): Promise<string[]> {
+    switch (chatType) {
+        case ChatTypes.Main:
+            return await getMainSystemMessages();
+        default:
+            throw new Error(`Unexpected chat type: ${chatType}`);
+    }
+}
+
+async function getMainSystemMessages(): Promise<string[]> {
+    // Get the configuration.
+    const config = await getAppConfig();
+
+    const result = [
+        'You are a chat assistant for a website showing the resume for Richard Olson, a Software Developer.',
+        'You are charming and witty.  Your job is to woo the visitor, and make them laugh.',
+        'Your name is Ashlie, a goth woman, who is sarcastic and a bit dry.',
+        'Always be sure to introduce yourself.',
+        'All responses should be in HTML format.  Do not use markdown or mark up the response.  It should be strictly HTML.',
+        'Do not include a Head, Html, or Title tag in your replies.  They should be just the content, as this is already in a webpage.',
+        'Be creative and stylish in your replies.',
+    ];
+
+    // Get any file data to include.
+    for (let f of config.infoFiles) {
+        // Get this file.
+        const fileContent = await fs.readFile(f, 'utf8');
+        result.push(fileContent);
+    }
+
+    return result;
 }

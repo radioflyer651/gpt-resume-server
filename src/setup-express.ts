@@ -17,8 +17,6 @@ export async function initializeExpressApp() {
   // Setup CORS.
   await setupCors(app);
 
-  app.use(authMiddleware);
-
   // Add the JSON body parser.
   app.use(bodyParser.json());
 
@@ -30,6 +28,8 @@ export async function initializeExpressApp() {
 
   // Servers (groups of endpoints).
   app.use(authRouter);
+  app.use(authMiddleware);
+
   app.use(characterChatRouter);
   app.use(chatRouter);
 

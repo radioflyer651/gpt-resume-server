@@ -18,8 +18,6 @@ export class UserDbService extends DbService {
             // Try to get the company for this website.
             const company = await db.collection(DbCollectionNames.Companies).findOne<Company>({ website: { $eq: lcWebsite } });
 
-            console.log(`company: ${company?.name}`);
-
             // If we didn't find one, then we don't have a user for the company.
             if (!company) {
                 return undefined;
@@ -27,8 +25,6 @@ export class UserDbService extends DbService {
 
             // Try to find the user.
             const user = nullToUndefined(await db.collection(DbCollectionNames.Users).findOne<User>({ userName: { $eq: lcUserName }, companyId: { $eq: company._id } }));
-
-            console.log(`user: ${user?.userName}`, user);
 
             // If there's no user, then we don't have a user for the company.
             if (!user) {

@@ -7,8 +7,6 @@ import { convertChatToClientChat } from '../utils/convert-to-client-chat';
 export const chatRouter = express.Router();
 
 chatRouter.get('/chat/main', async (req, res) => {
-    console.log((req as any).user);
-
     // Get the user from this request.
     const userId = getUserIdFromRequest(req);
 
