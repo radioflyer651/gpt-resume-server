@@ -71,4 +71,11 @@ export class UserDbService extends DbService {
             return nullToUndefined(await collection.findOne<User>({ _id: userId }));
         });
     }
+
+    /** Returns a company by a specified ID. */
+    async getCompanyById(companyId: ObjectId): Promise<Company | undefined> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, collection) => {
+            return await nullToUndefined(collection.findOne<Company>({ _id: companyId }));
+        });
+    }
 }

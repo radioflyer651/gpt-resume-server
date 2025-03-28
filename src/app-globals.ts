@@ -1,5 +1,6 @@
 import { getAppConfig } from "./config";
 import { ChatDbService } from "./database/chat-db.service";
+import { LogDbService } from "./database/log-db.service";
 import { UserDbService } from "./database/user-db.service";
 import { MongoHelper } from "./mongo-helper";
 import { ChatSocketServer } from "./server/chat-socket.server";
@@ -16,6 +17,7 @@ export let dbHelper: MongoHelper;
 export let userDbService: UserDbService;
 export let chatDbService: ChatDbService;
 export let appChatService: AppChatService;
+export let loggingService: LogDbService;
 export let chatService: LlmChatService;
 export let chatServer: ChatSocketServer;
 
@@ -34,9 +36,10 @@ export async function initializeServices(): Promise<void> {
     /* All DB Services. */
     userDbService = new UserDbService(dbHelper);
     chatDbService = new ChatDbService(dbHelper);
+    loggingService = new LogDbService(dbHelper);
     appChatService = new AppChatService(chatDbService);
     await appChatService.initialize();
-    chatService = new LlmChatService(config.openAiConfig, chatDbService);
+    chatService = new LlmChatService(config.openAiConfig, chatDbService, userDbService, loggingService);
 
     /* App Services. */
     authService = new AuthService(userDbService);

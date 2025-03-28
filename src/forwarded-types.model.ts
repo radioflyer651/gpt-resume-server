@@ -14,3 +14,6 @@ export type MessageType = ResponseOutputMessage | EasyInputMessage | Message | R
 
 export type FunctionTool = ResponseTypes.FunctionTool;
 export type ResponseInputItem = ResponseTypes.ResponseInputItem;
+
+// ----------------------------------------------------
+
