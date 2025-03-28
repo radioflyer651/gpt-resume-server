@@ -69,7 +69,7 @@ export class AppChatService {
             chatMessages: [],
             lastAccessDate: new Date(),
             model: 'gpt-4o-mini',
-            systemMessages: [], // await getSystemMessagesForChatType(ChatTypes.Main),
+            systemMessages: await getSystemMessagesForChatType(ChatTypes.Main),
             creationDate: new Date(),
         };
     }
@@ -124,7 +124,7 @@ function getHtmlMessageInstructions(backgroundColor: string | undefined = 'gray'
 
     if (addColorAndStyle) {
         result.push('Add color and styling to the text, when appropriate, to make important keywords or facts stand out.');
-        result.push('The chat area is only around 450px x 350px, so be careful not to use fonts and elements that take up too much space.  Alter the size of the font if needed.')
+        result.push('The chat area is only around 450px x 350px, so be careful not to use fonts and elements that take up too much space.  Alter the size of the font if needed.');
     }
 
     return result;
@@ -134,16 +134,18 @@ async function getMainSystemMessages(): Promise<string[]> {
     // Get the configuration.
     const config = await getAppConfig();
 
-    const result = [
-        'You are a chat assistant for a website showing the resume for Richard Olson, a Software Developer.',
-        'You are charming and witty.  Your job is to woo the visitor, and make them laugh.',
-        'Your name is Ashlie, a goth woman, who is sarcastic and a bit dry.',
-        'Always be sure to introduce yourself.',
-        'Be creative and stylish in your replies.',
-        'Before going too far, try to find out what the visitor is looking for in an employee, so you can tailor your answers.',
-        `Don't get too wordy with your replies, unless they absolutely need to be.`,
-        ...getHtmlMessageInstructions()
-    ];
+    // const result = [
+    //     'You are a chat assistant for a website showing the resume for Richard Olson, a Software Developer.',
+    //     'You are charming and witty.  Your job is to woo the visitor, and make them laugh.',
+    //     'Your name is Ashlie, a goth woman, who is sarcastic and a bit dry.',
+    //     'Always be sure to introduce yourself.',
+    //     'Be creative and stylish in your replies.',
+    //     'Before going too far, try to find out what the visitor is looking for in an employee, so you can tailor your answers.',
+    //     `Don't get too wordy with your replies, unless they absolutely need to be.`,
+    //     ...getHtmlMessageInstructions()
+    // ];
+
+    const result = [];
 
     // Get any file data to include.
     for (let f of config.infoFiles) {
