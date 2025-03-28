@@ -47,6 +47,7 @@ export class LlmChatService {
                 // Update the chat in the DB.
                 chat = await this.chatDbService.upsertChat(chat);
 
+
                 // Create the callback function that will send status messages to the UI
                 //  through the observable, when status updates are being made.
                 const asyncProcessMessage = (message: string) => {
@@ -97,8 +98,13 @@ export class LlmChatService {
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
     private async callChatResponse(chat: Chat, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
-        // Assemble the system messages.
-        const systemMessages = chat.systemMessages.map(msg => ({
+
+        // Get the chat instructions from the database.
+        const instructions = (await this.chatDbService.getBaseInstructions(chat.chatType))?.instructions ?? [];
+
+        // Assemble the system messages, including the instructions from
+        //  the base instructions.
+        const systemMessages = [...chat.systemMessages, ...instructions].map(msg => ({
             role: 'system' as const,
             content: msg
         }));

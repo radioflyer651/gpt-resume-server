@@ -10,14 +10,9 @@ export function bodyObjectIdsToStringMiddleware(req: any, res: any, next: any) {
 
     // Override the json method.
     res.json = function (body: any) {
-        console.log(`Converting - Response`);
-        console.log(body);
-
         // Convert any object IDs to strings.  We can't clone
         //  because ObjectIds get turned into other types when we do.
         body = objectIdToStringConverter(body);
-
-        console.log(body);
 
         // Call the original json method.
         return json.call(this, body);

@@ -38,10 +38,7 @@ function convertFilePathsToAbsolute(target: object): void {
 
 /** Replaces any configuration value with ENV values, if they exist. */
 function updateConfigWithEnvVars(config: IAppConfig): void {
-    console.log(`ENV: `, process.env);
-    console.log(`config.json`, config);
     updateConfigWithEnvVarsR(config, ConfigToEnvMap);
-    console.log('New config: ', config);
 }
 
 function updateConfigWithEnvVarsR(config: any, propertyMap: any): void {

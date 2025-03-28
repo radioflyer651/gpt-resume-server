@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { ResponseInputItem } from '../../forwarded-types.model';
+import { ChatTypes } from './chat-types.model';
 
 /** A shortened data set for a Chat so it can be returned for lists.*/
 export interface ChatInfo {
@@ -14,7 +15,7 @@ export interface ChatInfo {
 
     /** Gets or sets the type of chat this is.  Different types of chats
      *   have different types of interactions on the site. */
-    chatType: string;
+    chatType: ChatTypes;
 
     /** Gets or sets the date this chat was last updated. */
     lastAccessDate: Date;

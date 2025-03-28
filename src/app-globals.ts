@@ -35,6 +35,7 @@ export async function initializeServices(): Promise<void> {
     userDbService = new UserDbService(dbHelper);
     chatDbService = new ChatDbService(dbHelper);
     appChatService = new AppChatService(chatDbService);
+    await appChatService.initialize();
     chatService = new LlmChatService(config.openAiConfig, chatDbService);
 
     /* App Services. */

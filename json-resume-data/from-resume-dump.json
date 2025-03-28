@@ -145,11 +145,11 @@
       },
       {
         "company": "Intertech Inc.",
-        "duration": "August 2020 (Contract)",
+        "duration": "August 2020",
         "role": "Software Consultant",
         "projects": [
           {
-            "name": "Closed Captoining Demo App",
+            "name": "Closed Captioning Demo App",
             "duration": "August 2020",
             "summary": "Developed a Progressive Web Application (PWA) demo to showcase capabilities in real-time captioning, installation as a native app, and cross-platform performance.",
             "achievements": [

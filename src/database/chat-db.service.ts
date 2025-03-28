@@ -3,7 +3,9 @@ import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { Chat, ChatInfo, ChatMessage } from "../model/shared-models/chat-models.model";
-import { isNewDbItem, NewDbItem } from "../model/shared-models/db-operation-types.model";
+import { isExistingDbItem, isNewDbItem, NewDbItem, UpsertDbItem } from "../model/shared-models/db-operation-types.model";
+import { ChatTypes } from "../model/shared-models/chat-types.model";
+import { ChatBaseInstructions } from "../model/chat-instructions.model";
 
 
 export class ChatDbService extends DbService {
@@ -58,10 +60,10 @@ export class ChatDbService extends DbService {
     }
 
     /** Upserts a specified chat. */
-    async upsertChat(chat: Chat | NewDbItem<Chat>): Promise<Chat> {
+    async upsertChat(chat: UpsertDbItem<Chat>): Promise<Chat> {
         return await this.dbHelper.makeCall(async db => {
             // Determine if this is a new chat, or an existing one.
-            if ('_id' in chat) {
+            if (isExistingDbItem(chat)) {
                 const result = await db.collection(DbCollectionNames.Chats).updateOne(
                     { _id: chat._id },
                     { $set: chat },
@@ -72,7 +74,7 @@ export class ChatDbService extends DbService {
                 return chat;
             } else {
                 // Insert the chat into the databse.
-                const opResult = await db.collection<Chat>(DbCollectionNames.Chats).insertOne(chat as Chat);
+                const opResult = await db.collection<NewDbItem<Chat>>(DbCollectionNames.Chats).insertOne(chat);
 
                 // Silly, but recast to an actual chat, because TypeScript can't figure it out.
                 const newChat = chat as Chat;
@@ -90,6 +92,49 @@ export class ChatDbService extends DbService {
     async deleteChat(chatId: ObjectId) {
         return await this.dbHelper.makeCall(async db => {
             await db.collection(DbCollectionNames.Chats).deleteOne({ _id: chatId });
+        });
+    }
+
+    /** Returns the base instruction set, if there are any, for a specified chat type. */
+    async getBaseInstructions(chatType: ChatTypes): Promise<ChatBaseInstructions | undefined> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.ChatBaseInstructions, async (db, collection) => {
+            return nullToUndefined(collection.findOne<ChatBaseInstructions>({ chatType }));
+        });
+    }
+
+    /** Upserts a specified ChatBaseInstructions object. */
+    async upsertChatBaseInstructions(instructions: UpsertDbItem<ChatBaseInstructions>): Promise<ChatBaseInstructions> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.ChatBaseInstructions, async (db, collection) => {
+            // Determine if this is a new chat, or an existing one.
+            if (isExistingDbItem(instructions)) {
+                const result = await collection.updateOne(
+                    { _id: instructions._id },
+                    { $set: instructions },
+                    { upsert: true }
+                );
+
+                instructions._id = result.upsertedId || instructions._id;
+                return instructions;
+            } else {
+                // Insert the chat into the databse.
+                const opResult = await collection.insertOne(instructions);
+
+                // Silly, but recast to an actual chat, because TypeScript can't figure it out.
+                const newInstructions = instructions as ChatBaseInstructions;
+
+                // Set the new ID from the database.
+                newInstructions._id = opResult.insertedId;
+
+                // Return the old object.
+                return newInstructions;
+            }
+        });
+    }
+
+    /** Deletes a specified ChatBaseInstructions object from the database. */
+    async deleteChatBaseInstructions(chatType: ChatTypes): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.ChatBaseInstructions, async (db, collection) => {
+            collection.deleteOne({ chatType });
         });
     }
 }
