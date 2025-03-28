@@ -8,6 +8,8 @@ export interface IAppConfig {
     serverConfig: ServerConfig;
     /** The full path to the socket.io endpoint for chatting. */
     chatSocketIoEndpoint: string;
+    /** The path of the socket.  This is different than the namespace. */
+    chatSocketIoPath: string;
     infoFiles: string[];
 }
 

@@ -34,7 +34,7 @@ export class ChatSocketServer {
 
     registerWithServer(config: IAppConfig, server: http.Server<any, any>) {
         const io = new SocketIOServer(server, {
-            // path: 'chat-io',
+            path: '/chat-io/',
             cors: {
                 origin: config.corsAllowed ?? [],
                 methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']

@@ -4,6 +4,7 @@ import { ChatSocketServer } from "./server/chat-socket.server";
 import { initializeExpressApp } from "./setup-express";
 import http from 'http';
 import https from 'https';
+import * as process from 'process';
 
 async function run() {
     const config = await getAppConfig();
