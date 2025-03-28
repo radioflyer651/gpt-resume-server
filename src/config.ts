@@ -54,9 +54,12 @@ function updateConfigWithEnvVarsR(config: any, propertyMap: any): void {
     // Update each property recursively.
     for (let key in envMap) {
         const curProp = envMap[key];
+        const curVal = env[curProp];
 
-        if (typeof curProp === 'string' && curProp.trim() !== '') {
-            config[key] = env[curProp];
+        if (typeof curProp === 'string') {
+            if (typeof curVal === 'string' && curVal.trim() !== '') {
+                config[key] = env[curProp];
+            }
         } else {
             // Get the current value on the configuration.
             const curConfigObj = config[key];
