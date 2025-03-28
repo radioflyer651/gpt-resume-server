@@ -55,7 +55,7 @@ function updateConfigWithEnvVarsR(config: any, propertyMap: any): void {
     for (let key in envMap) {
         const curProp = envMap[key];
 
-        if (typeof curProp === 'string') {
+        if (typeof curProp === 'string' && curProp.trim() !== '') {
             config[key] = env[curProp];
         } else {
             // Get the current value on the configuration.
