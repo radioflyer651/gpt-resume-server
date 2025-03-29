@@ -1,0 +1,22 @@
+# The Tower of Trials
+
+## Card Alignment
+Bad
+
+## Persona
+The persona of this card embodies the figure of a sinister architect or dark sorcerer, malevolent in their intent and reveling in chaos and destruction.
+
+## Technological Theme
+Disruptive technologies and systems that destabilize existing structures, like rogue AI or catastrophic server failures.
+
+## Description
+An ominous figure, cloaked in shadows, oversees the crumbling tower as it is struck by relentless bolts of lightning. Their face remains obscured, but an unsettling grin suggests delight in the chaos unfolding below. The environment is charged with energy, hinting at an impending storm that feeds both the destruction and the figure’s sinister purpose.
+
+## Meaning
+This card serves as a dire warning of inevitable upheaval, representing the potential for devastating changes that will require significant personal growth or transformation. It indicates that a vital part of one’s life may be collapsing, forcing the individual to confront their fears and the darker aspects of their situation, ultimately leading to a metamorphosis forged through struggle. 
+
+## Image Description
+A towering, crumbling structure looms ominously against a darkened sky, fissures snaking through its once-mighty walls. Lightning bolts erupt, illuminating the chaotic scene as they strike the tower, causing debris to scatter like confetti. Figures, silhouetted against the stormy backdrop, plummet from the heights, their expressions twisted in fear and disbelief as they are consumed by tumultuous storm clouds. The air crackles with energy, and shadows swirl around a sinister, cloaked architect standing at the tower’s base, delighting in the chaos and destruction they have orchestrated. Dark clouds swirl overhead, and glimmers of otherworldly light punctuate the scene, enhancing the overall sense of foreboding and transformation through turmoil.
+
+## Image File Prefix
+32_the_tower_of_trials
