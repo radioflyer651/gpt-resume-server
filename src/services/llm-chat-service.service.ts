@@ -8,7 +8,6 @@ import { Observable } from "rxjs";
 import { UserDbService } from "../database/user-db.service";
 import { LogDbService } from "../database/log-db.service";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
-import { AiFunctionDefinition } from "../model/shared-models/functions/ai-function.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */

@@ -73,7 +73,7 @@ export class ChatDbService extends DbService {
                 chat._id = result.upsertedId || chat._id;
                 return chat;
             } else {
-                // Insert the chat into the databse.
+                // Insert the chat into the database.
                 const opResult = await db.collection<NewDbItem<Chat>>(DbCollectionNames.Chats).insertOne(chat);
 
                 // Silly, but recast to an actual chat, because TypeScript can't figure it out.

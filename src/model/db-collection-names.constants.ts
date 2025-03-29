@@ -8,4 +8,6 @@ export enum DbCollectionNames {
     ChatCallCache = 'chat-call-cache',
     ChatBaseInstructions = 'chat-base-instructions',
     Logs = 'log',
+    TarotGames = 'tarot-games',
+    TarotCards = 'tarot-cards',
 }
