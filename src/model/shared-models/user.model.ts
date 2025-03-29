@@ -5,4 +5,5 @@ export interface User {
     userName: string;
     companyId: ObjectId;
     isAdmin?: boolean;
+    displayName?: string;
 }

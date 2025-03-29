@@ -56,9 +56,24 @@ export class AppChatService {
         switch (chatType) {
             case ChatTypes.Main:
                 return this.initializeNewMainChat(ownerUserId);
+            case ChatTypes.TarotGame:
+                return this.initializeGenericChat(ownerUserId, chatType);
             default:
                 throw new Error(`The chat type '${chatType}' is not supported.`);
         }
+    }
+
+    /** Returns a new chat no configuration. */
+    async initializeGenericChat(ownerUserId: ObjectId, chatType: ChatTypes): Promise<NewDbItem<Chat>> {
+        return {
+            userId: ownerUserId,
+            chatType: chatType,
+            chatMessages: [],
+            lastAccessDate: new Date(),
+            model: 'gpt-4o-mini',
+            systemMessages: [],
+            creationDate: new Date(),
+        };
     }
 
     /** Returns a new Chat object for the 'Main" type. */

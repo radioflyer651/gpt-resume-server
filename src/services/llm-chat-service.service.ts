@@ -24,7 +24,7 @@ export class LlmChatService {
     /** Creates a new ChatResponse (like a chat completion) against the LLM with a specified new message
      *   for a specified chat.  Optionally, tools (custom functions) may be supplied for the LLM to call.
      *   Optionally, a function may be provided to send a message back to the UI if a tool is called along with a message. */
-    createChatResponse(chatId: ObjectId, prompt: string, toolList?: AiFunctionGroup[]): Observable<ChatMessage | string> {
+    createChatResponse(chatId: ObjectId, prompt: string | ChatMessage, toolList?: AiFunctionGroup[]): Observable<ChatMessage | string> {
         return new Observable<ChatMessage | string>((subscriber) => {
             // Status to indicate if we've aborted somehow.
             let unsubscribed = false;
@@ -40,15 +40,18 @@ export class LlmChatService {
                 }
 
                 // Add the new prompt to the message list.
-                chat.chatMessages.push(
-                    {
-                        role: 'user' as const,
-                        content: prompt
-                    });
+                if (typeof prompt === 'string') {
+                    chat.chatMessages.push(
+                        {
+                            role: 'user' as const,
+                            content: prompt
+                        });
+                } else {
+                    chat.chatMessages.push(prompt);
+                }
 
                 // Update the chat in the DB.
                 chat = await this.chatDbService.upsertChat(chat);
-
 
                 // Create the callback function that will send status messages to the UI
                 //  through the observable, when status updates are being made.

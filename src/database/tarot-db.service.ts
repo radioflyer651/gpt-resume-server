@@ -52,4 +52,11 @@ export class TarotDbService extends DbService {
             }
         });
     }
+
+    /** Returns the number of game cards that exist for the Tarot Game. */
+    async getGameCardCount(): Promise<number> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return await collection.countDocuments();
+        });
+    }
 }
