@@ -11,6 +11,8 @@ import { ChatDbService } from '../database/chat-db.service';
 import { ChatTypes } from '../model/shared-models/chat-types.model';
 import { AppChatService } from '../services/app-chat.service';
 import { objectIdToStringConverter, stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
+import { ToastMessage } from '../model/toast-message.model';
+import { chatFunctionsServiceFactory } from '../services/chat-functions.service';
 
 /** All functions in the ChatServer that must be registered with socket.io. */
 const socketFunctions = [] as string[];
@@ -168,6 +170,11 @@ export class ChatSocketServer {
         socket.emit('receiveServerStatusMessage', type, message);
     }
 
+    /** Sends a Toast message to the UI, which is a popup. */
+    receiveToastMessage = async (socket: Socket, message: ToastMessage) => {
+        socket.emit('receiveToastMessage', message);
+    };
+
     //#endregion
 
     //#region Messaging From Client
@@ -183,8 +190,11 @@ export class ChatSocketServer {
         // Get the main chat for this user. (This could be improved to just get the ID.)
         const mainChat = await this.appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
 
+        // Create a function group for this.
+        const functionGroup = chatFunctionsServiceFactory(socket);
+
         // Function to deal with messages received during the API call.
-        const chatStream$ = this.llmChatService.createChatResponse(mainChat._id, message);
+        const chatStream$ = this.llmChatService.createChatResponse(mainChat._id, message, functionGroup.getFunctionGroups());
 
         // Subscribe tot he stream, and send messages to the front end as they come in.
         chatStream$.subscribe(msg => {
@@ -195,5 +205,6 @@ export class ChatSocketServer {
             }
         });
     };
+
     //#endregion
 }

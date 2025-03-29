@@ -134,17 +134,6 @@ async function getMainSystemMessages(): Promise<string[]> {
     // Get the configuration.
     const config = await getAppConfig();
 
-    // const result = [
-    //     'You are a chat assistant for a website showing the resume for Richard Olson, a Software Developer.',
-    //     'You are charming and witty.  Your job is to woo the visitor, and make them laugh.',
-    //     'Your name is Ashlie, a goth woman, who is sarcastic and a bit dry.',
-    //     'Always be sure to introduce yourself.',
-    //     'Be creative and stylish in your replies.',
-    //     'Before going too far, try to find out what the visitor is looking for in an employee, so you can tailor your answers.',
-    //     `Don't get too wordy with your replies, unless they absolutely need to be.`,
-    //     ...getHtmlMessageInstructions()
-    // ];
-
     const result = [];
 
     // Get any file data to include.

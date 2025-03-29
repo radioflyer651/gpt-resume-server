@@ -19,7 +19,7 @@ export let chatDbService: ChatDbService;
 export let appChatService: AppChatService;
 export let loggingService: LogDbService;
 export let chatService: LlmChatService;
-export let chatServer: ChatSocketServer;
+export let chatSocketServer: ChatSocketServer;
 
 
 /* App Services. */
@@ -43,6 +43,6 @@ export async function initializeServices(): Promise<void> {
 
     /* App Services. */
     authService = new AuthService(userDbService);
-    chatServer = new ChatSocketServer(chatService, chatDbService, appChatService);
+    chatSocketServer = new ChatSocketServer(chatService, chatDbService, appChatService);
 
 }

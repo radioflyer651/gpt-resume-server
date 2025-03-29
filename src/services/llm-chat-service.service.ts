@@ -1,13 +1,14 @@
 import { ObjectId } from "mongodb";
 import OpenAI from "openai";
 import { ChatDbService } from "../database/chat-db.service";
-import { FunctionCallOutput, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
-import { ToolDefinition } from "../model/shared-models/tool-definition.model";
+import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
 import { Chat, ChatMessage } from "../model/shared-models/chat-models.model";
 import { OpenAiConfig } from "../model/app-config.model";
 import { Observable } from "rxjs";
 import { UserDbService } from "../database/user-db.service";
 import { LogDbService } from "../database/log-db.service";
+import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
+import { AiFunctionDefinition } from "../model/shared-models/functions/ai-function.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -24,7 +25,7 @@ export class LlmChatService {
     /** Creates a new ChatResponse (like a chat completion) against the LLM with a specified new message
      *   for a specified chat.  Optionally, tools (custom functions) may be supplied for the LLM to call.
      *   Optionally, a function may be provided to send a message back to the UI if a tool is called along with a message. */
-    createChatResponse(chatId: ObjectId, prompt: string, toolList?: ToolDefinition[]): Observable<ChatMessage | string> {
+    createChatResponse(chatId: ObjectId, prompt: string, toolList?: AiFunctionGroup[]): Observable<ChatMessage | string> {
         return new Observable<ChatMessage | string>((subscriber) => {
             // Status to indicate if we've aborted somehow.
             let unsubscribed = false;
@@ -159,7 +160,7 @@ export class LlmChatService {
 
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
-    private async callChatResponse(chat: Chat, toolList?: ToolDefinition[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
+    private async callChatResponse(chat: Chat, toolList?: AiFunctionGroup[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
 
         // Get the chat instructions from the database.
         const instructions = (await this.chatDbService.getBaseInstructions(chat.chatType))?.instructions ?? [];
@@ -181,11 +182,14 @@ export class LlmChatService {
             ...chat.chatMessages
         ];
 
+        // Convert the function groups into functions we can use in the API call.
+        const tools = toolList?.reduce((p, c) => [...p, ...c.functions.map(f => f.definition)], [] as FunctionTool[]);
+
         // Create the call (data) to be made against the LLM API.
         const responseCreation: ResponseCreateParams = {
             model: chat.model,
             input: messages,
-            tools: toolList?.map(t => t.tool)
+            tools: tools
         };
 
         // Make the API call on the LLM.
@@ -205,25 +209,10 @@ export class LlmChatService {
             throw new Error(`toolList is empty, but function calls were received from the LLM.  This is not possible.`);
         }
 
-        // If there was a function call, inform the caller with their callback function.
-        if (asyncProcessMessage && functionCalls.length > 0) {
-            // Get the messages for each function call.
-            const messages = functionCalls
-                .map(fc => this.getToolForFunctionCall(fc, toolList!))
-                .filter(x => !!x)
-                .map(fc => fc.processingMessage);
-
-            // Call the callback for each message, and collect the promises.
-            const promises = messages.map(message => asyncProcessMessage(message));
-
-            // Wait for the promises to be done, so we can move on.
-            await Promise.all(promises);
-        }
-
         // Make any function calls form the LLM, if we have any.
         if (functionCalls.length > 0) {
             // Make each function call, and collect their promise results.
-            const resultPromises = functionCalls.map(fc => this.callTool(fc, toolList!));
+            const resultPromises = functionCalls.map(fc => this.callTool(fc, convertFunctionGroupsToPackages(toolList!)));
 
             // Wait on the promises to finish.
             const results = await Promise.all(resultPromises);
@@ -243,15 +232,18 @@ export class LlmChatService {
     }
 
     /** Given a specified set of ToolDefinition objects, returns the one that corresponds to a specified ResponseFunctionToolCall (if any). */
-    private getToolForFunctionCall(functionCall: ResponseFunctionToolCall, toolList: ToolDefinition[]) {
-        return toolList.find(x => x.tool.name === functionCall.name);
+    private getToolForFunctionCall(functionCall: ResponseFunctionToolCall, toolList: AiFunctionGroup[]) {
+        // Get just the function definitionPackages.
+        const packages = convertFunctionGroupsToPackages(toolList);
+        // Find the matching item.
+        return packages.find(p => p.definition.name === functionCall.name);
     }
 
     /** Given a Function Call response from the LLM, and a list of function definitions, calls the appropriate
      *   function for the call, and returns the result. */
-    private async callTool(functionCall: ResponseFunctionToolCall, toolList: ToolDefinition[]): Promise<FunctionCallOutput> {
+    private async callTool(functionCall: ResponseFunctionToolCall, toolList: AiFunctionDefinitionPackage[]): Promise<FunctionCallOutput> {
         // Find the function definition in question.
-        const fnDefinition = toolList.find(x => x.tool.type === "function" && x.tool.name === functionCall.name);
+        const fnDefinition = toolList.find(x => x.definition.name === functionCall.name);
 
         // If not found, then we have a problem.
         if (!fnDefinition) {
@@ -259,7 +251,12 @@ export class LlmChatService {
         }
 
         // Get the result from the definition.
-        let result = fnDefinition.function(...functionCall.arguments);
+        console.log(functionCall.arguments);
+        console.log(typeof functionCall.arguments);
+        const args = JSON.parse(functionCall.arguments);
+        console.log(args);
+        console.log(typeof args);
+        let result = fnDefinition.function(args);
 
         // Return the result.
         return {
