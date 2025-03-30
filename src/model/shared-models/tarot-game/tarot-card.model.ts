@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 
-export interface TarotCard {
+export interface TarotCard extends TarotCardDetails {
     /** The ID of the card in the database. */
     _id: ObjectId;
     /** The name of the card that was drawn. */

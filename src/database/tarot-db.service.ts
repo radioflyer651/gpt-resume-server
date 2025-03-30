@@ -4,7 +4,7 @@ import { TarotGame } from "../model/shared-models/tarot-game/tarot-game.model";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { assignIdToInsertable, isNewDbItem, UpsertDbItem } from "../model/shared-models/db-operation-types.model";
-import { TarotCard } from "../model/shared-models/tarot-game/tarot-card.model";
+import { TarotCard, TarotCardDetails } from "../model/shared-models/tarot-game/tarot-card.model";
 
 
 /** Provides database services for the tarot game. */
@@ -18,7 +18,7 @@ export class TarotDbService extends DbService {
     }
 
     /** Returns a tarot game with a specified ID. */
-    async getGame(gameId: ObjectId): Promise<TarotGame | undefined> {
+    async getGameById(gameId: ObjectId): Promise<TarotGame | undefined> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotGames, async (db, collection) => {
             return nullToUndefined(await collection.findOne<TarotGame>({ _id: gameId }));
         });
@@ -65,6 +65,39 @@ export class TarotDbService extends DbService {
     async getGameCardById(cardId: ObjectId): Promise<TarotCard | undefined> {
         return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
             return nullToUndefined(await collection.findOne<TarotCard>({ _id: cardId }));
+        });
+    }
+
+    /** Returns a TarotCardDetails with a specified ID. */
+    async getGameCardDetailsById(cardId: ObjectId): Promise<TarotCardDetails | undefined> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return nullToUndefined(await collection.findOne<TarotCardDetails>({ _id: cardId }, {
+                projection:
+                    { _id: 1, cardName: 1, cardAlignment: 1, technologicalTheme: 1, meaning: 1, imageFilePrefix: 1 }
+            }));
+        });
+    }
+
+    /** Returns all game cards from the database. */
+    async getAllGameCards(): Promise<TarotCardDetails[]> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return await collection.find<TarotCard>({}, {
+                projection: {
+                    _id: 1,
+                    cardName: 1,
+                    cardAlignment: 1,
+                    technologicalTheme: 1,
+                    meaning: 1,
+                    imageFilePrefix: 1,
+                }
+            }).toArray();
+        });
+    }
+
+    /** Returns just the IDs and base image names of all game cards. */
+    async getAllGameCardIdsAndImageNames(): Promise<{ _id: ObjectId, imageFilePrefix: string; }[]> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return await collection.find<TarotCard>({}, { projection: { _id: 1, imageFilePrefix: 1 } }).toArray();
         });
     }
 }
