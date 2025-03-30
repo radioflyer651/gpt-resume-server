@@ -4,6 +4,7 @@ import { TarotGame } from "../model/shared-models/tarot-game/tarot-game.model";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { assignIdToInsertable, isNewDbItem, UpsertDbItem } from "../model/shared-models/db-operation-types.model";
+import { TarotCard } from "../model/shared-models/tarot-game/tarot-card.model";
 
 
 /** Provides database services for the tarot game. */
@@ -57,6 +58,13 @@ export class TarotDbService extends DbService {
     async getGameCardCount(): Promise<number> {
         return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
             return await collection.countDocuments();
+        });
+    }
+
+    /** Returns a TarotCard with a specified ID. */
+    async getGameCardById(cardId: ObjectId): Promise<TarotCard | undefined> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return nullToUndefined(await collection.findOne<TarotCard>({ _id: cardId }));
         });
     }
 }

@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { TarotCardReference } from "./tarot-card.model";
 
 /** Represents an entire TarotGame data set. */
 export interface TarotGame {
@@ -20,6 +21,7 @@ export interface TarotGame {
     /** Gets or sets the ID of the chat object used for user interaction about this chat. */
     gameChatId: ObjectId;
 
-    /** The IDs of the cards picked.  There should be 0-5 cards selected in any game. */
-    cardsPicked: ObjectId[];
+    /** The references of the cards picked.  There should be 0-5 cards selected in any game. 
+     *   Remember, each card has more than one image, so the reference includes the image number. */
+    cardsPicked: TarotCardReference[];
 }

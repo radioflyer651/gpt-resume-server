@@ -7,6 +7,7 @@ import { NewDbItem } from "../model/shared-models/db-operation-types.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
 import { UserDbService } from "../database/user-db.service";
 import { ChatDbService } from "../database/chat-db.service";
+import { Chat } from "../model/shared-models/chat-models.model";
 
 /** Provides all functionality for the tarot game. */
 export class TarotChatService {
@@ -28,7 +29,7 @@ export class TarotChatService {
     }
 
     /** Starts a new TarotGame for a specified user, and returns the game. */
-    async startNewGame(userId: ObjectId): Promise<TarotGame> {
+    async startNewGame(userId: ObjectId): Promise<{ tarotGame: TarotGame, chat: Chat; }> {
         // Create a new chat for this game.
         const newChat = await this.appChatService.startNewChatOfType(userId, ChatTypes.TarotGame);
 
@@ -52,10 +53,10 @@ export class TarotChatService {
         const resultGame = await this.tarotDbService.upsertGame(newGame);
 
         // Send the first message to the chat.
-        await this.llmChatService.createChatResponse(newChat._id, {role: 'system', content: `The user has initiated a chat with you.  Begin the dialog.`}, [])
+        await this.llmChatService.createChatResponse(newChat._id, { role: 'system', content: `The user has initiated a chat with you.  Begin the dialog.` }, []);
 
         // Return the game.
-        return resultGame;
+        return { tarotGame: resultGame, chat: newChat };
     }
 
     /** Returns the system messages needed for a new tarot game chat. */

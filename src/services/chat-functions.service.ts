@@ -1,15 +1,15 @@
 import { Socket } from "socket.io";
 import { ChatDbService } from "../database/chat-db.service";
 import { ToastMessage } from "../model/toast-message.model";
-import { ChatSocketServer } from "../server/chat-socket.server";
+import { SocketServer } from "../server/socket.server";
 import { LlmChatService } from "./llm-chat-service.service";
-import { chatSocketServer, chatService, chatDbService } from "../app-globals";
+import { socketServer, chatService, chatDbService } from "../app-globals";
 import { AiFunctionGroup } from "../model/shared-models/functions/ai-function-group.model";
 import { sendToastMessageDefinition } from "../ai-functions/send-toast-message.ai-function";
 
 /** Factory function to create ChatFunctionsServices on demand. */
 export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsService {
-    return new ChatFunctionsService(socket, chatSocketServer, chatDbService, chatService);
+    return new ChatFunctionsService(socket, socketServer, chatDbService, chatService);
 }
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
@@ -17,7 +17,7 @@ export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsServic
 export class ChatFunctionsService {
     constructor(
         public readonly socket: Socket | undefined,
-        private chatSocketService: ChatSocketServer,
+        private chatSocketService: SocketServer,
         private chatDbService: ChatDbService,
         appChatService: LlmChatService) {
         if (!socket) {

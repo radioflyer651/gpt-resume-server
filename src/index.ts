@@ -1,6 +1,6 @@
 import { appChatService, chatDbService, chatService, initializeServices } from "./app-globals";
 import { getAppConfig } from "./config";
-import { ChatSocketServer } from "./server/chat-socket.server";
+import { SocketServer } from "./server/socket.server";
 import { initializeExpressApp } from "./setup-express";
 import http from 'http';
 import https from 'https';
@@ -20,7 +20,7 @@ async function run() {
     const server: http.Server | https.Server = http.createServer(app);
 
     // Register our chat server.  Since it uses socket.io, it works a little differently.
-    const socketChatServer = new ChatSocketServer(chatService, chatDbService, appChatService);
+    const socketChatServer = new SocketServer(chatService, chatDbService, appChatService);
     socketChatServer.registerWithServer(config, server);
 
     // Set the port, and start listening.

@@ -8,6 +8,7 @@ import { bodyStringsToObjectIdsMiddleware } from './server/middleware/body-strin
 import { getAppConfig } from './config';
 import { chatRouter } from './server/chat.server';
 import { authMiddleware } from './auth/auth-middleware';
+import { tarotRouter } from './server/tarot-game.server';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -32,6 +33,7 @@ export async function initializeExpressApp() {
 
   app.use(characterChatRouter);
   app.use(chatRouter);
+  app.use(tarotRouter);
 
   app.use((req, res) => {
     res.status(404).send('Not Found');

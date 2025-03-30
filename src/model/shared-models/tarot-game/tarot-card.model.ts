@@ -22,7 +22,7 @@ export interface TarotCard {
 }
 
 /** Reduced data set of the card for in the chat context. */
-export interface TarotCardReference {
+export interface TarotCardDetails {
     /** The ID of the card in the database. */
     _id: ObjectId;
     /** The name of the card that was drawn. */
@@ -35,4 +35,15 @@ export interface TarotCardReference {
     meaning: string;
     /** A prefix given to images representing that card on the server. */
     imageFilePrefix: string;
+}
+
+/** Simple reference to a specified Tarot Image and Tarot Card. 
+ *   TarotCards have more than one image, so this includes the number of the
+ *   image associated with the card. */
+export interface TarotCardReference {
+    /** The ID of the tarot card. */
+    _id: ObjectId;
+
+    /** The number of the image associated with this card to show to the user. */
+    imageNumber: number;
 }
