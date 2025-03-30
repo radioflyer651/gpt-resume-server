@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { AppChatService } from "../../services/app-chat.service";
 import { SocketServer } from "../socket.server";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
-import { chatFunctionsServiceFactory } from "../../services/chat-functions.service";
+import { chatFunctionsServiceFactory } from "../../services/functions-services/chat.functions-service";
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
 

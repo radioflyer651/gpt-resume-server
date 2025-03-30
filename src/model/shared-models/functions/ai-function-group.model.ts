@@ -23,8 +23,6 @@ export interface AiFunctionDefinitionPackage {
 
 /** Given a specified set of AiFunctionGroup objects, returns all of their AiFunctionDefinitionPackages. */
 export function convertFunctionGroupsToPackages(functionGroups: AiFunctionGroup[]): Array<AiFunctionDefinitionPackage> {
-    console.log(functionGroups);
     const result = functionGroups.reduce((p, c) => [...p, ...c.functions], [] as AiFunctionDefinitionPackage[]);
-    console.log(result);
     return result;
 }

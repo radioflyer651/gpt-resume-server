@@ -69,8 +69,7 @@ export class SocketServer {
             }
         });
 
-        // Register the socket functions with socket.io.
-        this.socketServer.on('connection', async (socket) => {
+        const onConnectionFunction = async (socket: Socket) => {
             // Determine if they can connect or not.
             if (!(await this.onConnect(socket))) {
                 console.log(`Connection made, but with bad credentials.  Disconnecting.`);
@@ -125,8 +124,6 @@ export class SocketServer {
                 });
             });
 
-
-
             // Register the disconnection.
             socket.on('disconnect', () => {
                 // Inform anyone observing connections that a socket has disconnected.
@@ -136,13 +133,19 @@ export class SocketServer {
                     data: []
                 });
                 console.log('Socket disconnected.');
+                this.socketServer.off('connection', onConnectionFunction);
                 this.onDisconnect(socket);
             });
-        });
+        };
+
+        // Register the socket functions with socket.io.
+        this.socketServer.on('connection', onConnectionFunction);
     }
 
     /** Subject that emits when a new socket is connected to the system. */
-    private _socketConnections$ = new Subject<Socket>();
+    private readonly _socketConnections$ = new Subject<Socket>();
+
+    // public socketConnections$ = this._socketConnections$.asObservable();
 
     get socketConnections$(): Observable<Socket> {
         return this._socketConnections$.asObservable();
@@ -252,7 +255,8 @@ export class SocketServer {
      *   the consuming service is registering at app startup, this shouldn't be a problem. */
     subscribeToEvent = (eventName: string) => {
         return this.socketConnections$
-            .pipe(mergeMap(socket => this.subscribeToSocketEvent(socket, eventName)));
+            .pipe(
+                mergeMap(socket => this.subscribeToSocketEvent(socket, eventName)));
     };
 
     /** Sends an error message back to the socket.  This should only be used when an error

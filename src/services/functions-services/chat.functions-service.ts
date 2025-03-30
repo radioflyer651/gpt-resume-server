@@ -1,25 +1,22 @@
 import { Socket } from "socket.io";
-import { ChatDbService } from "../database/chat-db.service";
-import { ToastMessage } from "../model/toast-message.model";
-import { SocketServer } from "../server/socket.server";
-import { LlmChatService } from "./llm-chat-service.service";
-import { socketServer, chatService, chatDbService } from "../app-globals";
-import { AiFunctionGroup } from "../model/shared-models/functions/ai-function-group.model";
-import { sendToastMessageDefinition } from "../ai-functions/send-toast-message.ai-function";
+import { ToastMessage } from "../../model/toast-message.model";
+import { mainChatSocketServer } from "../../app-globals";
+import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
+import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
+import { MainChatSocketService } from "../../server/socket-services/main-chat.socket-serice";
+import { FunctionGroupProvider } from "../../model/function-group-provider.model";
 
 /** Factory function to create ChatFunctionsServices on demand. */
 export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsService {
-    return new ChatFunctionsService(socket, socketServer, chatDbService, chatService);
+    return new ChatFunctionsService(socket, mainChatSocketServer);
 }
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
  *   context, the service has to work with each one individually to avoid a context management nightmare. */
-export class ChatFunctionsService {
+export class ChatFunctionsService implements FunctionGroupProvider {
     constructor(
         public readonly socket: Socket | undefined,
-        private chatSocketService: SocketServer,
-        private chatDbService: ChatDbService,
-        appChatService: LlmChatService) {
+        private mainChatSocketService: MainChatSocketService) {
         if (!socket) {
             console.error('No socket was passed to the ChatFunctionService.');
         }
@@ -36,7 +33,7 @@ export class ChatFunctionsService {
         console.log(`Toast message:`, JSON.stringify(message, undefined, 2));
 
         // Send the message.
-        this.chatSocketService.receiveToastMessage(this.socket, message);
+        this.mainChatSocketService.receiveToastMessage(this.socket, message);
 
         return 'success';
     };

@@ -24,6 +24,31 @@ export class TarotDbService extends DbService {
         });
     }
 
+    /** Returns a tarot cards with a specified IDs. */
+    async getGameCardsByIds(cardIds: ObjectId[]): Promise<TarotCardDetails[]> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return await collection.find<TarotCardDetails>({ _id: { $in: cardIds } }, {
+                projection:
+                    { _id: 1, cardName: 1, cardAlignment: 1, technologicalTheme: 1, meaning: 1, imageFilePrefix: 1 }
+            }).toArray();
+        });
+    }
+
+    /** Returns image details for game cards, for specified Ids */
+    async getGameCardsImageDetailsByIds(cardIds: ObjectId[]): Promise<{ _id: ObjectId, imageDescription: string; }[]> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            return await collection.find<TarotCard>({ _id: { $in: cardIds } },
+                {
+                    projection:
+                    {
+                        _id: 1,
+                        imageDescription: 1
+                    }
+                }).toArray();
+        });
+    }
+
+
     /** Upserts a specified tarot game. */
     async upsertGame(tarotGame: UpsertDbItem<TarotGame>): Promise<TarotGame> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {

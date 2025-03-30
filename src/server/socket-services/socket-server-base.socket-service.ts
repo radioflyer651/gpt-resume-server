@@ -27,7 +27,6 @@ export abstract class SocketServiceBase {
         this._disposing$.complete();
     }
 
-
     // #region Messaging To Client
 
     /** Sends a Toast message to the UI, which is a popup. */

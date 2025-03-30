@@ -3,8 +3,6 @@ import { ChatDbService } from "./database/chat-db.service";
 import { LogDbService } from "./database/log-db.service";
 import { UserDbService } from "./database/user-db.service";
 import { MongoHelper } from "./mongo-helper";
-import { SocketServer } from "./server/socket.server";
-import { MainChatSocketService } from "./server/socket-services/main-chat.socket-serice";
 import { AppChatService } from "./services/app-chat.service";
 import { AuthService } from "./services/auth-service";
 import { LlmChatService } from "./services/llm-chat-service.service";
@@ -20,10 +18,8 @@ export let dbHelper: MongoHelper;
 export let userDbService: UserDbService;
 export let chatDbService: ChatDbService;
 export let appChatService: AppChatService;
-export let mainChatSocketServer: MainChatSocketService;
 export let loggingService: LogDbService;
 export let chatService: LlmChatService;
-export let socketServer: SocketServer;
 export let tarotDbService: TarotDbService;
 export let tarotImageService: TarotImageService;
 
@@ -43,15 +39,14 @@ export async function initializeServices(): Promise<void> {
     chatDbService = new ChatDbService(dbHelper);
     loggingService = new LogDbService(dbHelper);
     tarotDbService = new TarotDbService(dbHelper);
+    chatService = new LlmChatService(config.openAiConfig, chatDbService, userDbService, loggingService);
+
     appChatService = new AppChatService(chatDbService);
     await appChatService.initialize();
-    chatService = new LlmChatService(config.openAiConfig, chatDbService, userDbService, loggingService);
-    mainChatSocketServer = new MainChatSocketService(socketServer, appChatService, chatService);
-    await mainChatSocketServer.initialize();
+
     tarotImageService = new TarotImageService(tarotDbService);
 
     /* App Services. */
     authService = new AuthService(userDbService);
-    socketServer = new SocketServer(chatService, chatDbService, appChatService);
 
 }
