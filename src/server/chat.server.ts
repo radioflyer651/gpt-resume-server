@@ -3,6 +3,7 @@ import { getUserIdFromRequest } from '../utils/get-user-from-request.utils';
 import { appChatService, chatDbService } from '../app-globals';
 import { ChatTypes } from '../model/shared-models/chat-types.model';
 import { convertChatToClientChat } from '../utils/convert-to-client-chat';
+import { ObjectId } from 'mongodb';
 
 export const chatRouter = express.Router();
 
@@ -58,4 +59,54 @@ chatRouter.get('/chat/main/start-new', async (req, res) => {
 
     // Return the new chat.
     res.json(result);
+});
+
+/** Returns a chat, specified by its ID. */
+chatRouter.get('/chat/:chatId', async (req, res) => {
+    // Get the userId for this call.
+    const userId = await getUserIdFromRequest(req)!;
+
+    // Get the chatId.
+    const chatIdParam = req.params.chatId;
+
+    // Validate.
+    if (!ObjectId.isValid(chatIdParam)) {
+        res.status(404).send('Unknown chat ID.');
+        return;
+    }
+
+    const chatId = new ObjectId(chatIdParam);
+
+    // Get the chat from the chat service.
+    const chat = await chatDbService.getChatById(chatId);
+
+    // If we don't have one, then we have a problem.
+    if (!chat) {
+        res.status(404).send(`Chat not found with chat ID: ${chatId}`);
+        return;
+    }
+
+    // Validate the userId matches.
+    if (!chat.userId.equals(userId)) {
+        res.status(403).send('User does not have permissions for the specified chat.');
+        return;
+    }
+
+    // Convert the chat to a client chat.
+    const clientChat = convertChatToClientChat(chat);
+
+    // Return the chat.
+    res.send(clientChat);
+});
+
+/** Returns a listing of all chats for a specified user. */
+chatRouter.get('/chat/for-user', async (req, res) => {
+    // Get the userId for this call.
+    const userId = await getUserIdFromRequest(req)!;
+
+    // Get the chats from the chat service.
+    const chats = await chatDbService.getUserChatList(userId);
+
+    // Return the chats.
+    res.send(chats);
 });

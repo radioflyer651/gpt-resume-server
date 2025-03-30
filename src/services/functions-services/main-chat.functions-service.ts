@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { ToastMessage } from "../../model/toast-message.model";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
-import { MainChatSocketService } from "../../server/socket-services/main-chat.socket-serice";
+import { ChatSocketService } from "../../server/socket-services/chat.socket-serice";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
 import { mainChatSocketServer } from "../../setup-socket-services";
 
@@ -16,7 +16,7 @@ export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsServic
 export class ChatFunctionsService implements FunctionGroupProvider {
     constructor(
         public readonly socket: Socket | undefined,
-        private mainChatSocketService: MainChatSocketService) {
+        private mainChatSocketService: ChatSocketService) {
         if (!socket) {
             console.error('No socket was passed to the ChatFunctionService.');
         }

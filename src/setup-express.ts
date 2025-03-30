@@ -9,6 +9,7 @@ import { getAppConfig } from './config';
 import { chatRouter } from './server/chat.server';
 import { authMiddleware } from './auth/auth-middleware';
 import { tarotRouter } from './server/tarot-game.server';
+import { bodyStringsToDatesMiddleware } from './server/middleware/string-to-date-converters.middleware';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -26,6 +27,9 @@ export async function initializeExpressApp() {
 
   // Add the middleware.
   app.use(bodyObjectIdsToStringMiddleware);
+
+  // Add the middleware to convert strings to Dates.
+  app.use(bodyStringsToDatesMiddleware);
 
   // Servers (groups of endpoints).
   app.use(authRouter);

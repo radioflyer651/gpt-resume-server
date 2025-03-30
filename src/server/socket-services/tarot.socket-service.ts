@@ -191,46 +191,6 @@ export class TarotSocketService extends SocketServiceBase {
         return { game, card: cardDetails };
     }
 
-    async receiveTarotGameChat(socket: Socket, gameId: ObjectId, message: string) {
-        // Get the game.
-        const game = await this.tarotDbService.getGameById(gameId);
-
-        // Validate the user ID.
-        if (game?.userId !== gameId) {
-            this.socketServer.reportError(socket, SocketErrorTypes.Security, `Current userId does not match games userId.`);
-            // Do nothing.
-            return;
-        }
-
-        // Get the chat for this game.
-        const chat = await this.chatDbService.getChatById(game.gameChatId);
-
-        // Validate the chat.
-        if (!chat) {
-            this.socketServer.reportError(socket, SocketErrorTypes.BadObjectId, 'Chat does not exist for game with specified id.');
-            return;
-        }
-
-        this.callWithErrorReporting(socket, async () => {
-            console.warn('We need to add server functions here!');
-
-            // Make the chat call, and response to any chat messages that come from it.
-            this.llmChatService.createChatResponse(game.gameChatId, message).subscribe(message => {
-                if (typeof message === 'string') {
-                    this.sendTarotGameChat(socket, chat._id, { role: 'user', content: message });
-                } else {
-                    this.sendTarotGameChat(socket, chat._id, message);
-                }
-            });
-
-        });
-    }
-
-    /** Sends a tarot chat message to the client. */
-    async sendTarotGameChat(socket: Socket, chatId: ObjectId, message: ChatMessage) {
-        socket.emit('receiveTarotGameChat', chatId, message);
-    }
-
     /** Sends a message to the client to tell it we flipped a card. */
     async sendTarotCardFlip(socket: Socket, gameId: ObjectId, cardReference: TarotCardReference) {
         socket.emit('receiveTarotCardFlip', gameId, cardReference);

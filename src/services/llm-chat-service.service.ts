@@ -233,14 +233,6 @@ export class LlmChatService {
 
     }
 
-    /** Given a specified set of ToolDefinition objects, returns the one that corresponds to a specified ResponseFunctionToolCall (if any). */
-    private getToolForFunctionCall(functionCall: ResponseFunctionToolCall, toolList: AiFunctionGroup[]) {
-        // Get just the function definitionPackages.
-        const packages = convertFunctionGroupsToPackages(toolList);
-        // Find the matching item.
-        return packages.find(p => p.definition.name === functionCall.name);
-    }
-
     /** Given a Function Call response from the LLM, and a list of function definitions, calls the appropriate
      *   function for the call, and returns the result. */
     private async callTool(functionCall: ResponseFunctionToolCall, toolList: AiFunctionDefinitionPackage[]): Promise<FunctionCallOutput> {

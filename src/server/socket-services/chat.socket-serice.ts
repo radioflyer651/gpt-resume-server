@@ -4,33 +4,56 @@ import { ObjectId } from "mongodb";
 import { AppChatService } from "../../services/app-chat.service";
 import { SocketServer } from "../socket.server";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
-import { chatFunctionsServiceFactory } from "../../services/functions-services/chat.functions-service";
+import { chatFunctionsServiceFactory } from "../../services/functions-services/chat.functions-factory.service";
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
-import { from, mergeMap } from "rxjs";
+import { from, mergeMap, Observable, tap } from "rxjs";
+import { ChatDbService } from "../../database/chat-db.service";
 
 
-export class MainChatSocketService extends SocketServiceBase {
+export class ChatSocketService extends SocketServiceBase {
     constructor(
         socketServer: SocketServer,
         private appChatService: AppChatService,
         private llmChatService: LlmChatService,
+        private chatDbService: ChatDbService,
     ) {
         super(socketServer);
     }
 
     async initialize(): Promise<void> {
-        this.socketServer.subscribeToEvent('sendMainChatMessage')
-            .pipe(mergeMap(event => {
-                // Since our "subscription" needs to subscribe to a promise function,
-                //  this is how we have to do it.  There's no other way to make sure the promise completes,
-                //  because subscriptions don't handle them.
-                return from(this.receiveMainChatMessage(event.socket, event.userId!, event.data[0]));
-            }))
+        this.socketServer.subscribeToEvent('sendChatMessage')
+            .pipe(
+                mergeMap(event => {
+                    // Since our "subscription" needs to subscribe to a promise function,
+                    //  this is how we have to do it.  There's no other way to make sure the promise completes,
+                    //  because subscriptions don't handle them.
+                    return from(this.receiveChatMessage(event.socket, event.userId!, event.userId!, event.data[0]));
+                }))
             .subscribe();
     }
 
-    receiveMainChatMessage = async (socket: Socket, userId: ObjectId, message: string): Promise<void> => {
+    receiveChatMessage = (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Observable<void> => {
+        return new Observable<void>(observer => {
+            const resolver = async () => {
+                // Get the chat from the database.
+                const chat = await this.chatDbService.getChatById(chatId);
+
+                // If nothing, then exit.
+                if (!chat) {
+                    observer.complete();
+                    return;
+                }
+
+                // Create a function group for this.
+
+
+            };
+        });
+    };
+
+
+    receiveChatMessage = async (socket: Socket, userId: ObjectId, message: string): Promise<void> => {
         // Validate the user ID.
         if (!userId) {
             throw new Error('UserID is invalid.');
@@ -49,7 +72,7 @@ export class MainChatSocketService extends SocketServiceBase {
             if (typeof msg === 'string') {
                 this.sendServerStatusMessage(socket, 'info', msg);
             } else {
-                this.sendMainChatMessage(socket, mainChat._id, msg);
+                this.sendChatMessage(socket, mainChat._id, msg);
             }
         });
     };
@@ -57,8 +80,8 @@ export class MainChatSocketService extends SocketServiceBase {
     // #region Messaging To Client
 
     /** Sends a chat message to the UI for a specified chat. */
-    sendMainChatMessage(socket: Socket, chatId: ObjectId, message: ChatMessage): void {
-        socket.emit('receiveMainChatMessage', chatId.toHexString(), message);
+    sendChatMessage(socket: Socket, chatId: ObjectId, message: ChatMessage): void {
+        socket.emit('receiveChatMessage', chatId.toHexString(), message);
     }
 
     sendServerStatusMessage(socket: Socket, type: 'info' | 'success' | 'warn' | 'error', message: string): void {
