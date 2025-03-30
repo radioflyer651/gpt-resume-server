@@ -1,10 +1,10 @@
 import { Socket } from "socket.io";
 import { ToastMessage } from "../../model/toast-message.model";
-import { mainChatSocketServer } from "../../app-globals";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
 import { MainChatSocketService } from "../../server/socket-services/main-chat.socket-serice";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
+import { mainChatSocketServer } from "../../setup-socket-services";
 
 /** Factory function to create ChatFunctionsServices on demand. */
 export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsService {

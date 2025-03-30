@@ -85,6 +85,7 @@ export class SocketServer {
 
             // For all events going out, we need to convert ObjectIds to strings.
             socket.onAnyOutgoing((...args) => {
+                console.log(`Sending message: ${args[0]}`);
                 args.forEach(a => {
                     objectIdToStringConverter(a);
                 });
@@ -92,6 +93,7 @@ export class SocketServer {
 
             // We must convert object IDs of strings to ObjectIds.
             socket.use(([event, ...args], next) => {
+                console.log(`Receiving Message: ${event}`);
                 args.forEach(a => {
                     stringToObjectIdConverter(a, false);
                 });

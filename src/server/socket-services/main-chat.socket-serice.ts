@@ -7,6 +7,7 @@ import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { chatFunctionsServiceFactory } from "../../services/functions-services/chat.functions-service";
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
+import { from, mergeMap } from "rxjs";
 
 
 export class MainChatSocketService extends SocketServiceBase {
@@ -19,9 +20,14 @@ export class MainChatSocketService extends SocketServiceBase {
     }
 
     async initialize(): Promise<void> {
-        this.socketServer.subscribeToEvent('sendMainChatMessage').subscribe(event => {
-            this.receiveMainChatMessage(event.socket, event.userId!, event.data[0]);
-        });
+        this.socketServer.subscribeToEvent('sendMainChatMessage')
+            .pipe(mergeMap(event => {
+                // Since our "subscription" needs to subscribe to a promise function,
+                //  this is how we have to do it.  There's no other way to make sure the promise completes,
+                //  because subscriptions don't handle them.
+                return from(this.receiveMainChatMessage(event.socket, event.userId!, event.data[0]));
+            }))
+            .subscribe();
     }
 
     receiveMainChatMessage = async (socket: Socket, userId: ObjectId, message: string): Promise<void> => {
