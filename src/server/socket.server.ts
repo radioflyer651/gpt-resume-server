@@ -94,24 +94,20 @@ export class SocketServer {
 
             // For all events going out, we need to convert ObjectIds to strings.
             socket.onAnyOutgoing((...args) => {
-                args.forEach(a => {
-                    try {
-                        objectIdToStringConverter(a);
-                    } catch (err) {
-                        console.error('error', err);
-                    }
-                });
+                try {
+                    objectIdToStringConverter(args);
+                } catch (err) {
+                    console.error(`Error Converting args.`, event, err, args);
+                }
             });
 
             // We must convert object IDs of strings to ObjectIds.
             socket.use(([event, ...args], next) => {
-                args.forEach(a => {
-                    try {
-                        stringToObjectIdConverter(a, false);
-                    } catch (err) {
-                        console.error(err);
-                    }
-                });
+                try {
+                    stringToObjectIdConverter(args, false);
+                } catch (err) {
+                    console.error(`Error Converting args.`, event, err, args);
+                }
 
                 next();
             });
@@ -243,7 +239,7 @@ export class SocketServer {
                 // Send the event.
                 subscriber.next({
                     socket,
-                    data: argsCopy,
+                    data: stringToObjectIdConverter(argsCopy),
                     eventName: event,
                     userId: socket.data?.userId,
                     callback: resolverCallback

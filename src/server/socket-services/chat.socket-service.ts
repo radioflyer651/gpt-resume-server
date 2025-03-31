@@ -3,12 +3,12 @@ import { SocketServiceBase } from "./socket-server-base.socket-service";
 import { ObjectId } from "mongodb";
 import { AppChatService } from "../../services/app-chat.service";
 import { SocketServer } from "../socket.server";
-import { ChatTypes } from "../../model/shared-models/chat-types.model";
+
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
-import { from, map, mergeMap, Observable, tap } from "rxjs";
+import { from, mergeMap, } from "rxjs";
 import { ChatDbService } from "../../database/chat-db.service";
-import { chatFunctionsServiceFactory } from "../../services/functions-services/main-chat.functions-service";
+import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 
 
 export class ChatSocketService extends SocketServiceBase {
@@ -37,46 +37,36 @@ export class ChatSocketService extends SocketServiceBase {
             .subscribe();
     }
 
-    // receiveChatMessage = (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Observable<void> => {
-    //     return new Observable<void>(observer => {
-    //         const resolver = async () => {
-    //             // Get the chat from the database.
-    //             const chat = await this.chatDbService.getChatById(chatId);
-
-    //             // If nothing, then exit.
-    //             if (!chat) {
-    //                 observer.complete();
-    //                 return;
-    //             }
-
-    //             // Create a function group for this.
-
-
-    //         };
-    //     });
-    // };
-
-
     receiveChatMessage = async (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Promise<void> => {
         // Validate the user ID.
         if (!userId) {
             throw new Error('UserID is invalid.');
         }
-        // Get the main chat for this user. (This could be improved to just get the ID.)
-        const mainChat = await this.appChatService.getOrCreateChatOfType(userId, ChatTypes.Main);
+
+        // Get the chat for this user. (This could be improved to just get the ID.)
+        const chat = await this.chatDbService.getChatById(chatId);
+
+        // Ensure we have a chat.
+        if (!chat) {
+            throw new Error(`No chat was found for the id: ${chatId}`);
+        }
+
+        // Get the configurations for this chat.
+        const configuration = this.llmChatService.getConfiguratorForChatType(chat!.chatType);
 
         // Create a function group for this.
-        const functionGroup = chatFunctionsServiceFactory(socket);
+        const functionGroupOwners = await configuration.getAiFunctionGroups(socket);
+        const functionGroups = functionGroupOwners.reduce((p, c) => [...p, ...c.getFunctionGroups()], [] as AiFunctionGroup[]);
 
         // Function to deal with messages received during the API call.
-        const chatStream$ = this.llmChatService.createChatResponse(mainChat._id, message, functionGroup.getFunctionGroups());
+        const chatStream$ = this.llmChatService.createChatResponse(chatId, message, functionGroups);
 
         // Subscribe tot he stream, and send messages to the front end as they come in.
         chatStream$.subscribe(msg => {
             if (typeof msg === 'string') {
                 this.sendServerStatusMessage(socket, 'info', msg);
             } else {
-                this.sendChatMessage(socket, mainChat._id, msg);
+                this.sendChatMessage(socket, chatId, msg);
             }
         });
     };

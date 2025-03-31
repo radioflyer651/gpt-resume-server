@@ -4,12 +4,6 @@ import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function
 import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
 import { ChatSocketService } from "../../server/socket-services/chat.socket-service";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
-import { mainChatSocketService } from "../../setup-socket-services";
-
-/** Factory function to create ChatFunctionsServices on demand. */
-export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsService {
-    return new ChatFunctionsService(socket, mainChatSocketService);
-}
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
  *   context, the service has to work with each one individually to avoid a context management nightmare. */

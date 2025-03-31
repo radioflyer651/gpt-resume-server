@@ -19,10 +19,10 @@ export type LlmChatProcessAsyncMessage = (message: string) => void | Promise<voi
 export class LlmChatService {
     constructor(
         config: OpenAiConfig,
-        private readonly chatDbService: ChatDbService,
-        private userService: UserDbService,
-        private loggingService: LogDbService,
-        private readonly chatConfigurations: ChatConfiguratorBase[],
+        public readonly chatDbService: ChatDbService,
+        public userService: UserDbService,
+        public loggingService: LogDbService,
+        public readonly chatConfigurations: ChatConfiguratorBase[],
     ) {
         if (!config) {
             throw new Error("OpenAiConfig is required.");
@@ -228,7 +228,7 @@ export class LlmChatService {
 
 
     /** Returns the configurator for a specified chat type.  If not found, throws an error. */
-    protected getConfiguratorForChatType(chatType: ChatTypes): ChatConfiguratorBase {
+    getConfiguratorForChatType(chatType: ChatTypes): ChatConfiguratorBase {
         // Find the configurator for the chat type we need.
         const configurator = this.chatConfigurations.find(c => c.chatType === chatType);
 
