@@ -2,7 +2,7 @@ import express from 'express';
 import { getUserIdFromRequest } from '../utils/get-user-from-request.utils';
 import { ObjectId } from 'mongodb';
 import * as path from 'path';
-import { tarotImageService } from '../app-globals';
+import { tarotDbService, tarotImageService } from '../app-globals';
 
 export const tarotRouter = express.Router();
 
@@ -41,4 +41,21 @@ tarotRouter.get('/tarot/images/:cardId/:imageNumber', async (req, res) => {
 
     // Files are in a static location in the app.  No need for any trickery.
     res.sendFile(path.join(__dirname, filePath));
+});
+
+tarotRouter.get('/tarot/games', async (req, res) => {
+    // Get the user from this request.
+    const userId = getUserIdFromRequest(req);
+
+    // If we have none, then we can't do anything.
+    if (!userId) {
+        res.sendStatus(403);
+        return;
+    }
+
+    // Get the games.
+    const games = await tarotDbService.getGamesForUser(userId);
+
+    // Return them.
+    res.json(games);
 });
