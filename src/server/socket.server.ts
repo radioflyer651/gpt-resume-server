@@ -78,6 +78,15 @@ export class SocketServer {
                 return;
             }
 
+            // Get the userId for this socket.  Use this forever and ever.
+            const userId = await this.getUserIdForSocket(socket);
+
+            // Attach this to the socket.
+            if (!socket.data) {
+                socket.data = {};
+            }
+            socket.data.userId = userId;
+
             console.log(`Connection established.`);
 
             // Broadcast the new connection on the observable.
@@ -85,17 +94,23 @@ export class SocketServer {
 
             // For all events going out, we need to convert ObjectIds to strings.
             socket.onAnyOutgoing((...args) => {
-                console.log(`Sending message: ${args[0]}`);
                 args.forEach(a => {
-                    objectIdToStringConverter(a);
+                    try {
+                        objectIdToStringConverter(a);
+                    } catch (err) {
+                        console.error('error', err);
+                    }
                 });
             });
 
             // We must convert object IDs of strings to ObjectIds.
             socket.use(([event, ...args], next) => {
-                console.log(`Receiving Message: ${event}`);
                 args.forEach(a => {
-                    stringToObjectIdConverter(a, false);
+                    try {
+                        stringToObjectIdConverter(a, false);
+                    } catch (err) {
+                        console.error(err);
+                    }
                 });
 
                 next();
@@ -105,25 +120,27 @@ export class SocketServer {
             this._events$.next({
                 socket,
                 eventName: 'connection',
+                userId,
                 data: []
             });
 
             // Register the socket for any events to emit them to observers.
             socket.onAny((event, ...args) => {
-                this.getUserIdForSocket(socket).then(userId => {
-                    // Check if the args have a callback function.
+                // Create the event.
+                try {
+                    args = stringToObjectIdConverter(args);
+                } catch {
+                    console.warn('Error converting strings to object IDs.');
+                }
+                const eventObj: SocketServerEvent = {
+                    socket,
+                    eventName: event,
+                    userId,
+                    data: args
+                };
 
-                    // Create the event.
-                    const eventObj: SocketServerEvent = {
-                        socket,
-                        eventName: event,
-                        data: args,
-                        userId
-                    };
-
-                    // Emit the event.
-                    this._events$.next(eventObj);
-                });
+                // Emit the event.
+                this._events$.next(eventObj);
             });
 
             // Register the disconnection.
@@ -132,6 +149,7 @@ export class SocketServer {
                 this._events$.next({
                     socket,
                     eventName: 'disconnect',
+                    userId,
                     data: []
                 });
                 console.log('Socket disconnected.');
@@ -142,6 +160,7 @@ export class SocketServer {
 
         // Register the socket functions with socket.io.
         this.socketServer.on('connection', onConnectionFunction);
+        this.socketServer.on('connect', onConnectionFunction);
     }
 
     /** Subject that emits when a new socket is connected to the system. */
@@ -221,15 +240,13 @@ export class SocketServer {
                     }
                 }
 
-                this.getUserIdForSocket(socket).then(userId => {
-                    // Send the event.
-                    subscriber.next({
-                        socket,
-                        data: argsCopy,
-                        eventName: event,
-                        userId: userId,
-                        callback: resolverCallback
-                    });
+                // Send the event.
+                subscriber.next({
+                    socket,
+                    data: argsCopy,
+                    eventName: event,
+                    userId: socket.data?.userId,
+                    callback: resolverCallback
                 });
 
                 const onComplete = () => {
@@ -241,6 +258,7 @@ export class SocketServer {
 
                 // Send the cleanup function.
                 return () => {
+                    console.log(`Handler disconnected: ${event}`);
                     // Remove the event handlers.
                     socket.off('disconnect', onComplete);
                     socket.off(event, subscriptionFunction);
@@ -258,7 +276,10 @@ export class SocketServer {
     subscribeToEvent = (eventName: string) => {
         return this.socketConnections$
             .pipe(
-                mergeMap(socket => this.subscribeToSocketEvent(socket, eventName)));
+                mergeMap(socket => {
+                    return this.subscribeToSocketEvent(socket, eventName);
+                })
+            );
     };
 
     /** Sends an error message back to the socket.  This should only be used when an error

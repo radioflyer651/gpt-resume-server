@@ -8,6 +8,8 @@ import { Observable } from "rxjs";
 import { UserDbService } from "../database/user-db.service";
 import { LogDbService } from "../database/log-db.service";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
+import { ChatConfiguratorBase } from "./chat-configurators/chat-configurator.model";
+import { ChatTypes } from "../model/shared-models/chat-types.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -15,7 +17,29 @@ export type LlmChatProcessAsyncMessage = (message: string) => void | Promise<voi
 
 /** Provides functionality needed to communicate with the LLM (probably ChatGPT). */
 export class LlmChatService {
-    constructor(config: OpenAiConfig, private readonly chatDbService: ChatDbService, private userService: UserDbService, private loggingService: LogDbService) {
+    constructor(
+        config: OpenAiConfig,
+        private readonly chatDbService: ChatDbService,
+        private userService: UserDbService,
+        private loggingService: LogDbService,
+        private readonly chatConfigurations: ChatConfiguratorBase[],
+    ) {
+        if (!config) {
+            throw new Error("OpenAiConfig is required.");
+        }
+        if (!chatDbService) {
+            throw new Error("ChatDbService is required.");
+        }
+        if (!userService) {
+            throw new Error("UserDbService is required.");
+        }
+        if (!loggingService) {
+            throw new Error("LogDbService is required.");
+        }
+        if (!chatConfigurations || chatConfigurations.length === 0) {
+            throw new Error("At least one ChatConfiguratorBase is required.");
+        }
+
         this.openAi = new OpenAI({ apiKey: config.openAiKey, organization: config.openAiOrg });
     }
 
@@ -100,80 +124,21 @@ export class LlmChatService {
         });
     }
 
-    /** Returns a user and company for a specified chat. */
-    private async getUserInfoForChat(chat: Chat) {
-
-        // Get the user information for this chat.
-        const user = await this.userService.getUserById(chat.userId);
-
-        // Return an empty set if nothing was found.
-        if (!user) {
-            return {
-                user,
-                company: undefined
-            };
-        }
-
-        // Get the company.
-        const company = await this.userService.getCompanyById(user?.companyId);
-
-        // Return the set.
-        return {
-            user,
-            company
-        };
-    }
-
-    /** Using the getUserInfoForChat method, returns a set of information useful for a chat dialog, such as user's name, and things like that. */
-    private async getChatInfoForSystem(chat: Chat): Promise<string[]> {
-        // Get the user information for this chat.
-        const userInfo = await this.getUserInfoForChat(chat);
-
-        // Create information about this chat.
-        const chatInfo: string[] = [
-            `Chat ObjectID: ${chat._id.toHexString()}`,
-            `User ObjectId: ${chat.userId.toHexString()}`,
-        ];
-
-        function addParts(recordName: string, target: any): void {
-            if (!target) {
-                return;
-            }
-
-            for (let n in target) {
-                const curVal = target[n];
-                if (curVal) {
-                    if (typeof curVal === 'string' || curVal instanceof ObjectId) {
-                        chatInfo.push(`${recordName} property: ${n} = ${curVal.toString()}`);
-                    }
-                }
-            }
-        }
-
-        addParts(`User`, userInfo.user);
-        addParts(`User's Company`, userInfo.company);
-
-        if (userInfo.user?.userName) {
-            chatInfo.push(`The user's name is ${userInfo.user.userName}.`);
-        }
-
-        return chatInfo;
-    }
-
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
     private async callChatResponse(chat: Chat, toolList?: AiFunctionGroup[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
+        // Get the configurator for this chat type.
+        const configurator = this.getConfiguratorForChatType(chat.chatType);
 
-        // Get the chat instructions from the database.
-        const instructions = (await this.chatDbService.getBaseInstructions(chat.chatType))?.instructions ?? [];
+        // Get the chat configuration instructions for this chat type.
+        const instructions = await configurator.getSystemMessagesForChatCall();
 
-        // Get information about this chat, the user that owns it, and the company they belong to
-        //  to add to the chat details for the AI's use.
-        const chatInfo = await this.getChatInfoForSystem(chat);
+        // Get any chat-specific system info messages for the call.
+        const chatSpecificInstructions = await configurator.getChatSpecificSystemInfoMessages(chat);
 
         // Assemble the system messages, including the instructions from
         //  the base instructions.
-        const systemMessages = [...chatInfo, ...chat.systemMessages, ...instructions].map(msg => ({
+        const systemMessages = [...chat.systemMessages, ...chatSpecificInstructions, ...instructions].map(msg => ({
             role: 'system' as const,
             content: msg
         }));
@@ -260,4 +225,19 @@ export class LlmChatService {
             output: await result
         };
     }
+
+
+    /** Returns the configurator for a specified chat type.  If not found, throws an error. */
+    protected getConfiguratorForChatType(chatType: ChatTypes): ChatConfiguratorBase {
+        // Find the configurator for the chat type we need.
+        const configurator = this.chatConfigurations.find(c => c.chatType === chatType);
+
+        // If not found, then we have issues.
+        if (!configurator) {
+            throw new Error(`No configurator found for chat type: ${chatType}`);
+        }
+
+        return configurator;
+    }
+
 }

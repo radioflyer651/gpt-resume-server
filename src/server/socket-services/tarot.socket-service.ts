@@ -30,6 +30,9 @@ export class TarotSocketService extends SocketServiceBase {
         private readonly chatDbService: ChatDbService,
     ) {
         super(socketServer);
+        if (!socketServer || !userDbService || !tarotDbService || !llmChatService || !appChatService || !chatDbService) {
+            throw new Error('One or more required services are not provided.');
+        }
     }
 
     async initialize(): Promise<void> {

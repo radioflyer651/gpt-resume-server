@@ -21,6 +21,7 @@ export function bodyStringsToDatesMiddleware(req: Request, res: Response, next: 
  * @param target The object to transform in-place.
  */
 export function convertDateStrings(target: any): any {
+    return target;
     if (target && typeof target === 'object') {
         if (Array.isArray(target)) {
             for (let i = 0; i < target.length; i++) {

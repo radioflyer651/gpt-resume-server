@@ -19,6 +19,15 @@ export class TarotGameFunctionsService implements IFunctionGroupProvider {
         if (!socket) {
             console.error('No socket was passed to the ChatFunctionService.');
         }
+        if (!tarotGameId) {
+            throw new Error('No tarotGameId was provided to the TarotGameFunctionsService.');
+        }
+        if (!tarotSocketService) {
+            throw new Error('No tarotSocketService was provided to the TarotGameFunctionsService.');
+        }
+        if (!tarotDbService) {
+            throw new Error('No tarotDbService was provided to the TarotGameFunctionsService.');
+        }
     }
 
     /** FOR LLM: Returns the details for a set of tarot cards specified by their IDs. */

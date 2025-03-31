@@ -4,7 +4,11 @@ import { getFileNameForImageNumber } from "../utils/tarot-image.utils";
 
 /** Handles management of Tarot card images. */
 export class TarotImageService {
-    constructor(private readonly tarotDbService: TarotDbService) { }
+    constructor(private readonly tarotDbService: TarotDbService) {
+        if (!tarotDbService) {
+            throw new Error("tarotDbService cannot be null or undefined.");
+        }
+    }
 
     /** Given the ObjectId of a tarot card, and the image number, returns the absolute file path to the file, if it exists. */
     async getFilePathForImageId(cardId: ObjectId, fileNumber: number): Promise<string | undefined> {

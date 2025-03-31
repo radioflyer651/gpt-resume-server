@@ -8,6 +8,9 @@ import { Socket } from "socket.io";
 /** Base class for all socket servers. */
 export abstract class SocketServiceBase {
     constructor(protected readonly socketServer: SocketServer) {
+        if (!socketServer) {
+            throw new Error("SocketServer instance is required.");
+        }
     }
 
     /** Initializes the base class, letting it sync with the socket server. */

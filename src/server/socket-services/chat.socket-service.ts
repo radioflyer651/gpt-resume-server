@@ -4,11 +4,11 @@ import { ObjectId } from "mongodb";
 import { AppChatService } from "../../services/app-chat.service";
 import { SocketServer } from "../socket.server";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
-import { chatFunctionsServiceFactory } from "../../services/functions-services/chat.functions-factory.service";
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
-import { from, mergeMap, Observable, tap } from "rxjs";
+import { from, map, mergeMap, Observable, tap } from "rxjs";
 import { ChatDbService } from "../../database/chat-db.service";
+import { chatFunctionsServiceFactory } from "../../services/functions-services/main-chat.functions-service";
 
 
 export class ChatSocketService extends SocketServiceBase {
@@ -19,41 +19,45 @@ export class ChatSocketService extends SocketServiceBase {
         private chatDbService: ChatDbService,
     ) {
         super(socketServer);
+        if (!socketServer || !appChatService || !llmChatService || !chatDbService) {
+            throw new Error('One or more required services are not provided.');
+        }
     }
 
     async initialize(): Promise<void> {
         this.socketServer.subscribeToEvent('sendChatMessage')
             .pipe(
                 mergeMap(event => {
+                    console.log(event);
                     // Since our "subscription" needs to subscribe to a promise function,
                     //  this is how we have to do it.  There's no other way to make sure the promise completes,
                     //  because subscriptions don't handle them.
-                    return from(this.receiveChatMessage(event.socket, event.userId!, event.userId!, event.data[0]));
+                    return from(this.receiveChatMessage(event.socket, event.userId!, event.data[0]!, event.data[1]));
                 }))
             .subscribe();
     }
 
-    receiveChatMessage = (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Observable<void> => {
-        return new Observable<void>(observer => {
-            const resolver = async () => {
-                // Get the chat from the database.
-                const chat = await this.chatDbService.getChatById(chatId);
+    // receiveChatMessage = (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Observable<void> => {
+    //     return new Observable<void>(observer => {
+    //         const resolver = async () => {
+    //             // Get the chat from the database.
+    //             const chat = await this.chatDbService.getChatById(chatId);
 
-                // If nothing, then exit.
-                if (!chat) {
-                    observer.complete();
-                    return;
-                }
+    //             // If nothing, then exit.
+    //             if (!chat) {
+    //                 observer.complete();
+    //                 return;
+    //             }
 
-                // Create a function group for this.
-
-
-            };
-        });
-    };
+    //             // Create a function group for this.
 
 
-    receiveChatMessage = async (socket: Socket, userId: ObjectId, message: string): Promise<void> => {
+    //         };
+    //     });
+    // };
+
+
+    receiveChatMessage = async (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Promise<void> => {
         // Validate the user ID.
         if (!userId) {
             throw new Error('UserID is invalid.');

@@ -2,13 +2,13 @@ import { Socket } from "socket.io";
 import { ToastMessage } from "../../model/toast-message.model";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
-import { ChatSocketService } from "../../server/socket-services/chat.socket-serice";
+import { ChatSocketService } from "../../server/socket-services/chat.socket-service";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
-import { mainChatSocketServer } from "../../setup-socket-services";
+import { mainChatSocketService } from "../../setup-socket-services";
 
 /** Factory function to create ChatFunctionsServices on demand. */
 export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsService {
-    return new ChatFunctionsService(socket, mainChatSocketServer);
+    return new ChatFunctionsService(socket, mainChatSocketService);
 }
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
@@ -16,9 +16,14 @@ export function chatFunctionsServiceFactory(socket: Socket): ChatFunctionsServic
 export class ChatFunctionsService implements FunctionGroupProvider {
     constructor(
         public readonly socket: Socket | undefined,
-        private mainChatSocketService: ChatSocketService) {
+        private mainChatSocketService: ChatSocketService
+    ) {
         if (!socket) {
             console.error('No socket was passed to the ChatFunctionService.');
+        }
+        // Validate the inputs.
+        if (!mainChatSocketService) {
+            throw new Error('mainChatSocketService is required.');
         }
     }
 

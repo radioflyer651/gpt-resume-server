@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { objectIdToStringConverter, stringToObjectIdConverter } from '../../utils/object-id-to-string-converter.utils';
+import { stringToObjectIdConverter } from '../../utils/object-id-to-string-converter.utils';
 
 
 /**

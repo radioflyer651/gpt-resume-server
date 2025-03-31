@@ -8,7 +8,9 @@ export class AuthService {
     constructor(
         private readonly dbService: UserDbService
     ) {
-
+        if (!dbService) {
+            throw new Error("dbService cannot be null or undefined.");
+        }
     }
 
     /** Attempts to validate a user, and if they exist, returns an ID for them.  If not, then returns undefined. */
