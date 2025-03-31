@@ -14,6 +14,7 @@ import { AppChatService } from "../../services/app-chat.service";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
 import { UserDbService } from "../../database/user-db.service";
+import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 
 // Client Event Names (from server)
 
@@ -54,12 +55,6 @@ export class TarotSocketService extends SocketServiceBase {
         // Create a new chat for this game.
         const newChat = await this.appChatService.startNewChatOfType(userId, ChatTypes.TarotGame);
 
-        // Set the system messages for the chat.
-        newChat.systemMessages = await this.getChatSystemMessagesForNewGame(userId);
-
-        // Update the chat with the system messages.
-        this.chatDbService.upsertChat(newChat);
-
         // Create the game.
         const newGame: NewDbItem<TarotGame> = {
             userId: userId,
@@ -73,8 +68,11 @@ export class TarotSocketService extends SocketServiceBase {
         // Save the game to the database.
         const resultGame = await this.tarotDbService.upsertGame(newGame);
 
+        // Get the AiFunctionGroups for this chat type.
+        const functionGroups = (await this.llmChatService.getConfiguratorForChatType(ChatTypes.TarotGame).getAiFunctionGroups(socket)).reduce((p, c) => [...p, ...c.getFunctionGroups()], [] as AiFunctionGroup[]);
+
         // Send the first message to the chat.
-        await this.llmChatService.createChatResponse(newChat._id, { role: 'system', content: `The user has initiated a chat with you.  Begin the dialog.` }, []);
+        await this.llmChatService.createChatResponse(newChat._id, { role: 'system', content: `The user has initiated a chat with you.  Begin the dialog.` }, functionGroups);
 
         // Return the game.
         const gameAndChat = { tarotGame: resultGame, chat: newChat };
@@ -84,48 +82,6 @@ export class TarotSocketService extends SocketServiceBase {
 
         // Return the result to the client.
         responseCallback({ game: gameAndChat.tarotGame, tarotChat: clientChat });
-    }
-
-    /** Returns the system messages needed for a new tarot game chat. */
-    private async getChatSystemMessagesForNewGame(userId: ObjectId): Promise<string[]> {
-        // Get the user for this game
-        const user = await this.userDbService.getUserById(userId);
-
-        // Get the number of game cards in the deck.
-        const gameCardCount = await this.tarotDbService.getGameCardCount();
-
-        // If we don't have one, then we have issues.
-        if (!user) {
-            throw new Error(`No user exists for the user id ${userId}`);
-        }
-
-        // Create the messages.
-        const result = [
-            `You are a tarot card reader on a website that centers around a web developer's resume.`,
-            `The web developer's name is Richard Olson.`,
-            `Tarot cards for the reading revolve around web development topics.`,
-            `The site visitor that you're doing the reading for is ${user.displayName ?? user.userName}`,
-        ];
-
-        // We're keeping the directions separate, for easier management of info.
-        const directionResults = [
-            `
-                Instructions:
-                1. The user already knows you're playing the tarot game.
-                2. Decide if you need to tell the user the instructions of the game or not.  If so, do so.  The user may have played before, and that will be noted in the system messages along with this one.
-
-                Game Instructions:
-                1. There are a deck of ${gameCardCount} tarot cards.
-                2. You will pick the cards for the user, when they indicate they're ready for a card.
-                  2a. When you pick a card, you will provide some commentary for the user about the card, and how it might affect the outcome.
-                  2b. Be careful not to be too wordy.  We want to keep the game moving, but add an element of intrigue.
-                3. You must have 5 cards to perform a reading.
-                4. After 5 cards are picked, you will provide a meaning of what all 5 cards mean together, and in the order they're in.
-                5. The end!
-            `
-        ];
-
-        return result.concat(directionResults);
     }
 
     /** Sends the list of TarotGames to the user. */

@@ -12,10 +12,10 @@ import { ChatDbService } from "../../database/chat-db.service";
  */
 export abstract class ChatConfiguratorBase {
     constructor(
-        protected userService: UserDbService,
+        protected userDbService: UserDbService,
         protected chatDbService: ChatDbService,
     ) { 
-        if (!userService) {
+        if (!userDbService) {
             throw new Error("UserDbService is required but was not provided.");
         }
 
@@ -69,7 +69,7 @@ export abstract class ChatConfiguratorBase {
     protected async getUserInfoForChat(chat: Chat) {
 
         // Get the user information for this chat.
-        const user = await this.userService.getUserById(chat.userId);
+        const user = await this.userDbService.getUserById(chat.userId);
 
         // Return an empty set if nothing was found.
         if (!user) {
@@ -80,7 +80,7 @@ export abstract class ChatConfiguratorBase {
         }
 
         // Get the company.
-        const company = await this.userService.getCompanyById(user?.companyId);
+        const company = await this.userDbService.getCompanyById(user?.companyId);
 
         // Return the set.
         return {
