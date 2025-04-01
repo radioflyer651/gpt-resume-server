@@ -110,3 +110,23 @@ chatRouter.get('/chat/for-user', async (req, res) => {
     // Return the chats.
     res.send(chats);
 });
+
+/** Returns all chats of a specified type, for the authenticated user. */
+chatRouter.get('/chats-by-type/:chatType', async (req, res) => {
+    const chatType = req.params.chatType;
+
+    // Get the user for this call.
+    const userId = await getUserIdFromRequest(req);
+
+    if (!userId) {
+        res.status(401).send('Unauthorized.');
+        return;
+    }
+
+    // Get the chats of the specified type.
+    const chats = await chatDbService.getChatsForUserByType(userId, chatType as ChatTypes);
+
+    // Convert these to client chats, and return them.
+    const clientChats = chats.map(c => convertChatToClientChat(c));
+    res.json(clientChats);
+});

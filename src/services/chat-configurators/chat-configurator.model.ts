@@ -14,7 +14,7 @@ export abstract class ChatConfiguratorBase {
     constructor(
         protected userDbService: UserDbService,
         protected chatDbService: ChatDbService,
-    ) { 
+    ) {
         if (!userDbService) {
             throw new Error("UserDbService is required but was not provided.");
         }
@@ -56,7 +56,7 @@ export abstract class ChatConfiguratorBase {
 
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
-    getAiFunctionGroups(socket: Socket): Promise<FunctionGroupProvider[]> {
+    getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
         return Promise.resolve([]);
     }
 

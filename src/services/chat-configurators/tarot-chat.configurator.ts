@@ -7,11 +7,11 @@ import { ChatBaseInstructions } from "../../model/chat-instructions.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
 import { UserDbService } from "../../database/user-db.service";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
-import { ChatFunctionsService } from "../functions-services/main-chat.functions-service";
 import { Socket } from "socket.io";
-import { mainChatSocketService } from "../../setup-socket-services";
+import { mainChatSocketService, tarotSocketServer } from "../../setup-socket-services";
 import { getAshliePersonaChatInstructions, getHtmlChatInstructions } from "../../utils/common-chat-instructions.utils";
 import { TarotDbService } from "../../database/tarot-db.service";
+import { TarotGameFunctionsService } from "../functions-services/tarot-game.functions-service";
 
 /** Configurator for main chats. */
 export class TarotChatConfigurator extends ChatConfiguratorBase {
@@ -32,7 +32,7 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
         this.initializeChatBaseMessages();
     }
 
-    readonly chatType = ChatTypes.Main;
+    readonly chatType = ChatTypes.TarotGame;
 
     async initializeNewChat(ownerId: ObjectId): Promise<NewDbItem<Chat>> {
         return {
@@ -76,8 +76,14 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
 
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
-    async getAiFunctionGroups(socket: Socket): Promise<FunctionGroupProvider[]> {
-        return [new ChatFunctionsService(socket, this.getMainChatSocketService())];
+    async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
+        // Get the chat.
+        const chat = await this.chatDbService.getChatById(chatId);
+
+        // Get the tarot game for this chat.
+        const tarotGame = await this.tarotDbService.getGameByChatId(chatId);
+
+        return [new TarotGameFunctionsService(socket, tarotGame!._id, tarotSocketServer, this.tarotDbService)];
     }
 
     /** Returns the system messages needed for a new tarot game chat. */

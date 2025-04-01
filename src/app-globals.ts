@@ -34,6 +34,7 @@ export async function initializeServices(): Promise<void> {
 
     /** The mongo helper used in all DB Services. */
     dbHelper = new MongoHelper(config.mongo.connectionString, config.mongo.databaseName);
+    await dbHelper.connect();
 
     /* All DB Services. */
     userDbService = new UserDbService(dbHelper);

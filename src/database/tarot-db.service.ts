@@ -24,6 +24,13 @@ export class TarotDbService extends DbService {
         });
     }
 
+    async getGameByChatId(chatId: ObjectId): Promise<TarotGame | undefined> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotGames, async (db, collection) => {
+            return nullToUndefined(await collection.findOne<TarotGame>({ gameChatId: chatId }));
+        });
+    }
+
+
     /** Returns a tarot cards with a specified IDs. */
     async getGameCardsByIds(cardIds: ObjectId[]): Promise<TarotCardDetails[]> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
@@ -51,7 +58,7 @@ export class TarotDbService extends DbService {
 
     /** Upserts a specified tarot game. */
     async upsertGame(tarotGame: UpsertDbItem<TarotGame>): Promise<TarotGame> {
-        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotGames, async (db, collection) => {
             // Determine if the game is new or not.
             if (isNewDbItem(tarotGame)) {
                 // We need to insert the game.
@@ -119,10 +126,17 @@ export class TarotDbService extends DbService {
         });
     }
 
-    /** Returns just the IDs and base image names of all game cards. */
-    async getAllGameCardIdsAndImageNames(): Promise<{ _id: ObjectId, imageFilePrefix: string; }[]> {
+    /** Returns just the IDs, card names, and base image names of all game cards. */
+    async getAllGameCardIdsNamesAndImageNames(): Promise<{ _id: ObjectId, cardName: string, imageFilePrefix: string; }[]> {
         return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
-            return await collection.find<TarotCard>({}, { projection: { _id: 1, imageFilePrefix: 1 } }).toArray();
+            return await collection.find<TarotCard>({}, { projection: { _id: 1, cardName: 1, imageFilePrefix: 1 } }).toArray();
+        });
+    }
+
+    /** Inserts the data for a specified card into the database. */
+    async insertCardData(cardInfo: TarotCard): Promise<void> {
+        return this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotCards, async (db, collection) => {
+            await collection.insertOne(cardInfo);
         });
     }
 }

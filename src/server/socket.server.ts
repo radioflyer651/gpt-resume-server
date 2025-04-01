@@ -124,9 +124,9 @@ export class SocketServer {
             socket.onAny((event, ...args) => {
                 // Create the event.
                 try {
-                    args = stringToObjectIdConverter(args);
-                } catch {
-                    console.warn('Error converting strings to object IDs.');
+                    args = stringToObjectIdConverter(args, false);
+                } catch (err) {
+                    console.warn('Error converting strings to object IDs.', err);
                 }
                 const eventObj: SocketServerEvent = {
                     socket,

@@ -10,6 +10,7 @@ import { LogDbService } from "../database/log-db.service";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
 import { ChatConfiguratorBase } from "./chat-configurators/chat-configurator.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
+import { User } from "../model/shared-models/user.model";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -48,7 +49,7 @@ export class LlmChatService {
     /** Creates a new ChatResponse (like a chat completion) against the LLM with a specified new message
      *   for a specified chat.  Optionally, tools (custom functions) may be supplied for the LLM to call.
      *   Optionally, a function may be provided to send a message back to the UI if a tool is called along with a message. */
-    createChatResponse(chatId: ObjectId, prompt: string | ChatMessage, toolList?: AiFunctionGroup[]): Observable<ChatMessage | string> {
+    createChatResponse(chatId: ObjectId, prompt: string | ChatMessage, userId: ObjectId, toolList?: AiFunctionGroup[]): Observable<ChatMessage | string> {
         return new Observable<ChatMessage | string>((subscriber) => {
             // Status to indicate if we've aborted somehow.
             let unsubscribed = false;
@@ -74,6 +75,12 @@ export class LlmChatService {
                     chat.chatMessages.push(prompt);
                 }
 
+                // Get the user for this call.
+                const user = await this.userService.getUserById(userId);
+                if (!user) {
+                    console.warn('No user was provided for the chat.');
+                }
+
                 // Update the chat in the DB.
                 chat = await this.chatDbService.upsertChat(chat);
 
@@ -89,7 +96,7 @@ export class LlmChatService {
                 let chatResult: Chat;
                 try {
                     // Call the LLM API, and process the results.
-                    chatResult = await this.callChatResponse(chat, toolList, asyncProcessMessage);
+                    chatResult = await this.callChatResponse(chat, user!, toolList, asyncProcessMessage);
                 } catch (err) {
                     subscriber.error(err);
                     return;
@@ -126,7 +133,7 @@ export class LlmChatService {
 
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
-    private async callChatResponse(chat: Chat, toolList?: AiFunctionGroup[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
+    private async callChatResponse(chat: Chat, user: User, toolList?: AiFunctionGroup[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
         // Get the configurator for this chat type.
         const configurator = this.getConfiguratorForChatType(chat.chatType);
 
@@ -135,6 +142,13 @@ export class LlmChatService {
 
         // Get any chat-specific system info messages for the call.
         const chatSpecificInstructions = await configurator.getChatSpecificSystemInfoMessages(chat);
+
+        // If this is an admin user, then add that fact to the system messages.
+        if (user.isAdmin) {
+            instructions.push(`This user is a site administrator.  Provide them access to diagnostics functions and information that you have available to you.`);
+        } else {
+            instructions.push(`This user is NOT a site administrator.  They are an ordinary user.`);
+        }
 
         // Assemble the system messages, including the instructions from
         //  the base instructions.
@@ -148,6 +162,7 @@ export class LlmChatService {
             ...systemMessages,
             ...chat.chatMessages
         ];
+
 
         // Convert the function groups into functions we can use in the API call.
         const tools = toolList?.reduce((p, c) => [...p, ...c.functions.map(f => f.definition)], [] as FunctionTool[]);
@@ -189,7 +204,7 @@ export class LlmChatService {
 
             // We have to recall the LLM again with the results.
             //  In doing so, return the result of whatever that is.
-            return await this.callChatResponse(chat, toolList, asyncProcessMessage);
+            return await this.callChatResponse(chat, user, toolList, asyncProcessMessage);
         }
 
         // We have no function responses.
@@ -201,29 +216,42 @@ export class LlmChatService {
     /** Given a Function Call response from the LLM, and a list of function definitions, calls the appropriate
      *   function for the call, and returns the result. */
     private async callTool(functionCall: ResponseFunctionToolCall, toolList: AiFunctionDefinitionPackage[]): Promise<FunctionCallOutput> {
-        // Find the function definition in question.
-        const fnDefinition = toolList.find(x => x.definition.name === functionCall.name);
+        try {
+            // Find the function definition in question.
+            const fnDefinition = toolList.find(x => x.definition.name === functionCall.name);
 
-        // If not found, then we have a problem.
-        if (!fnDefinition) {
-            throw new Error(`No function with the name ${functionCall.name} was found in the toolList.`);
+            // If not found, then we have a problem.
+            if (!fnDefinition) {
+                throw new Error(`No function with the name ${functionCall.name} was found in the toolList.`);
+            }
+
+            // Get the result from the definition.
+            const args = JSON.parse(functionCall.arguments);
+            let result = await fnDefinition.function(args);
+
+            // Return the result.
+            return {
+                call_id: functionCall.call_id,
+                type: "function_call_output",
+                status: "completed",
+                output: result
+            };
+        } catch (err: any) {
+            // Print the error to the prompt.
+            const errorMessage = `An error occurred when trying to run the tool ${functionCall.name}.  \nError: ${err}\n\nTrace:\n${err?.stack ?? 'No Trace'}`;
+            console.trace('See error below.');
+            console.error(errorMessage);
+
+            // Return the as an error.
+            return {
+                call_id: functionCall.call_id,
+                type: "function_call_output",
+                status: "incomplete",
+                output: errorMessage
+            };
+
         }
 
-        // Get the result from the definition.
-        console.log(functionCall.arguments);
-        console.log(typeof functionCall.arguments);
-        const args = JSON.parse(functionCall.arguments);
-        console.log(args);
-        console.log(typeof args);
-        let result = fnDefinition.function(args);
-
-        // Return the result.
-        return {
-            call_id: functionCall.call_id,
-            type: "function_call_output",
-            status: "completed",
-            output: await result
-        };
     }
 
 

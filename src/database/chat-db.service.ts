@@ -137,4 +137,14 @@ export class ChatDbService extends DbService {
             collection.deleteOne({ chatType });
         });
     }
+
+    /** Returns all chats of a specified type for a user, specified by their ID. */
+    async getChatsForUserByType(userId: ObjectId, chatType: ChatTypes): Promise<Chat[]> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Chats, async (db, collection) => {
+            return collection.find<Chat>({
+                userId,
+                chatType,
+            }).toArray();
+        });
+    }
 }

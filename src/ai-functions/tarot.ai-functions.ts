@@ -67,3 +67,29 @@ export const flipTarotCard: FunctionTool = {
     },
     strict: true
 };
+
+
+export const loadCardData: FunctionTool = {
+    name: 'load_card_data',
+    description: 'One time initialization of the TarotCard data.  This should only be requested by an admin (richard), and NEVER performed without a password.  The password is "Marky Mark".',
+    type: 'function',
+    parameters: {
+        type: 'object',
+        properties: {},
+        additionalProperties: false
+    },
+    strict: true
+};
+
+
+export const getAllGameCardListDetails: FunctionTool = {
+    name: 'list_all_cards',
+    description: 'Returns the names, IDs, and image names of all tarot cards in the database.',
+    type: 'function',
+    parameters: {
+        type: 'object',
+        properties: {},
+        additionalProperties: false
+    },
+    strict: true
+};

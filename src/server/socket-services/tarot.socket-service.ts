@@ -68,14 +68,14 @@ export class TarotSocketService extends SocketServiceBase {
         // Save the game to the database.
         const resultGame = await this.tarotDbService.upsertGame(newGame);
 
-        // Get the AiFunctionGroups for this chat type.
-        const functionGroups = (await this.llmChatService.getConfiguratorForChatType(ChatTypes.TarotGame).getAiFunctionGroups(socket)).reduce((p, c) => [...p, ...c.getFunctionGroups()], [] as AiFunctionGroup[]);
-
-        // Send the first message to the chat.
-        await this.llmChatService.createChatResponse(newChat._id, { role: 'system', content: `The user has initiated a chat with you.  Begin the dialog.` }, functionGroups);
-
         // Return the game.
         const gameAndChat = { tarotGame: resultGame, chat: newChat };
+
+        // Get the AiFunctionGroups for this chat type.
+        const functionGroups = (await this.llmChatService.getConfiguratorForChatType(ChatTypes.TarotGame).getAiFunctionGroups(socket, gameAndChat.chat._id, userId)).reduce((p, c) => [...p, ...c.getFunctionGroups()], [] as AiFunctionGroup[]);
+
+        // Send the first message to the chat.
+        await this.llmChatService.createChatResponse(newChat._id, { role: 'system', content: `The user has initiated a chat with you.  Begin the dialog.` }, userId, functionGroups);
 
         // Convert the chat to a client chat.
         const clientChat = convertChatToClientChat(gameAndChat.chat);
@@ -110,7 +110,7 @@ export class TarotSocketService extends SocketServiceBase {
         }
 
         // Get all of the game cards.
-        const allCards = await this.tarotDbService.getAllGameCardIdsAndImageNames();
+        const allCards = await this.tarotDbService.getAllGameCardIdsNamesAndImageNames();
 
         // Get just the cards that are not already picked.
         const remainingCards = allCards.filter(c => !game.cardsPicked.some(p => p._id.equals(c._id)));
@@ -126,7 +126,7 @@ export class TarotSocketService extends SocketServiceBase {
 
         // If we don't have any, then we can't do anything.
         if (!imageNumbers) {
-            throw new Error(`No images exist for the card ${randomCard.imageFilePrefix}`);
+            throw new Error(`No images exist for the card ${randomCard.imageFilePrefix}.`);
         }
 
         // Get a random number from the image numbers.

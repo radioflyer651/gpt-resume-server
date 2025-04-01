@@ -7,7 +7,6 @@ export const sendToastMessageDefinition: FunctionTool = {
     parameters: {
         type: 'object',
         required: ['level', 'content', 'title'],
-        additionalProperties: false,
         properties: {
             'level': {
                 type: 'string',
@@ -26,7 +25,8 @@ export const sendToastMessageDefinition: FunctionTool = {
                 type: 'string',
                 description: 'The body of the message, which has the more detail that the title.'
             }
-        }
+        },
+        additionalProperties: false
     },
     strict: true
 };

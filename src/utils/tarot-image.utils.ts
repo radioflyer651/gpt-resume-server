@@ -22,7 +22,7 @@ async function getImageFolderContents(): Promise<string[]> {
  */
 export function getTarotImageFileBaseName(fileName: string): string | undefined {
     // Pattern to parse the file name.
-    const pattern = /^(.+)(_\d+)(\.png)?$/i;
+    const pattern = /^(.+)(_\d+)_?(\.png)?$/i;
 
     // Parse it.
     const match = pattern.exec(fileName);
@@ -39,7 +39,7 @@ export function getTarotImageFileBaseName(fileName: string): string | undefined 
 /** Given a specified tarot image's file name, returns its image number. */
 export function getTarotImageNumberFromFileName(fileName: string): number {
     // Get a match on the file name using regex.
-    const filePattern = /^.*_(\d+)(\.png)?_?$/i;
+    const filePattern = /^.+_(\d+)_?(\.png)?$/i;
     const match = filePattern.exec(fileName);
 
     // Ensure we have a match.

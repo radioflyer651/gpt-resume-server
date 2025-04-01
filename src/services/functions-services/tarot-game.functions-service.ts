@@ -5,6 +5,9 @@ import { TarotSocketService } from "../../server/socket-services/tarot.socket-se
 import { TarotDbService } from "../../database/tarot-db.service";
 import { ObjectId } from "mongodb";
 import { FunctionGroupProvider as IFunctionGroupProvider } from "../../model/function-group-provider.model";
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { flipTarotCard as flipTarotCardDetails, getAllGameCardListDetails, getTarotCardDetailsDefinition, getTarotCardsImageDetails, loadCardData as loadCardDataDetails } from "../../ai-functions/tarot.ai-functions";
 
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
@@ -30,10 +33,24 @@ export class TarotGameFunctionsService implements IFunctionGroupProvider {
         }
     }
 
-    /** FOR LLM: Returns the details for a set of tarot cards specified by their IDs. */
-    getTarotCardsDetails = async (cardIds: string[]): Promise<string> => {
+    /** Returns the IDs and Names of all game cards. */
+    getAllGameCardList = async (): Promise<string> => {
         // Get the cards.
-        const cards = await this.tarotDbService.getGameCardsByIds(cardIds.map((id) => new ObjectId(id)));
+        const allCards = await this.tarotDbService.getAllGameCardIdsNamesAndImageNames();
+
+        // Form the results as a JSON array.
+        let result = '[';
+        allCards.map(c => result += JSON.stringify(c)).join(', ');
+        result += ']';
+
+        // Return the result.
+        return result;
+    };
+
+    /** FOR LLM: Returns the details for a set of tarot cards specified by their IDs. */
+    getTarotCardsDetails = async ({ tarotIds }: { tarotIds: string[]; }): Promise<string> => {
+        // Get the cards.
+        const cards = await this.tarotDbService.getGameCardsByIds(tarotIds.map((id) => new ObjectId(id)));
 
         // Format the response for the LLM.
         let result = '';
@@ -55,7 +72,7 @@ export class TarotGameFunctionsService implements IFunctionGroupProvider {
     };
 
     /** FOR LLM: Returns the image details for a set of tarot cards specified by their IDs. */
-    getTarotCardsImageDetails = async (tarotIds: string[]): Promise<string> => {
+    getTarotCardsImageDetails = async ({ tarotIds }: { tarotIds: string[]; }): Promise<string> => {
         // Get the cards.
         const cards = await this.tarotDbService.getGameCardsImageDetailsByIds(tarotIds.map((id) => new ObjectId(id)));
 
@@ -87,22 +104,60 @@ export class TarotGameFunctionsService implements IFunctionGroupProvider {
         return `The card flipped was: (ID: ${result.card._id}) ${result.card.cardName}`;
     };
 
+    /** Loads the cards in the card folder. */
+    loadCardData = async (): Promise<string> => {
+        console.log(`Loading card data into the database.`);
+        try {
+            const folderPath = path.join(__dirname, '../../tarot-game/card-data');
+
+            // Get the files in the folder.
+            const folderContent = await fs.readdir(folderPath);
+
+            // Load each file into the database.
+            for (let i = 0; i < folderContent.length; i++) {
+                // Get the file path.
+                const filePath = path.join(folderPath, folderContent[i]);
+
+                // Get the file content.
+                const content = await fs.readFile(filePath, 'utf8');
+
+                // Convert to an object.
+                const obj = JSON.parse(content);
+
+                // Send it to the database.
+                await this.tarotDbService.insertCardData(obj);
+            }
+        } catch (err) {
+            return `Error: ${err}`;
+        }
+
+        return 'All cards inserted.';
+    };
+
     /** Returns all function groups that this chat service can provide. */
     getFunctionGroups = (): AiFunctionGroup[] => {
         const fnGroup: AiFunctionGroup = {
             groupName: 'UI Functions',
             functions: [
                 {
-                    definition: sendToastMessageDefinition,
+                    definition: getTarotCardDetailsDefinition,
                     function: this.getTarotCardsDetails
                 },
                 {
-                    definition: sendToastMessageDefinition,
+                    definition: getTarotCardsImageDetails,
                     function: this.getTarotCardsImageDetails
                 },
                 {
-                    definition: sendToastMessageDefinition,
+                    definition: flipTarotCardDetails,
                     function: this.flipTarotCard
+                },
+                {
+                    definition: loadCardDataDetails,
+                    function: this.loadCardData
+                },
+                {
+                    definition: getAllGameCardListDetails,
+                    function: this.getAllGameCardList
                 }
             ]
         };

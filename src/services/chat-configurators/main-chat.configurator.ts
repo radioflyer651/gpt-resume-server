@@ -76,7 +76,7 @@ export class MainChatConfigurator extends ChatConfiguratorBase {
 
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
-    async getAiFunctionGroups(socket: Socket): Promise<FunctionGroupProvider[]> {
+    async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
         return [new ChatFunctionsService(socket, this.getMainChatSocketService())];
     }
 }

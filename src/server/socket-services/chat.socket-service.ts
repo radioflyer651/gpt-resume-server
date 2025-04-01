@@ -55,11 +55,12 @@ export class ChatSocketService extends SocketServiceBase {
         const configuration = this.llmChatService.getConfiguratorForChatType(chat!.chatType);
 
         // Create a function group for this.
-        const functionGroupOwners = await configuration.getAiFunctionGroups(socket);
+        const functionGroupOwners = await configuration.getAiFunctionGroups(socket, chatId, userId);
+
         const functionGroups = functionGroupOwners.reduce((p, c) => [...p, ...c.getFunctionGroups()], [] as AiFunctionGroup[]);
 
         // Function to deal with messages received during the API call.
-        const chatStream$ = this.llmChatService.createChatResponse(chatId, message, functionGroups);
+        const chatStream$ = this.llmChatService.createChatResponse(chatId, message, userId, functionGroups);
 
         // Subscribe tot he stream, and send messages to the front end as they come in.
         chatStream$.subscribe(msg => {
