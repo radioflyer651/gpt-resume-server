@@ -133,7 +133,7 @@ export class TarotSocketService extends SocketServiceBase {
         const randomImageNumber = imageNumbers[Math.floor(Math.random() * imageNumbers.length)];
 
         // Add this card reference to the game.
-        game.cardsPicked.push({ _id: randomCard._id, imageNumber: randomImageNumber } as TarotCardReference);
+        game.cardsPicked.push({ _id: randomCard._id, cardName: randomCard.cardName, imageNumber: randomImageNumber } as TarotCardReference);
 
         // Update the game in the database.
         await this.tarotDbService.upsertGame(game);

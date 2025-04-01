@@ -46,4 +46,7 @@ export interface TarotCardReference {
 
     /** The number of the image associated with this card to show to the user. */
     imageNumber: number;
+
+    /** Returns the name of the card. */
+    cardName: string;
 }

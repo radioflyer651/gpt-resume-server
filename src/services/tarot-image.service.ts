@@ -22,6 +22,7 @@ export class TarotImageService {
         }
 
         // Find the file for this, based on the file number.
-        return getFileNameForImageNumber(image.imageFilePrefix, fileNumber);
+        const result =  await getFileNameForImageNumber(image.imageFilePrefix, fileNumber);
+        return result;
     }
 }

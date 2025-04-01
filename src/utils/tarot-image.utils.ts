@@ -66,13 +66,15 @@ export async function getFileNameForImageNumber(fileBaseName: string, fileNumber
     fileBaseName = fileBaseName.toLowerCase();
 
     // Filter based on the base name and number.
-    const result = imageFolderContent
+    let result = imageFolderContent
         .find(f => f.toLowerCase().startsWith(fileBaseName) && getTarotImageNumberFromFileName(f) === fileNumber);
 
     // Return the full path to the result.
-    return result
+    result = result
         ? path.join(TAROT_IMAGE_FILE_FOLDER_PATH, result)
         : undefined;
+
+    return result;
 }
 
 /** Returns a map with the base file names, and all image numbers that exist for that base file.
