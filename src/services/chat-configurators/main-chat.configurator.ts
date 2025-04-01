@@ -11,8 +11,10 @@ import { UserDbService } from "../../database/user-db.service";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
 import { ChatFunctionsService } from "../functions-services/main-chat.functions-service";
 import { Socket } from "socket.io";
-import { mainChatSocketService } from "../../setup-socket-services";
+import { adminSocketService, mainChatSocketService } from "../../setup-socket-services";
 import { getAshliePersonaChatInstructions, getHtmlChatInstructions } from "../../utils/common-chat-instructions.utils";
+import { adminDbService } from "../../app-globals";
+import { AdminFunctionsService } from "../functions-services/admin.functions-service";
 
 /** Configurator for main chats. */
 export class MainChatConfigurator extends ChatConfiguratorBase {
@@ -77,7 +79,21 @@ export class MainChatConfigurator extends ChatConfiguratorBase {
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
     async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
-        return [new ChatFunctionsService(socket, this.getMainChatSocketService())];
+        const result: FunctionGroupProvider[] = [new ChatFunctionsService(socket, this.getMainChatSocketService())];
+
+        // Get the user for this.
+        const user = await this.userDbService.getUserById(userId);
+        if (!user) {
+            console.error(`Unable to get user for ID: ${userId}`);
+        }
+
+        // If they are an admin, then we need to include the admin functions.
+        if (user?.isAdmin) {
+            result.push(new AdminFunctionsService(socket, adminDbService, this.userDbService, adminSocketService));
+        }
+
+        // Return the result.
+        return result;
     }
 }
 

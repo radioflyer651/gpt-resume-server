@@ -12,6 +12,7 @@ import { tarotRouter } from './server/tarot-game.server';
 import { bodyStringsToDatesMiddleware } from './server/middleware/string-to-date-converters.middleware';
 import { tarotImageRouter } from './server/tarot-images.server';
 import { audioRouter } from './server/audio.server';
+import { siteInfoRouter } from './server/site-info.server';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -42,6 +43,7 @@ export async function initializeExpressApp() {
   app.use(characterChatRouter);
   app.use(chatRouter);
   app.use(tarotRouter);
+  app.use(siteInfoRouter);
 
   app.use((req, res) => {
     res.status(404).send('Not Found');

@@ -9,6 +9,7 @@ import { ChatMessage } from "../../model/shared-models/chat-models.model";
 import { from, mergeMap, } from "rxjs";
 import { ChatDbService } from "../../database/chat-db.service";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
+import { AdminDbService } from "../../database/admin-db.service";
 
 
 export class ChatSocketService extends SocketServiceBase {
@@ -17,6 +18,7 @@ export class ChatSocketService extends SocketServiceBase {
         private appChatService: AppChatService,
         private llmChatService: LlmChatService,
         private chatDbService: ChatDbService,
+        private adminDbService: AdminDbService,
     ) {
         super(socketServer);
         if (!socketServer || !appChatService || !llmChatService || !chatDbService) {
@@ -89,6 +91,15 @@ export class ChatSocketService extends SocketServiceBase {
 
     /** Work function called from the socket request to get an audio message with specified content. */
     receiveAudioRequest = async (socket: Socket, userId: ObjectId, message: string, responseCallback: ChatCallback<string>) => {
+        // Get the site settings, to see if audio is enabled.
+        const settings = await this.adminDbService.getSiteSettings();
+
+        // If audio chat is turned off, then we can't service this request.
+        if (!settings?.allowAudioChat) {
+            responseCallback('ERROR: Audio chat is not enabled.');
+            return;
+        }
+
         // Have the LLM generate the audio file.
         const audioResponse = await this.llmChatService.getAudio(message);
 

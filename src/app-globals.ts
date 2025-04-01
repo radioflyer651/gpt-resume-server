@@ -9,6 +9,7 @@ import { LlmChatService } from "./services/llm-chat-service.service";
 import { TarotImageService } from "./services/tarot-image.service";
 import { TarotDbService } from "./database/tarot-db.service";
 import { getChatConfigurators } from "./chat-configurators";
+import { AdminDbService } from "./database/admin-db.service";
 
 /** If we were using dependency injection, this would be the DI services we'd inject in the necessary places. */
 
@@ -23,6 +24,7 @@ export let loggingService: LogDbService;
 export let llmChatService: LlmChatService;
 export let tarotDbService: TarotDbService;
 export let tarotImageService: TarotImageService;
+export let adminDbService: AdminDbService;
 
 /* App Services. */
 export let authService: AuthService;
@@ -41,6 +43,7 @@ export async function initializeServices(): Promise<void> {
     chatDbService = new ChatDbService(dbHelper);
     loggingService = new LogDbService(dbHelper);
     tarotDbService = new TarotDbService(dbHelper);
+    adminDbService = new AdminDbService(dbHelper);
     llmChatService = new LlmChatService(config.openAiConfig, chatDbService, userDbService, loggingService, getChatConfigurators());
 
     appChatService = new AppChatService(chatDbService, getChatConfigurators());

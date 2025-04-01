@@ -288,4 +288,9 @@ export class SocketServer {
     emitEvent(socket: Socket, eventName: string, ...args: any[]): void {
         socket.emit(eventName, ...args);
     }
+
+    /** Emits an event to all connections. */
+    emitEventToAll(eventName: string, ...args: any[]): void {
+        this.socketServer.emit(eventName, ...args);
+    }
 }

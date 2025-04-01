@@ -78,4 +78,32 @@ export class UserDbService extends DbService {
             return await nullToUndefined(collection.findOne<Company>({ _id: companyId }));
         });
     }
+
+    /** Returns all companies from the database. */
+    async getAllCompanies(): Promise<Company[]> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, collection) => {
+            return await collection.find<Company>({}).toArray();
+        });
+    }
+
+    /** Adds a new company to the system. */
+    async addCompany(website: string, name: string): Promise<Company | undefined> {
+        // Ensure we have valid values.
+        const lcWebsite = website.toLowerCase();
+
+        return await this.dbHelper.makeCall(async db => {
+            // Create the company.
+            const company: Company = {
+                _id: new ObjectId(),
+                website: lcWebsite,
+                name
+            };
+
+            // Insert the company.
+            await db.collection(DbCollectionNames.Companies).insertOne(company);
+
+            // Return the company.
+            return company;
+        });
+    }
 }

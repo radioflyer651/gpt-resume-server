@@ -10,9 +10,6 @@ import { systemInitialization } from "./system-setup";
 async function run() {
     const config = await getAppConfig();
 
-    /** Initialize the system. */
-    await systemInitialization();
-
     // Initialize the services used by the app.
     await initializeServices();
 
@@ -28,6 +25,9 @@ async function run() {
     socketServer.registerWithServer(config, server);
 
     await setupSocketServices(socketServer);
+
+    /** Initialize the system. */
+    await systemInitialization();
 
     // Set the port, and start listening.
     const port = config.serverConfig.port;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { llmChatService } from '../app-globals';
+import { adminDbService, llmChatService } from '../app-globals';
 import { verifyToken } from '../auth/jwt';
 import { getAudioFileContent, getAudioFileExists, getAudioFilePathForFileName } from '../utils/audio-folder.methods';
 
@@ -49,11 +49,19 @@ audioRouter.get('/chat/audio/:fileName', async (req, res) => {
     }
 
     // Check that the file exists.
-    if(!await getAudioFileExists(fileName)) {
+    if (!await getAudioFileExists(fileName)) {
         res.status(404).end();
         return;
     }
-    
+
+    // Get the site settings.
+    const settings = await adminDbService.getSiteSettings();
+    // If audio chat is turned off, then we can't service this request.
+    if (!settings?.allowAudioChat) {
+        res.status(409).send(`Audio chat is not enabled.`);
+        return;
+    }
+
     // Get the path to the audio file.
     const filePath = getAudioFilePathForFileName(fileName);
 

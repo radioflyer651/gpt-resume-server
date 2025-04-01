@@ -1,3 +1,4 @@
+import { adminDbService } from "./app-globals";
 import { initializeAudioFilePath } from "./utils/audio-folder.methods";
 
 
@@ -5,6 +6,9 @@ import { initializeAudioFilePath } from "./utils/audio-folder.methods";
 export async function systemInitialization(): Promise<void> {
     // Ensure we ha
     await initializeAudioFilePath();
+
+    // Setup the site settings.
+    await adminDbService.initializeSiteSettings();
 
     // Setup the tarot cards if needed (this is a TODO).
 }
