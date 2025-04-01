@@ -28,7 +28,6 @@ export class ChatSocketService extends SocketServiceBase {
         this.socketServer.subscribeToEvent('sendChatMessage')
             .pipe(
                 mergeMap(event => {
-                    console.log(event);
                     // Since our "subscription" needs to subscribe to a promise function,
                     //  this is how we have to do it.  There's no other way to make sure the promise completes,
                     //  because subscriptions don't handle them.
