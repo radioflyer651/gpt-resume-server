@@ -30,10 +30,15 @@ export class ChatSocketService extends SocketServiceBase {
         this.socketServer.subscribeToEvent('sendChatMessage')
             .pipe(
                 mergeMap(event => {
+                    // Ensure we have a callback function.
+                    if (!event.callback) {
+                        return from(Promise.reject(new Error('No callback received to send response.')));
+                    }
+
                     // Since our "subscription" needs to subscribe to a promise function,
                     //  this is how we have to do it.  There's no other way to make sure the promise completes,
                     //  because subscriptions don't handle them.
-                    return from(this.receiveChatMessage(event.socket, event.userId!, event.data[0]!, event.data[1]));
+                    return from(this.receiveChatMessage(event.socket, event.userId!, event.data[0]!, event.data[1], event.callback!));
                 }))
             .subscribe();
 
@@ -54,7 +59,7 @@ export class ChatSocketService extends SocketServiceBase {
             .subscribe();
     }
 
-    receiveChatMessage = async (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string): Promise<void> => {
+    receiveChatMessage = async (socket: Socket, userId: ObjectId, chatId: ObjectId, message: string, responseCallback: ChatCallback<void>): Promise<void> => {
         // Validate the user ID.
         if (!userId) {
             throw new Error('UserID is invalid.');
@@ -80,12 +85,15 @@ export class ChatSocketService extends SocketServiceBase {
         const chatStream$ = this.llmChatService.createChatResponse(chatId, message, userId, functionGroups);
 
         // Subscribe tot he stream, and send messages to the front end as they come in.
-        chatStream$.subscribe(msg => {
-            if (typeof msg === 'string') {
-                this.sendServerStatusMessage(socket, 'info', msg);
-            } else {
-                this.sendChatMessage(socket, chatId, msg);
-            }
+        chatStream$.subscribe({
+            next: msg => {
+                if (typeof msg === 'string') {
+                    this.sendServerStatusMessage(socket, 'info', msg);
+                } else {
+                    this.sendChatMessage(socket, chatId, msg);
+                }
+            },
+            complete: () => responseCallback()
         });
     };
 

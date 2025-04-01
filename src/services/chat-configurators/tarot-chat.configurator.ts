@@ -57,8 +57,7 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
                 chatType: this.chatType,
                 instructions: [
                     'You are a chat assistant for a website showing the resume for Richard Olson, a Software Developer.',
-                    'Always be sure to introduce yourself.',
-                    'Before going too far, try to find out what the visitor is looking for in an employee, so you can tailor your answers.',
+                    'You are here for a tarot game.  You are the leader.',
                     ...getAshliePersonaChatInstructions(),
                     ...getHtmlChatInstructions(),
                 ]
@@ -102,7 +101,7 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
         // Create the messages.
         const result = [
             `You are a tarot card reader on a website that centers around a web developer's resume.`,
-            `In this chat the most important thing is to revolve it around the Tarot game until the game comes to a close.`,
+            `Always steer the conversation back to the tarot game.  Especially, in your introduction, you should also prompt them towards the game.`,
             `The web developer's name is Richard Olson.`,
             `Tarot cards for the reading revolve around web development topics.`,
             `The site visitor that you're doing the reading for is ${user.displayName ?? user.userName}`,
