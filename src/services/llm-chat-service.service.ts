@@ -11,6 +11,8 @@ import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPa
 import { ChatConfiguratorBase } from "./chat-configurators/chat-configurator.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
 import { User } from "../model/shared-models/user.model";
+import { Response } from "openai/_shims/auto/types";
+import { saveAudioFile } from "../utils/audio-folder.methods";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -249,9 +251,7 @@ export class LlmChatService {
                 status: "incomplete",
                 output: errorMessage
             };
-
         }
-
     }
 
 
@@ -268,4 +268,37 @@ export class LlmChatService {
         return configurator;
     }
 
+    /** Request the LLM to return an audio response with specified content.
+     *   Returns an object with the file name of the file with the content, as well as
+     *   the content itself. */
+    async getAudio(message: string): Promise<{ fileName: string, fileContent: any; }> {
+        // Create the instructions for how to voice should sound.
+        const instructions = `
+                        The message may be in HTML format.  Convert any HTML to text, interpret the meaning of what the HTML is trying to convey, and express that through the voice.
+                        Absolutely no HTML should be in the spoken output.
+
+                        Affect: We have it going on together!
+                        Tone: High pitch, loli, speech and spoken in a down inflection.
+                        Delivery: Keeping it flowing, but not too fast.
+                        Emotion: Excited
+                        Punctuation: Normal, never pausing too long on commas and transitions.
+                `;
+
+        // Make the call to Open AI to get the speech.
+        const result = await this.openAi.audio.speech.create({
+            model: 'gpt-4o-mini-tts',
+            instructions: instructions,
+            input: message,
+            voice: 'coral'
+        });
+
+        // Get the audio content.
+        const content = result.body;
+
+        // Save the file to the audio folder.
+        const fileName = await saveAudioFile(content, 'mp3');
+
+        // Return the result.
+        return { fileName, fileContent: content };
+    }
 }

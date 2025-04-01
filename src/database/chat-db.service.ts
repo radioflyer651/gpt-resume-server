@@ -14,7 +14,7 @@ export class ChatDbService extends DbService {
      *   Returned data is just a subset of the full chat data. */
     async getUserChatList(userId: ObjectId, chatType?: string): Promise<ChatInfo[]> {
         return await this.dbHelper.makeCall(async db => {
-            const query: any = { userId };
+            const query: any = { userId, isDeleted: { $ne: true } };
             if (chatType) {
                 query.chatType = chatType;
             }
@@ -33,7 +33,7 @@ export class ChatDbService extends DbService {
     /** Gets a specific chat, by its ID. */
     async getChatById(chatId: ObjectId) {
         return await this.dbHelper.makeCall(async db => {
-            return nullToUndefined(await db.collection(DbCollectionNames.Chats).findOne<Chat>({ _id: chatId }));
+            return nullToUndefined(await db.collection(DbCollectionNames.Chats).findOne<Chat>({ _id: chatId, isDeleted: { $ne: true } }));
         });
     }
 
@@ -42,6 +42,7 @@ export class ChatDbService extends DbService {
         return await this.dbHelper.makeCall(async db => {
             return nullToUndefined(await db.collection(DbCollectionNames.Chats).findOne<Chat>({
                 userId,
+                isDeleted: { $ne: true },
                 chatType
             }, {
                 sort: { lastAccessDate: -1 }
@@ -90,8 +91,11 @@ export class ChatDbService extends DbService {
 
     /** Deletes a specified chat. */
     async deleteChat(chatId: ObjectId) {
-        return await this.dbHelper.makeCall(async db => {
-            await db.collection(DbCollectionNames.Chats).deleteOne({ _id: chatId });
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Chats, async (db, collection) => {
+            // Soft delete the chat.
+            collection.updateOne({ _id: chatId }, {
+                $set: { isDeleted: true }
+            });
         });
     }
 
@@ -143,6 +147,7 @@ export class ChatDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Chats, async (db, collection) => {
             return collection.find<Chat>({
                 userId,
+                isDeleted: { $ne: true },
                 chatType,
             }).toArray();
         });

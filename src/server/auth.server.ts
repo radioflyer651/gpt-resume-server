@@ -12,6 +12,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
     // Validate companyName and website (add your own validation logic)
     if (!userName || !website) {
+        console.warn(`401 response on request: ${req.url}`);
         res.status(400).json({ message: 'Company name and website are required.' });
         return;
     }
@@ -21,6 +22,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
     // If we don't have a user, then this login attempt is denied.
     if (!tokenInfo) {
+        console.warn(`403 response on request: ${req.url}`);
         res.status(403).json({ message: 'Invalid company name or website.' });
         return;
     }

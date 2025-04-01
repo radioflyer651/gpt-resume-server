@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { SocketServiceBase } from "./socket-server-base.socket-service";
 import { ObjectId } from "mongodb";
 import { AppChatService } from "../../services/app-chat.service";
-import { SocketServer } from "../socket.server";
+import { ChatCallback, SocketServer } from "../socket.server";
 
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
@@ -32,6 +32,22 @@ export class ChatSocketService extends SocketServiceBase {
                     //  this is how we have to do it.  There's no other way to make sure the promise completes,
                     //  because subscriptions don't handle them.
                     return from(this.receiveChatMessage(event.socket, event.userId!, event.data[0]!, event.data[1]));
+                }))
+            .subscribe();
+
+        this.socketServer.subscribeToEvent('sendAudioRequest')
+            .pipe(
+                mergeMap(event => {
+                    // Since our "subscription" needs to subscribe to a promise function,
+                    //  this is how we have to do it.  There's no other way to make sure the promise completes,
+                    //  because subscriptions don't handle them.
+
+                    // Ensure we have a callback function.
+                    if (!event.callback) {
+                        return from(Promise.reject(new Error('No callback received to send response.')));
+                    }
+
+                    return from(this.receiveAudioRequest(event.socket, event.userId!, event.data[0]!, event.callback as ChatCallback<string>));
                 }))
             .subscribe();
     }
@@ -71,16 +87,25 @@ export class ChatSocketService extends SocketServiceBase {
         });
     };
 
+    /** Work function called from the socket request to get an audio message with specified content. */
+    receiveAudioRequest = async (socket: Socket, userId: ObjectId, message: string, responseCallback: ChatCallback<string>) => {
+        // Have the LLM generate the audio file.
+        const audioResponse = await this.llmChatService.getAudio(message);
+
+        // Return the file name.
+        responseCallback(audioResponse.fileName);
+    };
+
     // #region Messaging To Client
 
     /** Sends a chat message to the UI for a specified chat. */
     sendChatMessage(socket: Socket, chatId: ObjectId, message: ChatMessage): void {
         socket.emit('receiveChatMessage', chatId.toHexString(), message);
-    }
+    };
 
     sendServerStatusMessage(socket: Socket, type: 'info' | 'success' | 'warn' | 'error', message: string): void {
         socket.emit('receiveServerStatusMessage', type, message);
-    }
+    };
 
     //#endregion
 

@@ -30,6 +30,14 @@ export class TarotDbService extends DbService {
         });
     }
 
+    /** Deletes a specified TarotGame from the database. */
+    async deleteGameById(gameId: ObjectId): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotGames, async (db, collection) => {
+            const result = await collection.deleteOne({ _id: gameId });
+            console.log(result);
+        });
+    }
+
 
     /** Returns a tarot cards with a specified IDs. */
     async getGameCardsByIds(cardIds: ObjectId[]): Promise<TarotCardDetails[]> {

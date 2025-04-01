@@ -102,6 +102,7 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
         // Create the messages.
         const result = [
             `You are a tarot card reader on a website that centers around a web developer's resume.`,
+            `In this chat the most important thing is to revolve it around the Tarot game until the game comes to a close.`,
             `The web developer's name is Richard Olson.`,
             `Tarot cards for the reading revolve around web development topics.`,
             `The site visitor that you're doing the reading for is ${user.displayName ?? user.userName}`,

@@ -11,6 +11,7 @@ import { authMiddleware } from './auth/auth-middleware';
 import { tarotRouter } from './server/tarot-game.server';
 import { bodyStringsToDatesMiddleware } from './server/middleware/string-to-date-converters.middleware';
 import { tarotImageRouter } from './server/tarot-images.server';
+import { audioRouter } from './server/audio.server';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -35,8 +36,9 @@ export async function initializeExpressApp() {
   // Servers (groups of endpoints).
   app.use(authRouter);
   app.use(tarotImageRouter);
-  app.use(authMiddleware);
+  app.use(audioRouter);
 
+  app.use(authMiddleware);
   app.use(characterChatRouter);
   app.use(chatRouter);
   app.use(tarotRouter);

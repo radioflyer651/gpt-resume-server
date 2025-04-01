@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { getUserIdFromRequest } from '../utils/get-user-from-request.utils';
-import { appChatService, chatDbService } from '../app-globals';
+import { appChatService, chatDbService, llmChatService } from '../app-globals';
 import { ChatTypes } from '../model/shared-models/chat-types.model';
 import { convertChatToClientChat } from '../utils/convert-to-client-chat';
 import { ObjectId } from 'mongodb';

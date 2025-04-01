@@ -149,14 +149,13 @@ export class SocketServer {
                     data: []
                 });
                 console.log('Socket disconnected.');
-                this.socketServer.off('connection', onConnectionFunction);
+                // this.socketServer.off('connection', onConnectionFunction);
                 this.onDisconnect(socket);
             });
         };
 
         // Register the socket functions with socket.io.
         this.socketServer.on('connection', onConnectionFunction);
-        this.socketServer.on('connect', onConnectionFunction);
     }
 
     /** Subject that emits when a new socket is connected to the system. */

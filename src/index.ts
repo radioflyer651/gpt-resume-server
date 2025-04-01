@@ -5,9 +5,13 @@ import { initializeExpressApp } from "./setup-express";
 import http from 'http';
 import https from 'https';
 import { setupSocketServices } from "./setup-socket-services";
+import { systemInitialization } from "./system-setup";
 
 async function run() {
     const config = await getAppConfig();
+
+    /** Initialize the system. */
+    await systemInitialization();
 
     // Initialize the services used by the app.
     await initializeServices();

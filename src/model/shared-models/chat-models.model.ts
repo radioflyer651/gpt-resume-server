@@ -7,6 +7,9 @@ export interface ChatInfo {
     /** Gets or sets the database ID for this chat. */
     _id: ObjectId;
 
+    /** Allows soft delete of chats. */
+    isDeleted?: boolean;
+
     /** Gets or sets the ID of the user who owns this chat. */
     userId: ObjectId;
 
@@ -35,7 +38,7 @@ export interface Chat extends ChatInfo {
 }
 
 /** The representation of a Chat on the client side. */
-export type ClientChat = Omit<Chat, 'chatMessages' | 'systemMessages'> & { chatMessages: ChatMessage[]; };
+export type ClientChat = Omit<Chat, 'chatMessages' | 'systemMessages' | 'isDeleted'> & { chatMessages: ChatMessage[]; };
 
 /** The possible values for roles in a ChatMessage. */
 export type ChatMessageRoleTypes = 'system' | 'user' | 'assistant';
