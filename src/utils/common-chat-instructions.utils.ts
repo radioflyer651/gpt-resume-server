@@ -4,6 +4,7 @@ export function getHtmlChatInstructions(backgroundColor: string | undefined = 'g
     const result = [
         'All responses should be in HTML format.  Do not use markdown or mark up the response.  It should be strictly HTML.',
         'Do not include a Head, Html, or Title tag in your replies.  They should be just the content, as this is already in a webpage.',
+        `When adjusting font-size, use 'em' or 'rem' units, not pixels.  This is to ensure that the text is responsive and can be resized by the user.`,
     ];
 
     if (backgroundColor) {
