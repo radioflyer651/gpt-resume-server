@@ -5,15 +5,15 @@ import { ObjectId } from "mongodb";
 import { ChatMessage, ClientChat } from "../../model/shared-models/chat-models.model";
 import { TarotGame } from "../../model/shared-models/tarot-game/tarot-game.model";
 import { convertChatToClientChat } from "../../utils/convert-to-client-chat";
-import { TarotDbService } from "../../database/tarot-db.service";
+import { TarotDbService } from "../../database/tarot.db-service";
 import { LlmChatService } from "../../services/llm-chat-service.service";
-import { ChatDbService } from "../../database/chat-db.service";
+import { ChatDbService } from "../../database/chat.db-service";
 import { TarotCardDetails, TarotCardReference } from "../../model/shared-models/tarot-game/tarot-card.model";
 import { getTarotCardImageNumbers } from "../../utils/tarot-image.utils";
 import { AppChatService } from "../../services/app-chat.service";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
-import { UserDbService } from "../../database/user-db.service";
+import { UserDbService } from "../../database/user.db-service";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 
 // Client Event Names (from server)

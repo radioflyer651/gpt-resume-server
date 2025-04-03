@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { ChatDbService } from "../database/chat-db.service";
+import { ChatDbService } from "../database/chat.db-service";
 import { Chat } from "../model/shared-models/chat-models.model";
 import { NewDbItem } from "../model/shared-models/db-operation-types.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";

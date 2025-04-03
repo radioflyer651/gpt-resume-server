@@ -7,7 +7,7 @@ import { ChatCallback, SocketServer } from "../socket.server";
 import { LlmChatService } from "../../services/llm-chat-service.service";
 import { ChatMessage } from "../../model/shared-models/chat-models.model";
 import { from, mergeMap, } from "rxjs";
-import { ChatDbService } from "../../database/chat-db.service";
+import { ChatDbService } from "../../database/chat.db-service";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 import { AdminDbService } from "../../database/admin-db.service";
 

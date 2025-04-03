@@ -1,13 +1,13 @@
 import { getAppConfig } from "./config";
-import { ChatDbService } from "./database/chat-db.service";
-import { LogDbService } from "./database/log-db.service";
-import { UserDbService } from "./database/user-db.service";
+import { ChatDbService } from "./database/chat.db-service";
+import { LogDbService } from "./database/log.db-service";
+import { UserDbService } from "./database/user.db-service";
 import { MongoHelper } from "./mongo-helper";
 import { AppChatService } from "./services/app-chat.service";
 import { AuthService } from "./services/auth-service";
 import { LlmChatService } from "./services/llm-chat-service.service";
 import { TarotImageService } from "./services/tarot-image.service";
-import { TarotDbService } from "./database/tarot-db.service";
+import { TarotDbService } from "./database/tarot.db-service";
 import { getChatConfigurators } from "./chat-configurators";
 import { AdminDbService } from "./database/admin-db.service";
 

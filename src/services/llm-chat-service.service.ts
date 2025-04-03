@@ -1,12 +1,12 @@
 import { ObjectId } from "mongodb";
 import OpenAI from "openai";
-import { ChatDbService } from "../database/chat-db.service";
+import { ChatDbService } from "../database/chat.db-service";
 import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
 import { Chat, ChatMessage } from "../model/shared-models/chat-models.model";
 import { OpenAiConfig } from "../model/app-config.model";
 import { Observable } from "rxjs";
-import { UserDbService } from "../database/user-db.service";
-import { LogDbService } from "../database/log-db.service";
+import { UserDbService } from "../database/user.db-service";
+import { LogDbService } from "../database/log.db-service";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
 import { ChatConfiguratorBase } from "./chat-configurators/chat-configurator.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
@@ -173,7 +173,7 @@ export class LlmChatService {
         const responseCreation: ResponseCreateParams = {
             model: chat.model,
             input: messages,
-            tools: tools
+            tools: tools,
         };
 
         // Make the API call on the LLM.

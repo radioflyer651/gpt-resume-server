@@ -2,10 +2,10 @@ import { ObjectId } from "mongodb";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { Chat } from "../../model/shared-models/chat-models.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
-import { FunctionGroupProvider } from "../../model/function-group-provider.model";
-import { UserDbService } from "../../database/user-db.service";
+import { IFunctionGroupProvider } from "../../model/function-group-provider.model";
+import { UserDbService } from "../../database/user.db-service";
 import { Socket } from "socket.io";
-import { ChatDbService } from "../../database/chat-db.service";
+import { ChatDbService } from "../../database/chat.db-service";
 
 /** Provides services for specific types of chats, configuring them for use and
  *    providing services required for LLM chat calls.
@@ -56,7 +56,7 @@ export abstract class ChatConfiguratorBase {
 
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
-    getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
+    getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<IFunctionGroupProvider[]> {
         return Promise.resolve([]);
     }
 

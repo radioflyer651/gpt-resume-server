@@ -6,7 +6,7 @@ import { TokenPayload } from '../model/shared-models/token-payload.model';
 import { verifyToken } from '../auth/jwt';
 import { nullToUndefined } from '../utils/empty-and-null.utils';
 import { LlmChatService } from '../services/llm-chat-service.service';
-import { ChatDbService } from '../database/chat-db.service';
+import { ChatDbService } from '../database/chat.db-service';
 import { AppChatService } from '../services/app-chat.service';
 import { objectIdToStringConverter, stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
 import { mergeMap, Observable, Subject } from 'rxjs';

@@ -2,15 +2,15 @@ import { ObjectId } from "mongodb";
 import { Chat } from "../../model/shared-models/chat-models.model";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { ChatConfiguratorBase } from "./chat-configurator.model";
-import { ChatDbService } from "../../database/chat-db.service";
+import { ChatDbService } from "../../database/chat.db-service";
 import { ChatBaseInstructions } from "../../model/chat-instructions.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
-import { UserDbService } from "../../database/user-db.service";
-import { FunctionGroupProvider } from "../../model/function-group-provider.model";
+import { UserDbService } from "../../database/user.db-service";
+import { IFunctionGroupProvider } from "../../model/function-group-provider.model";
 import { Socket } from "socket.io";
 import { mainChatSocketService, tarotSocketServer } from "../../setup-socket-services";
 import { getAshliePersonaChatInstructions, getHtmlChatInstructions } from "../../utils/common-chat-instructions.utils";
-import { TarotDbService } from "../../database/tarot-db.service";
+import { TarotDbService } from "../../database/tarot.db-service";
 import { TarotGameFunctionsService } from "../functions-services/tarot-game.functions-service";
 
 /** Configurator for main chats. */
@@ -21,14 +21,6 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
         protected tarotDbService: TarotDbService
     ) {
         super(userDbService, chatDbService);
-        if (!userDbService) {
-            throw new Error("userDbService is required and cannot be null or undefined.");
-        }
-
-        if (!chatDbService) {
-            throw new Error("chatDbService is required and cannot be null or undefined.");
-        }
-
         this.initializeChatBaseMessages();
     }
 
@@ -75,9 +67,9 @@ export class TarotChatConfigurator extends ChatConfiguratorBase {
 
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
-    async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
+    async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<IFunctionGroupProvider[]> {
         // Get the chat.
-        const chat = await this.chatDbService.getChatById(chatId);
+        // const chat = await this.chatDbService.getChatById(chatId);
 
         // Get the tarot game for this chat.
         const tarotGame = await this.tarotDbService.getGameByChatId(chatId);

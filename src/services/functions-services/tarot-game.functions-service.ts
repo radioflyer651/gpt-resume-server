@@ -1,10 +1,9 @@
 import { Socket } from "socket.io";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
-import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
 import { TarotSocketService } from "../../server/socket-services/tarot.socket-service";
-import { TarotDbService } from "../../database/tarot-db.service";
+import { TarotDbService } from "../../database/tarot.db-service";
 import { ObjectId } from "mongodb";
-import { FunctionGroupProvider as IFunctionGroupProvider } from "../../model/function-group-provider.model";
+import { IFunctionGroupProvider } from "../../model/function-group-provider.model";
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { flipTarotCard as flipTarotCardDetails, getAllGameCardListDetails, getTarotCardDetailsDefinition, getTarotCardsImageDetails, loadCardData as loadCardDataDetails } from "../../ai-functions/tarot.ai-functions";

@@ -2,13 +2,13 @@ import { ObjectId } from "mongodb";
 import { Chat } from "../../model/shared-models/chat-models.model";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { ChatConfiguratorBase } from "./chat-configurator.model";
-import { ChatDbService } from "../../database/chat-db.service";
+import { ChatDbService } from "../../database/chat.db-service";
 import { ChatBaseInstructions } from "../../model/chat-instructions.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
 import { getAppConfig } from "../../config";
 import * as fs from 'fs/promises';
-import { UserDbService } from "../../database/user-db.service";
-import { FunctionGroupProvider } from "../../model/function-group-provider.model";
+import { UserDbService } from "../../database/user.db-service";
+import { IFunctionGroupProvider } from "../../model/function-group-provider.model";
 import { ChatFunctionsService } from "../functions-services/main-chat.functions-service";
 import { Socket } from "socket.io";
 import { adminSocketService, mainChatSocketService } from "../../setup-socket-services";
@@ -78,8 +78,8 @@ export class MainChatConfigurator extends ChatConfiguratorBase {
 
     /** Returns the set of FunctionGroupProvider, defining what sort of functions the AI can
      *   execute in this sort of chat. */
-    async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<FunctionGroupProvider[]> {
-        const result: FunctionGroupProvider[] = [new ChatFunctionsService(socket, this.getMainChatSocketService())];
+    async getAiFunctionGroups(socket: Socket, chatId: ObjectId, userId: ObjectId): Promise<IFunctionGroupProvider[]> {
+        const result: IFunctionGroupProvider[] = [new ChatFunctionsService(socket, this.getMainChatSocketService())];
 
         // Get the user for this.
         const user = await this.userDbService.getUserById(userId);

@@ -11,4 +11,5 @@ export enum DbCollectionNames {
     TarotGames = 'tarot-games',
     TarotCards = 'tarot-cards',
     SiteSettings = 'site-settings',
+    CustomResume = 'custom-resumes',
 }

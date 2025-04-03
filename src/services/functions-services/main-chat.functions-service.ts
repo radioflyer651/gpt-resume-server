@@ -3,11 +3,11 @@ import { ToastMessage } from "../../model/toast-message.model";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 import { sendToastMessageDefinition } from "../../ai-functions/send-toast-message.ai-function";
 import { ChatSocketService } from "../../server/socket-services/chat.socket-service";
-import { FunctionGroupProvider } from "../../model/function-group-provider.model";
+import { IFunctionGroupProvider } from "../../model/function-group-provider.model";
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
  *   context, the service has to work with each one individually to avoid a context management nightmare. */
-export class ChatFunctionsService implements FunctionGroupProvider {
+export class ChatFunctionsService implements IFunctionGroupProvider {
     constructor(
         public readonly socket: Socket | undefined,
         private mainChatSocketService: ChatSocketService

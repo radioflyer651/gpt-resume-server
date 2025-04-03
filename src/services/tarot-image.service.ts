@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { TarotDbService } from "../database/tarot-db.service";
+import { TarotDbService } from "../database/tarot.db-service";
 import { getFileNameForImageNumber } from "../utils/tarot-image.utils";
 
 /** Handles management of Tarot card images. */

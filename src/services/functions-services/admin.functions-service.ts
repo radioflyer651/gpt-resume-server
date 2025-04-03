@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
-import { FunctionGroupProvider } from "../../model/function-group-provider.model";
+import { IFunctionGroupProvider } from "../../model/function-group-provider.model";
 import {
     setAllowSoundSiteWide,
     getAllowSoundSiteWide,
@@ -8,11 +8,11 @@ import {
     addCompanyDefinition
 } from "../../ai-functions/admin.ai-functions";
 import { AdminDbService } from "../../database/admin-db.service";
-import { UserDbService } from "../../database/user-db.service";
+import { UserDbService } from "../../database/user.db-service";
 import { AdminSocketService } from "../../server/socket-services/admin.socket-service";
 
 /** Provides the AI site-management functions. */
-export class AdminFunctionsService implements FunctionGroupProvider {
+export class AdminFunctionsService implements IFunctionGroupProvider {
     constructor(
         private readonly socket: Socket,
         private readonly adminDbService: AdminDbService,
