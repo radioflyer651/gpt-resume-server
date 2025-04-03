@@ -1,8 +1,7 @@
 import express from 'express';
 import { getUserIdFromRequest } from '../utils/get-user-from-request.utils';
 import { ObjectId } from 'mongodb';
-import * as path from 'path';
-import { chatDbService, tarotDbService, tarotImageService } from '../app-globals';
+import { tarotDbService } from '../app-globals';
 
 export const tarotRouter = express.Router();
 
@@ -64,4 +63,31 @@ tarotRouter.delete('/tarot/games/:gameId', async (req, res) => {
     await tarotDbService.deleteGameById(game._id);
 
     res.status(200).json("ok");
+});
+
+/** Returns the card details for a specified tarot card. */
+tarotRouter.get('/tarot/card-details/:cardId', async (req, res) => {
+    // Get the card ID.
+    const cardIdStr = req.params.cardId;
+
+    // Validate it.
+    if (!ObjectId.isValid(cardIdStr)) {
+        res.sendStatus(400);
+        return;
+    }
+
+    // Convert to an ObjectId.
+    const cardId = new ObjectId(cardIdStr);
+
+    // Get the details from the server.
+    const details = await tarotDbService.getGameCardById(cardId);
+
+    // Verify we have one.
+    if (!details) {
+        res.sendStatus(404);
+        return;
+    }
+
+    // Return the card details.
+    res.json(details);
 });
