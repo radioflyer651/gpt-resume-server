@@ -4,7 +4,7 @@ import { ChatDbService } from "../database/chat-db.service";
 import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
 import { Chat, ChatMessage } from "../model/shared-models/chat-models.model";
 import { OpenAiConfig } from "../model/app-config.model";
-import { Observable } from "rxjs";
+import { Observable, shareReplay } from "rxjs";
 import { UserDbService } from "../database/user-db.service";
 import { LogDbService } from "../database/log-db.service";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
@@ -88,10 +88,21 @@ export class LlmChatService {
 
                 // Create the callback function that will send status messages to the UI
                 //  through the observable, when status updates are being made.
-                const asyncProcessMessage = (message: string) => {
+                const asyncProcessMessage = (message: string | ResponseOutputMessage) => {
                     // Only send this if we're not unsubscribed.
                     if (!unsubscribed) {
-                        subscriber.next(message);
+                        if (typeof message === 'string') {
+                            subscriber.next(message);
+                        } else {
+                            message.content.forEach(m => {
+                                if (m.type === 'output_text') {
+                                    subscriber.next({
+                                        content: m.text,
+                                        role: message.role
+                                    });
+                                }
+                            });
+                        }
                     }
                 };
 
@@ -130,12 +141,12 @@ export class LlmChatService {
             };
 
             internals();
-        });
+        }).pipe(shareReplay());
     }
 
     /** Calls the LLM response API for a specified chat, assuming the last value is a user request or function call. 
      *   This may be called recursively if more function calls are made from the resulting response. */
-    private async callChatResponse(chat: Chat, user: User, toolList?: AiFunctionGroup[], asyncProcessMessage?: (msg: string) => void): Promise<Chat> {
+    private async callChatResponse(chat: Chat, user: User, toolList?: AiFunctionGroup[], asyncProcessMessage?: (msg: string | ResponseOutputMessage) => void): Promise<Chat> {
         // Get the configurator for this chat type.
         const configurator = this.getConfiguratorForChatType(chat.chatType);
 
@@ -203,6 +214,9 @@ export class LlmChatService {
 
             // Add the results to the chat history.
             chat.chatMessages.push(...results);
+
+            // Store these replies.
+            await this.chatDbService.upsertChat(chat);
 
             // We have to recall the LLM again with the results.
             //  In doing so, return the result of whatever that is.
