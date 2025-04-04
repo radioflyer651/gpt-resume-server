@@ -34,7 +34,6 @@ export class TarotDbService extends DbService {
     async deleteGameById(gameId: ObjectId): Promise<void> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotGames, async (db, collection) => {
             const result = await collection.deleteOne({ _id: gameId });
-            console.log(result);
         });
     }
 

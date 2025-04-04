@@ -9,7 +9,7 @@ import { LlmChatService } from '../services/llm-chat-service.service';
 import { ChatDbService } from '../database/chat-db.service';
 import { AppChatService } from '../services/app-chat.service';
 import { objectIdToStringConverter, stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
-import { mergeMap, Observable, Subject } from 'rxjs';
+import { mergeMap, Observable, Subject, takeUntil } from 'rxjs';
 
 /** Represents an event received from socket.io */
 export interface SocketServerEvent {
@@ -163,8 +163,9 @@ export class SocketServer {
 
     // public socketConnections$ = this._socketConnections$.asObservable();
 
+    private __socketConnections$ = this._socketConnections$.asObservable();
     get socketConnections$(): Observable<Socket> {
-        return this._socketConnections$.asObservable();
+        return this.__socketConnections$;
     }
 
     private _events$ = new Subject<SocketServerEvent>();
@@ -221,6 +222,7 @@ export class SocketServer {
 
     /** Subscribes to a specified event from NEW sockets connecting to the system. */
     protected subscribeToSocketEvent(socket: Socket, event: string): Observable<SocketServerEvent> {
+        // NOTE: Handling of the on('disconnect') event is handled upstream.
         return new Observable(subscriber => {
             const subscriptionFunction = (...args: any[]) => {
                 // copy the argument list, so we don't alter it.
@@ -244,18 +246,10 @@ export class SocketServer {
                     callback: resolverCallback
                 });
 
-                const onComplete = () => {
-                    subscriber.complete();
-                };
-
-                // We need to disconnect when the socket disconnects.
-                socket.on('disconnect', onComplete);
-
                 // Send the cleanup function.
                 return () => {
                     console.log(`Handler disconnected: ${event}`);
                     // Remove the event handlers.
-                    socket.off('disconnect', onComplete);
                     socket.off(event, subscriptionFunction);
                 };
             };
@@ -272,7 +266,23 @@ export class SocketServer {
         return this.socketConnections$
             .pipe(
                 mergeMap(socket => {
-                    return this.subscribeToSocketEvent(socket, eventName);
+                    const disconnectObservableName = 'DISCONNECT_OBSERVABLE';
+                    // We're going to do something dirty... we're adding a property to the socket
+                    //  so we don't have to have a map to hold it.  Or a weakmap, more importantly.
+                    let disconnectObservable = (socket as any)[disconnectObservableName] as Observable<void>;
+                    if (!disconnectObservable) {
+                        // Add a single onDisconnect handler to this.
+                        disconnectObservable = new Observable(subscriber => {
+                            socket.on('disconnect', () => {
+                                subscriber.next();
+                                subscriber.complete();
+                            });
+                        });
+                    }
+
+                    // Return the observable with the disconnect attached to it.  Now, if the socket disconnects
+                    //  any observers will be made aware, and clean up.
+                    return this.subscribeToSocketEvent(socket, eventName).pipe(takeUntil(disconnectObservable));
                 })
             );
     };
