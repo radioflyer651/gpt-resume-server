@@ -4,7 +4,7 @@ import { TarotGame } from "../model/shared-models/tarot-game/tarot-game.model";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { assignIdToInsertable, isNewDbItem, UpsertDbItem } from "../model/shared-models/db-operation-types.model";
-import { TarotCard, TarotCardDetails } from "../model/shared-models/tarot-game/tarot-card.model";
+import { TarotCard, TarotCardDetails, TarotCardReference } from "../model/shared-models/tarot-game/tarot-card.model";
 
 
 /** Provides database services for the tarot game. */
@@ -62,6 +62,15 @@ export class TarotDbService extends DbService {
         });
     }
 
+    /** Inserts a new card reference into a specified game ID's picked cards, on the database. */
+    async insertCardIntoGame(gameId: ObjectId, card: TarotCardReference): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection<any, TarotGame>(DbCollectionNames.TarotGames, async (db, collection) => {
+            await collection.updateOne(
+                { _id: gameId },
+                { $push: { cardsPicked: card } }
+            );
+        });
+    }
 
     /** Upserts a specified tarot game. */
     async upsertGame(tarotGame: UpsertDbItem<TarotGame>): Promise<TarotGame> {
