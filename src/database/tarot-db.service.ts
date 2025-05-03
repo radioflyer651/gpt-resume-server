@@ -67,7 +67,7 @@ export class TarotDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection<any, TarotGame>(DbCollectionNames.TarotGames, async (db, collection) => {
             await collection.updateOne(
                 { _id: gameId },
-                { $push: { cardsPicked: card } }
+                { $addToSet: { cardsPicked: card } }
             );
         });
     }
