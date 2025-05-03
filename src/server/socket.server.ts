@@ -10,6 +10,7 @@ import { ChatDbService } from '../database/chat-db.service';
 import { AppChatService } from '../services/app-chat.service';
 import { objectIdToStringConverter, stringToObjectIdConverter } from '../utils/object-id-to-string-converter.utils';
 import { mergeMap, Observable, Subject, takeUntil } from 'rxjs';
+import { LogDbService } from '../database/log-db.service';
 
 /** Represents an event received from socket.io */
 export interface SocketServerEvent {
@@ -50,9 +51,20 @@ export class SocketServer {
     constructor(
         readonly llmChatService: LlmChatService,
         readonly chatDbServer: ChatDbService,
-        readonly appChatService: AppChatService
+        readonly appChatService: AppChatService,
+        private readonly loggingService: LogDbService,
     ) {
-
+        this._events$.subscribe(event => {
+            this.loggingService.logMessage({
+                level: 'info',
+                message: `Socket Event: ${event.eventName}`,
+                data: {
+                    ...event,
+                    callback: undefined,
+                    socket: undefined,
+                }
+            });
+        });
     }
 
     /** The socket server.io that is handling socket connections. */
@@ -72,6 +84,11 @@ export class SocketServer {
         const onConnectionFunction = async (socket: Socket) => {
             // Determine if they can connect or not.
             if (!(await this.onConnect(socket))) {
+                this.loggingService.logMessage({
+                    level: 'error',
+                    message: `Attempt to connect with bad credentials`
+                });
+
                 console.log(`Connection made, but with bad credentials.  Disconnecting.`);
                 // Disconnect and exit.
                 socket.disconnect();

@@ -8,6 +8,7 @@ import { FunctionGroupProvider as IFunctionGroupProvider } from "../../model/fun
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { flipTarotCard as flipTarotCardDetails, getAllGameCardListDetails, getTarotCardDetailsDefinition, getTarotCardsImageDetails, loadCardData as loadCardDataDetails } from "../../ai-functions/tarot.ai-functions";
+import { PromiseQueue } from "../../utils/promise-queue.utils";
 
 
 /** ChatFunctionService gets created on each request or socket message.  Since these items have important
@@ -32,6 +33,11 @@ export class TarotGameFunctionsService implements IFunctionGroupProvider {
             throw new Error('No tarotDbService was provided to the TarotGameFunctionsService.');
         }
     }
+
+    /** Some functions cannot be made asynchronously with itself, so this queue
+     *   will limit such calls to one at a time.  This is because, sometimes, MongoDB
+     *   has race conditions on calls against the same document. */
+    private promiseQueue = new PromiseQueue();
 
     /** Returns the IDs and Names of all game cards. */
     getAllGameCardList = async (): Promise<string> => {
@@ -73,21 +79,28 @@ export class TarotGameFunctionsService implements IFunctionGroupProvider {
 
     /** FOR LLM: Returns the image details for a set of tarot cards specified by their IDs. */
     getTarotCardsImageDetails = async ({ tarotIds }: { tarotIds: string[]; }): Promise<string> => {
-        // Get the cards.
-        const cards = await this.tarotDbService.getGameCardsImageDetailsByIds(tarotIds.map((id) => new ObjectId(id)));
+        // NOTE: This cannot be called asynchronously against itself, so we are going to
+        //  add the call to a queue, and let them be called one at a time.
+        const result = async () => {
+            // Get the cards.
+            const cards = await this.tarotDbService.getGameCardsImageDetailsByIds(tarotIds.map((id) => new ObjectId(id)));
 
-        // Format the response for the LLM.
-        let result = '';
+            // Format the response for the LLM.
+            let result = '';
 
-        cards.forEach(card => {
-            result += `
-            # Card: ${card._id.toHexString()}
-              - Image Description: ${card.imageDescription}
-              `;
-        });
+            cards.forEach(card => {
+                result += `
+                # Card: ${card._id.toHexString()}
+                  - Image Description: ${card.imageDescription}
+                  `;
+            });
 
-        // Return the result.
-        return result;
+            // Return the result.
+            return result;
+        };
+
+        // Add this to the queue, and return the resulting promise.
+        return this.promiseQueue.executeInQueue(result);
     };
 
     /** FOR LLM: Flips the tarot card in a Tarot game, and returns the details. 

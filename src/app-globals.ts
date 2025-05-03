@@ -51,6 +51,6 @@ export async function initializeServices(): Promise<void> {
     tarotImageService = new TarotImageService(tarotDbService);
 
     /* App Services. */
-    authService = new AuthService(userDbService);
+    authService = new AuthService(userDbService, loggingService);
 
 }

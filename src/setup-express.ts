@@ -13,6 +13,8 @@ import { bodyStringsToDatesMiddleware } from './server/middleware/string-to-date
 import { tarotImageRouter } from './server/tarot-images.server';
 import { audioRouter } from './server/audio.server';
 import { siteInfoRouter } from './server/site-info.server';
+import { loggingService } from './app-globals';
+import { AuthenticatedSpecialRequest } from './model/authenticated-request.model';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -34,12 +36,60 @@ export async function initializeExpressApp() {
   // Add the middleware to convert strings to Dates.
   app.use(bodyStringsToDatesMiddleware);
 
+  // Try to add some logging for API calls that don't have a user.
+  app.use(async (req, res, next) => {
+    try {
+      if (!(req.headers['authorization'] as string || req.headers['Authorization'])) {
+        await loggingService.logMessage({
+          level: 'info',
+          message: `API Call: ${req.path}`,
+          data: {
+            body: req?.body,
+            path: req.path,
+            hasAuthToken: false
+          }
+        });
+      }
+
+    } catch (err) {
+
+    }
+
+    next();
+  });
+
+
   // Servers (groups of endpoints).
   app.use(authRouter);
   app.use(tarotImageRouter);
   app.use(audioRouter);
 
   app.use(authMiddleware);
+
+  // Try to add some logging for API calls that DO have users.
+  app.use(async (req, res, next) => {
+    try {
+      if (req.headers['authorization'] as string || req.headers['Authorization']) {
+        const userRequest = req as AuthenticatedSpecialRequest<typeof req>;
+
+        await loggingService.logMessage({
+          level: 'info',
+          message: `API Call: ${req.path}`,
+          data: {
+            body: req?.body,
+            path: req.path,
+            user: userRequest.user,
+            hasAuthToken: true
+          }
+        });
+      }
+    } catch (err) {
+
+    }
+
+    next();
+  });
+
   app.use(characterChatRouter);
   app.use(chatRouter);
   app.use(tarotRouter);

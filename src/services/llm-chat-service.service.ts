@@ -57,6 +57,15 @@ export class LlmChatService {
             let unsubscribed = false;
 
             const internals = async () => {
+                await this.loggingService.logMessage({
+                    level: 'info',
+                    message: `Make Chat Call`,
+                    data: {
+                        prompt: prompt,
+                        chatId: chatId
+                    }
+                });
+
                 // Get the specified chat.
                 let chat = await this.chatDbService.getChatById(chatId);
 
