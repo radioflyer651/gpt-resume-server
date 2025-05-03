@@ -46,7 +46,9 @@ export async function initializeExpressApp() {
           data: {
             body: req?.body,
             path: req.path,
-            hasAuthToken: false
+            hasAuthToken: false,
+            userIp: req.ip,
+            hostName: req.hostname,
           }
         });
       }
@@ -79,6 +81,8 @@ export async function initializeExpressApp() {
             body: req?.body,
             path: req.path,
             user: userRequest.user,
+            userIp: req.ip,
+            hostName: req.hostname,
             hasAuthToken: true
           }
         });
