@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, Document } from "mongodb";
 import * as mongo from 'mongodb';
 
 // const defaultConnectionString = 'mongodb://192.168.99.100:27017'
@@ -89,7 +89,7 @@ export class MongoHelper {
     }
 
 
-    async makeCallWithCollection<T>(collectionName: string, callback: (db: mongo.Db, collection: mongo.Collection) => Promise<T>): Promise<T> {
+    async makeCallWithCollection<T, C  extends Document = Document>(collectionName: string, callback: (db: mongo.Db, collection: mongo.Collection<C>) => Promise<T>): Promise<T> {
         let makeConnection = !this.isConnected;
         if (makeConnection) {
             await this.connect();
@@ -97,7 +97,7 @@ export class MongoHelper {
 
         try {
             // Get the collection.
-            const collection = this.db!.collection(collectionName);
+            const collection = this.db!.collection<C>(collectionName);
 
             // Return the result from the callback.
             return await callback(this.db!, collection) as T;
