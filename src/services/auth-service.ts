@@ -2,6 +2,7 @@ import { UserDbService } from "../database/user-db.service";
 import { isValidString } from "../utils/strings.utils";
 import { TokenPayload } from "../model/shared-models/token-payload.model";
 import { LogDbService } from "../database/log-db.service";
+import { getNormalizedWebsite } from "../utils/url-match.utils";
 
 
 export class AuthService {
@@ -16,6 +17,9 @@ export class AuthService {
 
     /** Attempts to validate a user, and if they exist, returns an ID for them.  If not, then returns undefined. */
     async login(userName: string, webSite: string): Promise<TokenPayload | undefined> {
+        // Make sure the website is proper.
+        webSite = getNormalizedWebsite(webSite);
+
         await this.loggingService.logMessage({
             level: "info", message: `User attempted to log in: ${userName}, ${webSite}`,
             data: {
