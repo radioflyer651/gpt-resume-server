@@ -11,8 +11,9 @@ import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPa
 import { ChatConfiguratorBase } from "./chat-configurators/chat-configurator.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
 import { User } from "../model/shared-models/user.model";
-import { Response } from "openai/_shims/auto/types";
 import { saveAudioFile } from "../utils/audio-folder.methods";
+import { APIPromise } from "openai/core";
+import { ResponseOutputItem } from "openai/resources/responses/responses";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -196,8 +197,17 @@ export class LlmChatService {
             tools: tools
         };
 
-        // Make the API call on the LLM.
-        const apiResult = await this.openAi.responses.create(responseCreation);
+        let apiResult!: Awaited<ReturnType<typeof this.openAi.responses.create>> & { output: Array<ResponseOutputItem>; };
+        try {
+            // Make the API call on the LLM.
+            apiResult = await this.openAi.responses.create(responseCreation);
+        } catch (err) {
+            this.loggingService.logMessage({
+                level: 'error',
+                message: `An error occurred when attempting to call the LLM.  ${err?.toString()}`,
+                data: err
+            });
+        }
 
         // Add the results to the chat.
         chat.chatMessages.push(...apiResult.output);

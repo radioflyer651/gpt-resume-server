@@ -35,7 +35,7 @@ export abstract class ChatConfiguratorBase {
             chatType: this.chatType,
             chatMessages: [],
             lastAccessDate: new Date(),
-            model: 'gpt-4o-nano',
+            model: 'gpt-4o-mini',
             systemMessages: [],
             creationDate: new Date(),
         };
@@ -49,7 +49,7 @@ export abstract class ChatConfiguratorBase {
     }
 
     /** Returns the default chat model to use when creating new chats. */
-    protected readonly defaultChatModel = 'gpt-4o-nano';
+    protected readonly defaultChatModel = 'gpt-4o-mini';
 
     /** Returns a newly initialized chat, configured for the type of chat this configurator services. */
     abstract initializeNewChat(ownerId: ObjectId): Promise<NewDbItem<Chat>>;
