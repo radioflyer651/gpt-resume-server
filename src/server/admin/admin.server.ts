@@ -8,8 +8,6 @@ export const adminRouter = express.Router();
 adminRouter.use(async (req, res, next) => {
     const user = getTokenPayloadFromRequest(req);
 
-    console.log(JSON.stringify(user, undefined, 2));
-
     // Ensure that the user has admin access.
     if (!user?.isAdmin) {
         res.status(403).send('Unauthorized');

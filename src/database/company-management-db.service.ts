@@ -4,6 +4,7 @@ import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { getPaginatedResult, PaginatedResult } from "../model/shared-models/paginated-result.model";
+import { CompanyListingInfo } from "../model/shared-models/company-listing.model";
 
 /** Provide Database services for company management. */
 export class CompanyManagementDbService extends DbService {
@@ -44,16 +45,44 @@ export class CompanyManagementDbService extends DbService {
     }
 
     /** Returns a list of companies, paginated by a specified amount. */
-    async getCompanyList(skip: number, limit: number): Promise<PaginatedResult<Company>> {
-        return await this.dbHelper.makeCallWithCollection<PaginatedResult<Company>, Company>(DbCollectionNames.Companies, async (db, collection) => {
-            // Get the total document count.
-            const totalCount = await collection.countDocuments();
+    async getCompanyList(): Promise<CompanyListingInfo[]> {
+        return await this.dbHelper.makeCallWithCollection<CompanyListingInfo[], Company>(DbCollectionNames.Companies, async (db, collection) => {
+            // Create the aggregation to get this information.
+            const aggregation = [
+                {
+                    $lookup: {
+                        from: 'job-listings',
+                        localField: '_id',
+                        foreignField: 'companyId',
+                        as: 'jobListings'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'company-contacts',
+                        localField: '_id',
+                        foreignField: 'companyId',
+                        as: 'companyContacts'
+                    }
+                },
+                {
+                    $addFields: {
+                        companyContacts: {
+                            $size: '$companyContacts'
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        jobListings: {
+                            $size: '$jobListings'
+                        }
+                    }
+                }
+            ];
 
-            // Get the results.
-            const result = await collection.find({}, { limit, skip }).toArray();
-
-            // Return the result.
-            return getPaginatedResult(result, skip, totalCount);
+            const result = await collection.aggregate(aggregation).toArray();
+            return result as CompanyListingInfo[];
         });
     }
 }
