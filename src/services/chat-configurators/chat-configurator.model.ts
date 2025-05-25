@@ -3,16 +3,18 @@ import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { Chat } from "../../model/shared-models/chat-models.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
-import { UserDbService } from "../../database/user-db.service";
+import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { Socket } from "socket.io";
 import { ChatDbService } from "../../database/chat-db.service";
+import { AuthDbService } from "../../database/auth-db.service";
 
 /** Provides services for specific types of chats, configuring them for use and
  *    providing services required for LLM chat calls.
  */
 export abstract class ChatConfiguratorBase {
     constructor(
-        protected userDbService: UserDbService,
+        protected userDbService: AuthDbService,
+        protected companyDbService: CompanyManagementDbService,
         protected chatDbService: ChatDbService,
     ) {
         if (!userDbService) {
@@ -80,7 +82,7 @@ export abstract class ChatConfiguratorBase {
         }
 
         // Get the company.
-        const company = await this.userDbService.getCompanyById(user?.companyId);
+        const company = await this.companyDbService.getCompanyById(user?.companyId);
 
         // Return the set.
         return {

@@ -1,4 +1,4 @@
-import { adminDbService, appChatService, chatDbService, llmChatService, tarotDbService, userDbService } from "./app-globals";
+import { adminDbService, appChatService, chatDbService, llmChatService, tarotDbService, companyDbService } from "./app-globals";
 import { AdminSocketService } from "./server/socket-services/admin.socket-service";
 import { ChatSocketService } from "./server/socket-services/chat.socket-service";
 import { TarotSocketService } from "./server/socket-services/tarot.socket-service";
@@ -13,7 +13,7 @@ export async function setupSocketServices(socketServer: SocketServer): Promise<v
     mainChatSocketService = new ChatSocketService(socketServer, appChatService, llmChatService, chatDbService, adminDbService);
     await mainChatSocketService.initialize();
 
-    tarotSocketServer = new TarotSocketService(socketServer, userDbService, tarotDbService, llmChatService, appChatService, chatDbService);
+    tarotSocketServer = new TarotSocketService(socketServer, companyDbService, tarotDbService, llmChatService, appChatService, chatDbService);
     await tarotSocketServer.initialize();
 
     adminSocketService = new AdminSocketService(socketServer);

@@ -5,22 +5,24 @@ import { ChatConfiguratorBase } from "./chat-configurator.model";
 import { ChatDbService } from "../../database/chat-db.service";
 import { ChatBaseInstructions } from "../../model/chat-instructions.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
-import { UserDbService } from "../../database/user-db.service";
+import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
 import { Socket } from "socket.io";
 import { mainChatSocketService, tarotSocketServer } from "../../setup-socket-services";
 import { getAshliePersonaChatInstructions, getHtmlChatInstructions } from "../../utils/common-chat-instructions.utils";
 import { TarotDbService } from "../../database/tarot-db.service";
 import { TarotGameFunctionsService } from "../functions-services/tarot-game.functions-service";
+import { AuthDbService } from "../../database/auth-db.service";
 
 /** Configurator for main chats. */
 export class TarotChatConfigurator extends ChatConfiguratorBase {
     constructor(
-        userDbService: UserDbService,
+        userDbService: AuthDbService,
+        companyDbService: CompanyManagementDbService,
         chatDbService: ChatDbService,
         protected tarotDbService: TarotDbService
     ) {
-        super(userDbService, chatDbService);
+        super(userDbService, companyDbService, chatDbService);
         if (!userDbService) {
             throw new Error("userDbService is required and cannot be null or undefined.");
         }

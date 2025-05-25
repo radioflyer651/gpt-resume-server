@@ -8,7 +8,7 @@ import {
     addCompanyDefinition
 } from "../../ai-functions/admin.ai-functions";
 import { AdminDbService } from "../../database/admin-db.service";
-import { UserDbService } from "../../database/user-db.service";
+import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { AdminSocketService } from "../../server/socket-services/admin.socket-service";
 
 /** Provides the AI site-management functions. */
@@ -16,7 +16,7 @@ export class AdminFunctionsService implements FunctionGroupProvider {
     constructor(
         private readonly socket: Socket,
         private readonly adminDbService: AdminDbService,
-        private readonly userDbService: UserDbService,
+        private readonly userDbService: CompanyManagementDbService,
         private readonly adminSocketService: AdminSocketService,
     ) {
 

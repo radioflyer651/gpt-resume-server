@@ -15,6 +15,7 @@ import { audioRouter } from './server/audio.server';
 import { siteInfoRouter } from './server/site-info.server';
 import { loggingService } from './app-globals';
 import { AuthenticatedSpecialRequest } from './model/authenticated-request.model';
+import { adminRouter } from './server/admin/admin.server';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -98,6 +99,8 @@ export async function initializeExpressApp() {
   app.use(chatRouter);
   app.use(tarotRouter);
   app.use(siteInfoRouter);
+
+  app.use(adminRouter);
 
   app.use((req, res) => {
     res.status(404).send('Not Found');

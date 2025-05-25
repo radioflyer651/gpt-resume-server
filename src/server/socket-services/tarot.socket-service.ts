@@ -13,7 +13,7 @@ import { getTarotCardImageNumbers } from "../../utils/tarot-image.utils";
 import { AppChatService } from "../../services/app-chat.service";
 import { ChatTypes } from "../../model/shared-models/chat-types.model";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
-import { UserDbService } from "../../database/user-db.service";
+import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function-group.model";
 
 // Client Event Names (from server)
@@ -24,7 +24,7 @@ import { AiFunctionGroup } from "../../model/shared-models/functions/ai-function
 export class TarotSocketService extends SocketServiceBase {
     constructor(
         socketServer: SocketServer,
-        private readonly userDbService: UserDbService,
+        private readonly userDbService: CompanyManagementDbService,
         private readonly tarotDbService: TarotDbService,
         private readonly llmChatService: LlmChatService,
         private readonly appChatService: AppChatService,

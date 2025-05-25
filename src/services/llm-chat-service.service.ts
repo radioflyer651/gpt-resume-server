@@ -1,19 +1,18 @@
 import { ObjectId } from "mongodb";
 import OpenAI from "openai";
 import { ChatDbService } from "../database/chat-db.service";
-import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage, Tool } from "../forwarded-types.model";
+import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall, ResponseOutputMessage } from "../forwarded-types.model";
 import { Chat, ChatMessage } from "../model/shared-models/chat-models.model";
 import { OpenAiConfig } from "../model/app-config.model";
 import { Observable, shareReplay } from "rxjs";
-import { UserDbService } from "../database/user-db.service";
 import { LogDbService } from "../database/log-db.service";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../model/shared-models/functions/ai-function-group.model";
 import { ChatConfiguratorBase } from "./chat-configurators/chat-configurator.model";
 import { ChatTypes } from "../model/shared-models/chat-types.model";
 import { User } from "../model/shared-models/user.model";
 import { saveAudioFile } from "../utils/audio-folder.methods";
-import { APIPromise } from "openai/core";
 import { ResponseOutputItem } from "openai/resources/responses/responses";
+import { AuthDbService } from "../database/auth-db.service";
 
 /** When a chat request is made, if a function call is made in between, this is a function
  *   that may be called to send intermediate responses to the UI. */
@@ -24,7 +23,7 @@ export class LlmChatService {
     constructor(
         config: OpenAiConfig,
         public readonly chatDbService: ChatDbService,
-        public userService: UserDbService,
+        public authDbService: AuthDbService,
         public loggingService: LogDbService,
         public readonly chatConfigurations: ChatConfiguratorBase[],
     ) {
@@ -34,8 +33,8 @@ export class LlmChatService {
         if (!chatDbService) {
             throw new Error("ChatDbService is required.");
         }
-        if (!userService) {
-            throw new Error("UserDbService is required.");
+        if (!authDbService) {
+            throw new Error("authDbService is required.");
         }
         if (!loggingService) {
             throw new Error("LogDbService is required.");
@@ -88,7 +87,7 @@ export class LlmChatService {
                 }
 
                 // Get the user for this call.
-                const user = await this.userService.getUserById(userId);
+                const user = await this.authDbService.getUserById(userId);
                 if (!user) {
                     console.warn('No user was provided for the chat.');
                 }
