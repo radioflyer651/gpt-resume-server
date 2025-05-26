@@ -17,11 +17,14 @@ export interface CompanyContact {
     /** Gets or sets the title this person holds in the company. */
     title: string;
 
+    /** Gets or sets the email for this contact. */
+    email: string;
+
     /** Gets or sets a list of phone numbers for this contact. */
     phoneNumbers: ContactPhoneNumber[];
 
     /** Gets or sets a set of notes associated with this person. */
-    notes: string[];
+    comments: string[];
 }
 
 /** Represents a phone number for a contact. */
@@ -34,5 +37,5 @@ export interface ContactPhoneNumber {
 
     /** Gets or sets any notes associated with this phone number.
      *   I.e. how it was obtained, when to use it, etc. */
-    notes: string[];
+    comments: string[];
 }

@@ -74,7 +74,7 @@ export class TarotDbService extends DbService {
 
     /** Upserts a specified tarot game. */
     async upsertGame(tarotGame: UpsertDbItem<TarotGame>): Promise<TarotGame> {
-        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.TarotGames, async (db, collection) => {
+        return await this.dbHelper.makeCallWithCollection<TarotGame>(DbCollectionNames.TarotGames, async (db, collection) => {
             // Determine if the game is new or not.
             if (isNewDbItem(tarotGame)) {
                 // We need to insert the game.
@@ -84,7 +84,7 @@ export class TarotDbService extends DbService {
                 const updatedGame = assignIdToInsertable(tarotGame, result.insertedId);
 
                 // Return the game.
-                return updatedGame;
+                return updatedGame as TarotGame;
             } else {
                 // Recast - silly typescript...
                 const actTarotGame = tarotGame as TarotGame;

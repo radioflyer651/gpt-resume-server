@@ -5,6 +5,10 @@ import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { getPaginatedResult, PaginatedResult } from "../model/shared-models/paginated-result.model";
 import { CompanyListingInfo } from "../model/shared-models/company-listing.model";
+import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.data";
+import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/job-listing.model";
+import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
+import { getUpsertMatchObject } from "./db-utils";
 
 /** Provide Database services for company management. */
 export class CompanyManagementDbService extends DbService {
@@ -83,6 +87,122 @@ export class CompanyManagementDbService extends DbService {
 
             const result = await collection.aggregate(aggregation).toArray();
             return result as CompanyListingInfo[];
+        });
+    }
+
+    /** Returns all contacts for a specified company. */
+    async getContactsForCompanyId(companyId: ObjectId): Promise<CompanyContact[]> {
+        return await this.dbHelper.makeCallWithCollection<CompanyContact[], CompanyContact>(DbCollectionNames.CompanyContacts, async (db, col) => {
+            return await col.find({ companyId: companyId }).toArray();
+        });
+    }
+
+    /** Returns all job listings (shortened) for a specified company ID. */
+    async getJobListingsForCompanyId(companyId: ObjectId): Promise<JobListingLine[]> {
+        // Create the aggregation to get this information.
+        const aggregation = [
+            {
+                $match: {
+                    companyId
+                }
+            },
+            {
+                $addFields: {
+                    jobStatuses: {
+                        $sortArray: {
+                            input: '$jobStatuses',
+                            sortBy: { statusDate: 1 }
+                        }
+                    },
+                }
+            },
+            {
+                $addFields: {
+                    currentStatus: {
+                        $arrayElemAt: [`$jobStatuses`, -1]
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    urlLink: 1,
+                    postingDate: 1,
+                    jobTitle: 1,
+                    currentStatus: 1
+                }
+            },
+        ];
+
+        return await this.dbHelper.makeCallWithCollection<JobListingLine[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
+            return await col.aggregate(aggregation).toArray() as JobListingLine[];
+        });
+    }
+
+    /** Returns a company job listing, specified by its ID. */
+    async getJobListingById(listingId: ObjectId): Promise<JobListing | undefined> {
+        return await this.dbHelper.makeCallWithCollection<JobListing | undefined, JobListing>(DbCollectionNames.JobListings, async (db, col) => {
+            return await nullToUndefined(col.findOne({ _id: listingId }));
+        });
+    }
+
+    /** Returns a company contact, specified by its ID. */
+    async getContactById(contactId: ObjectId): Promise<CompanyContact | undefined> {
+        return await this.dbHelper.makeCallWithCollection<CompanyContact | undefined, CompanyContact>(DbCollectionNames.CompanyContacts, async (db, col) => {
+            return await nullToUndefined(col.findOne({ _id: contactId }));
+        });
+    }
+
+    /** Upserts a specified company contact. */
+    async upsertCompanyContact(contact: UpsertDbItem<CompanyContact>): Promise<CompanyContact> {
+        return await this.dbHelper.makeCallWithCollection<CompanyContact>(DbCollectionNames.CompanyContacts, async (db, col) => {
+            const result = await col.updateOne(getUpsertMatchObject(contact), { $set: contact }, { upsert: true });
+            if (result.upsertedId) {
+                contact._id = result.upsertedId;
+            }
+
+            return contact as CompanyContact;
+        });
+    }
+
+    /** Updates a specified company in the database. */
+    async updateCompany(company: Company): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, col) => {
+            // Ensure the company data is pure.
+            const updateDocument = {
+                _id: company._id,
+                name: company.name,
+                website: company.website,
+                comments: company.comments,
+            };
+
+            await col.updateOne({ _id: company._id }, { $set: updateDocument });
+        });
+    }
+
+    /** Updates/inserts a specified job description into the database. */
+    async upsertCompanyJobListing(jobDescription: UpsertDbItem<JobListing>): Promise<JobListing> {
+        return await this.dbHelper.makeCallWithCollection<JobListing>(DbCollectionNames.JobListings, async (db, col) => {
+            const result = await col.updateOne(getUpsertMatchObject(jobDescription), { $set: jobDescription }, { upsert: true });
+            if (result.upsertedId) {
+                jobDescription._id = result.upsertedId;
+            }
+
+            return jobDescription as JobListing;
+        });
+    }
+
+    /** Returns a Job Listing specified by its ID. */
+    async deleteCompanyJobListingById(_id: ObjectId): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.JobListings, async (db, col) => {
+            await col.deleteOne({ _id });
+        });
+    }
+
+    /** Returns a contact specified by its ID. */
+    async deleteCompanyContactById(_id: ObjectId): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.CompanyContacts, async (db, col) => {
+            await col.deleteOne({ _id });
         });
     }
 }

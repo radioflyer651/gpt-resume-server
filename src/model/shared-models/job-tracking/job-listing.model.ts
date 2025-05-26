@@ -5,6 +5,12 @@ export interface JobListing {
     /** Gets or sets the database ID for this chat. */
     _id: ObjectId;
 
+    /** Optional: Gets or sets the date that the job posting was posted. */
+    postingDate?: Date;
+
+    /** Gets or sets the Title of this job. */
+    jobTitle: string;
+
     /** Gets or sets the ID of the company this job is associated with. */
     companyId: ObjectId;
 
@@ -18,7 +24,7 @@ export interface JobListing {
     jobStatuses: JobListingStatus[];
 
     /** Gets or sets notes about this job listing. */
-    notes: string[];
+    comments: string[];
 
 }
 
@@ -29,3 +35,8 @@ export interface JobListingStatus {
     /** Gets or sets the date of this status. */
     statusDate: Date;
 }
+
+/** A shortened version of the JobListing it allow it to be listed in a table. */
+export type JobListingLine = Pick<JobListing,
+    '_id' | 'urlLink' | 'postingDate' | 'jobTitle'>
+    & { currentStatus: JobListingStatus; };
