@@ -59,7 +59,7 @@ companyRouter.post('/companies/job-listings', async (req, res) => {
     const listing = req.body as UpsertDbItem<JobListing>;
 
     // Ensure the company ID is set.
-    if (!ObjectId.isValid(listing.companyId)) {
+    if (!listing.companyId || !ObjectId.isValid(listing.companyId)) {
         res.sendStatus(400);
         return;
     }
@@ -71,36 +71,37 @@ companyRouter.post('/companies/job-listings', async (req, res) => {
     res.send(result);
 });
 
-/** Updates a specified company. */
+/** Upserts a specified company. */
 companyRouter.post('/companies', async (req, res) => {
     // Get the company from the body.
     const company = req.body as Company;
 
     // Ensure it has an ID.
-    if (!ObjectId.isValid(company._id)) {
+    if (company._id && !ObjectId.isValid(company._id)) {
         res.sendStatus(400);
         return;
     }
 
-    // Update the company.
-    await companyDbService.updateCompany(company);
+    // Update/insert the company.
+    const result = await companyDbService.upsertCompany(company);
 
-    // All done.
-    res.sendStatus(200);
+    // Send the company back, since it may have a new _id on it
+    //  if it were inserted.
+    res.send(result);
 });
 
 companyRouter.post('/companies/contacts', async (req, res) => {
     // Get the job listing from the body.
-    const listing = req.body as UpsertDbItem<CompanyContact>;
+    const contact = req.body as UpsertDbItem<CompanyContact>;
 
     // Ensure the company ID is set.
-    if (!ObjectId.isValid(listing.companyId)) {
+    if (!contact.companyId || !ObjectId.isValid(contact.companyId)) {
         res.sendStatus(400);
         return;
     }
 
     // Upsert the item.
-    const result = await companyDbService.upsertCompanyContact(listing);
+    const result = await companyDbService.upsertCompanyContact(contact);
 
     // Return it.
     res.send(result);
@@ -166,4 +167,18 @@ companyRouter.delete('/companies/contacts/:contactId', async (req, res) => {
 
     // All done.
     res.sendStatus(200);
+});
+
+/** Deletes a company specified by it's ID and its job descriptions and contacts. */
+companyRouter.delete('/companies/:companyId', async (req, res) => {
+    const { companyId } = req.params;
+
+    if (!ObjectId.isValid(companyId)) {
+        res.sendStatus(400);
+        return;
+    }
+
+    // Delete the company.
+    await companyDbService.deleteCompanyById(new ObjectId(companyId));
+    res.sendStatus(204);
 });

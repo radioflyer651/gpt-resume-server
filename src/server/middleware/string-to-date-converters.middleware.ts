@@ -21,7 +21,11 @@ export function bodyStringsToDatesMiddleware(req: Request, res: Response, next: 
  * @param target The object to transform in-place.
  */
 export function convertDateStrings(target: any): any {
-    return target;
+    // Just exist if we dont' have a target.
+    if (!target) {
+        return target;
+    }
+
     if (target && typeof target === 'object') {
         if (Array.isArray(target)) {
             for (let i = 0; i < target.length; i++) {
@@ -40,9 +44,14 @@ export function convertDateStrings(target: any): any {
     } else if (typeof target === 'string' && isValidDate(target)) {
         target = new Date(target);
     }
+
+    return target;
 }
 
 function isValidDate(dateValue: string): boolean {
-    const timestamp = Date.parse(dateValue);
-    return !isNaN(timestamp);
+    if(typeof dateValue !== 'string'){
+        return false;
+    }
+
+    return /^20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}::\d{2}\.\d+Z$/.test(dateValue);
 }

@@ -156,17 +156,22 @@ export class CompanyManagementDbService extends DbService {
     /** Upserts a specified company contact. */
     async upsertCompanyContact(contact: UpsertDbItem<CompanyContact>): Promise<CompanyContact> {
         return await this.dbHelper.makeCallWithCollection<CompanyContact>(DbCollectionNames.CompanyContacts, async (db, col) => {
-            const result = await col.updateOne(getUpsertMatchObject(contact), { $set: contact }, { upsert: true });
-            if (result.upsertedId) {
-                contact._id = result.upsertedId;
+            if (!contact._id) {
+                const result = await col.insertOne(contact);
+                contact._id = result.insertedId;
+                return contact as CompanyContact;
+
+            } else {
+                await col.updateOne(getUpsertMatchObject(contact), { $set: contact });
+                return contact as CompanyContact;
+
             }
 
-            return contact as CompanyContact;
         });
     }
 
-    /** Updates a specified company in the database. */
-    async updateCompany(company: Company): Promise<void> {
+    /** Updates a specified company in the database, or adds them if they don't exist. */
+    async upsertCompany(company: Company): Promise<Company> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, col) => {
             // Ensure the company data is pure.
             const updateDocument = {
@@ -174,21 +179,37 @@ export class CompanyManagementDbService extends DbService {
                 name: company.name,
                 website: company.website,
                 comments: company.comments,
-            };
+            } as any;
 
-            await col.updateOne({ _id: company._id }, { $set: updateDocument });
+            if (!company._id) {
+                const result = await col.insertOne(updateDocument);
+                updateDocument._id = result.insertedId;
+
+                // Return the company back, with the new ID.
+                return updateDocument;
+
+            } else {
+                await col.updateOne(getUpsertMatchObject(company), { $set: updateDocument });
+                return updateDocument;
+            }
+
         });
     }
 
     /** Updates/inserts a specified job description into the database. */
     async upsertCompanyJobListing(jobDescription: UpsertDbItem<JobListing>): Promise<JobListing> {
         return await this.dbHelper.makeCallWithCollection<JobListing>(DbCollectionNames.JobListings, async (db, col) => {
-            const result = await col.updateOne(getUpsertMatchObject(jobDescription), { $set: jobDescription }, { upsert: true });
-            if (result.upsertedId) {
-                jobDescription._id = result.upsertedId;
-            }
+            if (!jobDescription._id) {
+                const result = await col.insertOne(jobDescription);
+                jobDescription._id = result.insertedId;
 
-            return jobDescription as JobListing;
+                return jobDescription as JobListing;
+
+            } else {
+                await col.updateOne(getUpsertMatchObject(jobDescription), { $set: jobDescription });
+                return jobDescription as JobListing;
+
+            }
         });
     }
 
@@ -203,6 +224,15 @@ export class CompanyManagementDbService extends DbService {
     async deleteCompanyContactById(_id: ObjectId): Promise<void> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.CompanyContacts, async (db, col) => {
             await col.deleteOne({ _id });
+        });
+    }
+
+    /** Deletes a specified company, it's contacts, and job listings. */
+    async deleteCompanyById(companyId: ObjectId): Promise<void> {
+        return await this.dbHelper.makeCall(async (db) => {
+            await db.collection(DbCollectionNames.CompanyContacts).deleteMany({ companyId: companyId });
+            await db.collection(DbCollectionNames.JobListings).deleteMany({ companyId: companyId });
+            await db.collection(DbCollectionNames.Companies).deleteOne({ _id: companyId });
         });
     }
 }
