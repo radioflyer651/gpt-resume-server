@@ -5,5 +5,8 @@ export interface Company {
     name: string;
     website: string;
 
+    /** Boolean value indicating whether or not this company should be archived (and hidden from view). */
+    archive?: boolean;
+
     comments?: string[];
 }

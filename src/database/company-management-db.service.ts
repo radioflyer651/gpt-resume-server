@@ -179,6 +179,7 @@ export class CompanyManagementDbService extends DbService {
                 name: company.name,
                 website: company.website,
                 comments: company.comments,
+                archive: company.archive,
             } as any;
 
             if (!company._id) {
