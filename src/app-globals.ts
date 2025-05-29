@@ -11,6 +11,7 @@ import { TarotDbService } from "./database/tarot-db.service";
 import { getChatConfigurators } from "./chat-configurators";
 import { AdminDbService } from "./database/admin-db.service";
 import { AuthDbService } from "./database/auth-db.service";
+import { JobAnalysisFunction } from "./services/llm-functions/job-analysis.llm-function";
 
 /** If we were using dependency injection, this would be the DI services we'd inject in the necessary places. */
 
@@ -30,6 +31,9 @@ export let authDbService: AuthDbService;
 
 /* App Services. */
 export let authService: AuthService;
+
+// Other services.
+export let jobAnalyzerService: JobAnalysisFunction;
 
 /** Initializes the services used in the application. */
 export async function initializeServices(): Promise<void> {

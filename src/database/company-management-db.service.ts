@@ -9,6 +9,7 @@ import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
 import { getUpsertMatchObject } from "./db-utils";
 import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany } from "./company-aggregations.data";
+import { JobAnalysis } from "../model/shared-models/job-tracking/job-analysis.model";
 
 /** Provide Database services for company management. */
 export class CompanyManagementDbService extends DbService {
@@ -215,4 +216,12 @@ export class CompanyManagementDbService extends DbService {
         });
     }
 
+    /** Updates the analysis property on a JobListing object, specified by its ID. */
+    async updateJobAnalysisForJob(jobListingId: ObjectId, analysis: JobAnalysis): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection<void, JobListing>(DbCollectionNames.JobListings, async (db, col) => {
+            await col.updateOne({ _id: jobListingId }, {
+                $set: { analysis }
+            });
+        });
+    }
 }
