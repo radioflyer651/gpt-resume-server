@@ -3,12 +3,12 @@ import { Company } from "../model/shared-models/company.model";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
-import { getPaginatedResult, PaginatedResult } from "../model/shared-models/paginated-result.model";
 import { CompanyListingInfo } from "../model/shared-models/company-listing.model";
 import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.data";
 import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/job-listing.model";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
 import { getUpsertMatchObject } from "./db-utils";
+import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany } from "./company-aggregations.data";
 
 /** Provide Database services for company management. */
 export class CompanyManagementDbService extends DbService {
@@ -100,39 +100,17 @@ export class CompanyManagementDbService extends DbService {
     /** Returns all job listings (shortened) for a specified company ID. */
     async getJobListingsForCompanyId(companyId: ObjectId): Promise<JobListingLine[]> {
         // Create the aggregation to get this information.
-        const aggregation = [
-            {
-                $match: {
-                    companyId
-                }
-            },
-            {
-                $addFields: {
-                    jobStatuses: {
-                        $sortArray: {
-                            input: '$jobStatuses',
-                            sortBy: { statusDate: 1 }
-                        }
-                    },
-                }
-            },
-            {
-                $addFields: {
-                    currentStatus: {
-                        $arrayElemAt: [`$jobStatuses`, -1]
-                    }
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    urlLink: 1,
-                    postingDate: 1,
-                    jobTitle: 1,
-                    currentStatus: 1
-                }
-            },
-        ];
+        const aggregation = getJobListingAggregationPipelineForCompany(companyId);
+
+        return await this.dbHelper.makeCallWithCollection<JobListingLine[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
+            return await col.aggregate(aggregation).toArray() as JobListingLine[];
+        });
+    }
+
+    /** Returns the JobListingLines for all jobs in the system. */
+    async getAllJobListings(): Promise<JobListingLine[]> {
+        // Create the aggregation to get this information.
+        const aggregation = getJobListingAggregationPipeline();
 
         return await this.dbHelper.makeCallWithCollection<JobListingLine[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
             return await col.aggregate(aggregation).toArray() as JobListingLine[];
@@ -236,4 +214,5 @@ export class CompanyManagementDbService extends DbService {
             await db.collection(DbCollectionNames.Companies).deleteOne({ _id: companyId });
         });
     }
+
 }

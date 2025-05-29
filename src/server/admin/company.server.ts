@@ -182,3 +182,10 @@ companyRouter.delete('/companies/:companyId', async (req, res) => {
     await companyDbService.deleteCompanyById(new ObjectId(companyId));
     res.sendStatus(204);
 });
+
+companyRouter.get('/job-listings', async (req, res) => {
+    // Get all job listings in compact format
+    const jobListings = await companyDbService.getAllJobListings();
+
+    res.send(jobListings);
+});
