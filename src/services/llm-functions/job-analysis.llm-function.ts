@@ -36,6 +36,7 @@ export class JobAnalysisFunction extends LlmFunctionBase<JobAnalysis> {
             `You are a data analyzer for job openings.  You will analyze job descriptions, and organize the important information in a normalized form.`,
             `Your analysis must be passed as arguments to the return function tool.`,
             `If the role is not allowed in Minnesota, the posting will either indicate the job is "not remote", or that it might be remote, but only allowed in specific states.`,
+            `When a job description indicates that it's not eligible for people living in Minnesota, include a comment in the otherInformation referencing what was stated in the job description to indicate that.`,
             `The most likely date this posting was copied from the site is ${postingDate.toLocaleDateString()}.  When considering posted date, we only want actual dates, and not a value like "2 days ago".  Dates should be in the form of "MM/dd/yy"`,
             `The following is the job description to analyze: \n\n${jobListing.description}`,
         ];
@@ -46,7 +47,7 @@ export class JobAnalysisFunction extends LlmFunctionBase<JobAnalysis> {
     }
 
     get chatModel() {
-        return 'gpt-4.1-nano';
+        return 'gpt-4o-mini';
     }
 
     async getJobById(jobId: ObjectId): Promise<JobListing> {
@@ -135,7 +136,7 @@ export const jobAnalysisAiFunctionDefinition: FunctionTool = {
             },
             "allowWorkInMn": {
                 "type": "boolean",
-                "description": "Indicates whether this position is open to minnesotans"
+                "description": "Indicates whether this position is open to minnesotans.  True if Minnesotans can apply.  False if something in the application indicates that only certain other states may apply, or other specifically mentioned exclusions indicate this."
             },
             "minCompensation": {
                 "type": "string",
