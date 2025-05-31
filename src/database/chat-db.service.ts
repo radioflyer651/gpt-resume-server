@@ -60,6 +60,17 @@ export class ChatDbService extends DbService {
         });
     }
 
+    /** Changes the chat model for a specified chat session. */
+    async changeChatModelForChatId(chatId: ObjectId, newModel: string): Promise<void> {
+        return await this.dbHelper.makeCallWithCollection<void, Chat>(DbCollectionNames.Chats, async (db, col) => {
+            await col.updateOne({ _id: chatId }, {
+                $set: {
+                    model: newModel
+                }
+            });
+        });
+    }
+
     /** Upserts a specified chat. */
     async upsertChat(chat: UpsertDbItem<Chat>): Promise<Chat> {
         return await this.dbHelper.makeCall(async db => {
@@ -89,11 +100,27 @@ export class ChatDbService extends DbService {
         });
     }
 
+    /** Updates just the messages on a specified chat. */
+    async updateChatMessages(chat: Chat): Promise<void> {
+        return await this.dbHelper.makeCall(async db => {
+            await db.collection(DbCollectionNames.Chats).updateOne(
+                {
+                    _id: chat._id
+                },
+                {
+                    $set: {
+                        chatMessages: chat.chatMessages
+                    }
+                },
+            );
+        });
+    }
+
     /** Deletes a specified chat. */
     async deleteChat(chatId: ObjectId) {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Chats, async (db, collection) => {
             // Soft delete the chat.
-            collection.updateOne({ _id: chatId }, {
+            await collection.updateOne({ _id: chatId }, {
                 $set: { isDeleted: true }
             });
         });

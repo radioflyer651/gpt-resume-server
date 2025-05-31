@@ -4,14 +4,18 @@ import { FunctionGroupProvider } from "../../model/function-group-provider.model
 import {
     setAllowSoundSiteWide,
     getAllowSoundSiteWide,
-    getAllCompanyList,
-    addCompanyDefinition
+    changeChatModelDefinition,
+    listChatModelsDefinition,
+    getChatModelDefinition
 } from "../../ai-functions/admin.ai-functions";
 import { AdminDbService } from "../../database/admin-db.service";
 import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { AdminSocketService } from "../../server/socket-services/admin.socket-service";
-import { CompaniesAiFunctionGroup } from "../llm-functions/companies.ai-function-group";
-import { ProgrammerAiFunctionGroup } from "../llm-functions/programming.ai-function-group";
+import { CompaniesAiFunctionGroup } from "./companies.ai-function-group";
+import { ProgrammerAiFunctionGroup } from "./programming.ai-function-group";
+import { openAiChatModels } from "../../model/shared-models/chat-models.data";
+import { ChatDbService } from "../../database/chat-db.service";
+import { ObjectId } from "mongodb";
 
 /** Provides the AI site-management functions. */
 export class AdminFunctionsService implements FunctionGroupProvider {
@@ -20,6 +24,7 @@ export class AdminFunctionsService implements FunctionGroupProvider {
         private readonly adminDbService: AdminDbService,
         private readonly companyDbService: CompanyManagementDbService,
         private readonly adminSocketService: AdminSocketService,
+        private readonly chatDbService: ChatDbService,
     ) {
 
     }
@@ -36,6 +41,18 @@ export class AdminFunctionsService implements FunctionGroupProvider {
                 {
                     definition: getAllowSoundSiteWide,
                     function: this.getAllowSoundSiteWide
+                },
+                {
+                    definition: changeChatModelDefinition,
+                    function: (params: { chatModel: string, chatId: string; }) => this.changeChatModel(params)
+                },
+                {
+                    definition: listChatModelsDefinition,
+                    function: () => this.getChatModelList()
+                },
+                {
+                    definition: getChatModelDefinition,
+                    function: (params: { chatId: string; }) => this.getChatModelForChatId(params)
                 },
             ],
         };
@@ -64,17 +81,30 @@ export class AdminFunctionsService implements FunctionGroupProvider {
         return `Allow Audio Chat Site Wide: ${value}`;
     };
 
-    /** Implementation for retrieving all company list. */
-    private getAllCompanyList = async (): Promise<string> => {
-        const result = await this.companyDbService.getAllCompanies();
+    private changeChatModel = async ({ chatModel, chatId }: { chatModel: string, chatId: string; }): Promise<string> => {
+        // Validate the model id.
+        if (!openAiChatModels.some(x => x.value === chatModel)) {
+            return `Invalid chat model.  Please consult the list of chat models to find the right one.`;
+        }
 
-        // Return the list to the AI.
-        return JSON.stringify(result);
+        await this.chatDbService.changeChatModelForChatId(new ObjectId(chatId), chatModel);
+        return `The model has been changed to ${chatModel}`;
     };
 
-    /** Implementation for adding a company definition. */
-    private addCompanyDefinition = async ({ name, website }: { name: string, website: string; }): Promise<string> => {
-        const result = await this.companyDbService.addCompany(website, name);
-        return `New company Added with ID: ${result?._id}`;
+    private getChatModelForChatId = async ({ chatId }: { chatId: string; }): Promise<string> => {
+        // Get the chat.
+        const chat = await this.chatDbService.getChatById(new ObjectId(chatId));
+
+        // If there's no chat - we can't do anything.
+        if (!chat) {
+            return `ERROR: No chat exists with the ID ${chatId}`;
+        }
+
+        // Return the value.
+        return chat.model ?? `No chat set on the chat session.  Using default.`;
     };
-}
+
+    private getChatModelList = async () => {
+        return JSON.stringify(openAiChatModels);
+    };
+};;

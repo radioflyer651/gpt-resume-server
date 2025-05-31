@@ -27,7 +27,10 @@ export const searchForCompanyByName: FunctionTool = {
     name: 'search_for_company_by_name',
     type: 'function',
     description: `Searches the database, given some or all of the company name or website, and if found, returns the company data.
-                    Since a perfect match may not be possible, it's recommended to search by partial terms that are unique in the name for a better chance of success.`,
+                    Since a perfect match may not be possible, it's recommended to search by partial terms that are unique in the name for a better chance of success.
+                    This function uses regular expression syntax as its input, allowing great flexibility.  When a name is not found, try a few others.  A good technique
+                    might be to search for something that has the right first and last letter, and then pick from the results of that.  
+                    For instance if looking for "kilty", if it doesn't show up, you might search for "ki.*y", or "k.*y"`,
     strict: true,
     parameters: {
         type: 'object',

@@ -53,7 +53,8 @@ export const objectPropertiesAiDefinition = {
 export const aiFunctionDefinition: FunctionTool = {
     name: "get_json_schema_for_ai_tools",
     type: "function",
-    description: `Given a set of type information, returns the basic JSON Schema for the type.  This can be used in OpenAI tool definitions.`,
+    description: `Given a set of type information, returns the basic JSON Schema for the type.  This can be used in OpenAI tool definitions.
+                    NOTE: When ObjectIds are encountered, they should be string types.`,
     strict: true,
     parameters: objectPropertiesAiDefinition
 };

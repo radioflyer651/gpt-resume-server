@@ -9,12 +9,12 @@ import { getAppConfig } from "../../config";
 import * as fs from 'fs/promises';
 import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { FunctionGroupProvider } from "../../model/function-group-provider.model";
-import { ChatFunctionsService } from "../functions-services/main-chat.functions-service";
+import { ChatFunctionsService } from "../llm-function-groups/main-chat.functions-service";
 import { Socket } from "socket.io";
 import { adminSocketService, mainChatSocketService } from "../../setup-socket-services";
 import { getAshliePersonaChatInstructions, getHtmlChatInstructions } from "../../utils/common-chat-instructions.utils";
 import { adminDbService } from "../../app-globals";
-import { AdminFunctionsService } from "../functions-services/admin.functions-service";
+import { AdminFunctionsService } from "../llm-function-groups/admin.functions-service";
 import { AuthDbService } from "../../database/auth-db.service";
 
 /** Configurator for main chats. */
@@ -91,7 +91,7 @@ export class MainChatConfigurator extends ChatConfiguratorBase {
 
         // If they are an admin, then we need to include the admin functions.
         if (user?.isAdmin) {
-            result.push(new AdminFunctionsService(socket, adminDbService, this.companyDbService, adminSocketService));
+            result.push(new AdminFunctionsService(socket, adminDbService, this.companyDbService, adminSocketService, this.chatDbService));
         }
 
         // Return the result.

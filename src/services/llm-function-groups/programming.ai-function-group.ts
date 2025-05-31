@@ -38,6 +38,10 @@ export class ProgrammerAiFunctionGroup implements AiFunctionGroup {
 
         // Create the properties.
         functionDefinition.propertyList.forEach(p => {
+            /* Add this to the list of names, so it can be part of the 'required' property. */
+            parameterNames.push(p.name);
+
+            // Create the property itself.
             properties[p.name] = {
                 type: p.type,
                 description: p.description,

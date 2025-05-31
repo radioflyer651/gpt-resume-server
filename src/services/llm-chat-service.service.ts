@@ -93,7 +93,7 @@ export class LlmChatService {
                 }
 
                 // Update the chat in the DB.
-                chat = await this.chatDbService.upsertChat(chat);
+                await this.chatDbService.updateChatMessages(chat);
 
                 // Create the callback function that will send status messages to the UI
                 //  through the observable, when status updates are being made.
@@ -213,7 +213,7 @@ export class LlmChatService {
         chat.chatMessages.push(...apiResult.output);
 
         // Update the chat in the DB.
-        chat = await this.chatDbService.upsertChat(chat);
+        await this.chatDbService.updateChatMessages(chat);
 
         // Get any function calls from the response, if there are any.
         const functionCalls = apiResult.output.filter(x => x.type === 'function_call') as ResponseFunctionToolCall[];
@@ -235,7 +235,7 @@ export class LlmChatService {
             chat.chatMessages.push(...results);
 
             // Store these replies.
-            await this.chatDbService.upsertChat(chat);
+            await this.chatDbService.updateChatMessages(chat);
 
             // We have to recall the LLM again with the results.
             //  In doing so, return the result of whatever that is.

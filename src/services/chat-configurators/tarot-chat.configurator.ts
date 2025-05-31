@@ -11,7 +11,7 @@ import { Socket } from "socket.io";
 import { mainChatSocketService, tarotSocketServer } from "../../setup-socket-services";
 import { getAshliePersonaChatInstructions, getHtmlChatInstructions } from "../../utils/common-chat-instructions.utils";
 import { TarotDbService } from "../../database/tarot-db.service";
-import { TarotGameFunctionsService } from "../functions-services/tarot-game.functions-service";
+import { TarotGameFunctionsService } from "../llm-function-groups/tarot-game.functions-service";
 import { AuthDbService } from "../../database/auth-db.service";
 
 /** Configurator for main chats. */

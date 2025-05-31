@@ -275,7 +275,7 @@ export class CompanyManagementDbService extends DbService {
     /** Searches the names and websites of all companies with specified criteria, and returns those that contain the search term. */
     async searchForCompanyByName(searchTerm: string): Promise<Company[]> {
         return await this.dbHelper.makeCallWithCollection<Company[], Company>(DbCollectionNames.Companies, async (db, col) => {
-            return await col.find<Company>({ $or: [{ name: { $text: searchTerm } }, { website: { $text: searchTerm } }] }).toArray();
+            return await col.find<Company>({ $or: [{ name: { $regex: searchTerm } }, { website: { $regex: searchTerm } }] }).toArray();
         });
     }
 }
