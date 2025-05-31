@@ -11,6 +11,7 @@ export interface IAppConfig {
     /** The path of the socket.  This is different than the namespace. */
     chatSocketIoPath: string;
     infoFiles: string[];
+    apolloServiceConfiguration: ApolloConfiguration;
 }
 
 export interface OpenAiConfig {
@@ -25,4 +26,10 @@ export interface MongoConfig {
 
 export interface ServerConfig {
     port: number;
+}
+
+
+export interface ApolloConfiguration {
+    apiKey: string;
+    host: string; // 'api.apollo.io'
 }
