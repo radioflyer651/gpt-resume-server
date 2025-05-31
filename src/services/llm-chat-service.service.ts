@@ -206,6 +206,7 @@ export class LlmChatService {
                 message: `An error occurred when attempting to call the LLM.  ${err?.toString()}`,
                 data: err
             });
+            console.log(`Error`, err);
         }
 
         // Add the results to the chat.

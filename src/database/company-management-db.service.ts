@@ -7,9 +7,10 @@ import { CompanyListingInfo } from "../model/shared-models/company-listing.model
 import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.data";
 import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/job-listing.model";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
-import { getUpsertMatchObject } from "./db-utils";
+import { getPaginatedPipelineEnding, getUpsertMatchObject, unpackPaginatedResults } from "./db-utils";
 import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany } from "./company-aggregations.data";
 import { JobAnalysis } from "../model/shared-models/job-tracking/job-analysis.model";
+import { PaginatedResult } from "../model/shared-models/paginated-result.model";
 
 /** Provide Database services for company management. */
 export class CompanyManagementDbService extends DbService {
@@ -29,7 +30,7 @@ export class CompanyManagementDbService extends DbService {
     }
 
     /** Adds a new company to the system. */
-    async addCompany(website: string, name: string): Promise<Company | undefined> {
+    async addCompany(website: string, name: string): Promise<Company> {
         // Ensure we have valid values.
         const lcWebsite = website.toLowerCase();
 
@@ -88,6 +89,52 @@ export class CompanyManagementDbService extends DbService {
 
             const result = await collection.aggregate(aggregation).toArray();
             return result as CompanyListingInfo[];
+        });
+    }
+
+    /** Returns a list of companies, paginated by a specified amount. */
+    async getPaginatedCompanyList(skip: number, limit: number): Promise<PaginatedResult<CompanyListingInfo>> {
+        return await this.dbHelper.makeCallWithCollection<PaginatedResult<CompanyListingInfo>, Company>(DbCollectionNames.Companies, async (db, collection) => {
+            // Create the aggregation to get this information.
+            const aggregation = [
+                {
+                    $lookup: {
+                        from: 'job-listings',
+                        localField: '_id',
+                        foreignField: 'companyId',
+                        as: 'jobListings'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'company-contacts',
+                        localField: '_id',
+                        foreignField: 'companyId',
+                        as: 'companyContacts'
+                    }
+                },
+                {
+                    $addFields: {
+                        companyContacts: {
+                            $size: '$companyContacts'
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        jobListings: {
+                            $size: '$jobListings'
+                        }
+                    }
+                },
+                ...getPaginatedPipelineEnding(skip, limit)
+            ];
+
+            // Unpack the pipeline result to get the paginated results.
+            const result = unpackPaginatedResults<CompanyListingInfo>(await collection.aggregate(aggregation).toArray());
+
+            // Return the paginated results.
+            return result;
         });
     }
 
@@ -222,6 +269,13 @@ export class CompanyManagementDbService extends DbService {
             await col.updateOne({ _id: jobListingId }, {
                 $set: { analysis }
             });
+        });
+    }
+
+    /** Searches the names and websites of all companies with specified criteria, and returns those that contain the search term. */
+    async searchForCompanyByName(searchTerm: string): Promise<Company[]> {
+        return await this.dbHelper.makeCallWithCollection<Company[], Company>(DbCollectionNames.Companies, async (db, col) => {
+            return await col.find<Company>({ $or: [{ name: { $text: searchTerm } }, { website: { $text: searchTerm } }] }).toArray();
         });
     }
 }

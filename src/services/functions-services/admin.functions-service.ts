@@ -10,13 +10,14 @@ import {
 import { AdminDbService } from "../../database/admin-db.service";
 import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { AdminSocketService } from "../../server/socket-services/admin.socket-service";
+import { CompaniesAiFunctionGroup } from "../llm-functions/companies.ai-function-group";
 
 /** Provides the AI site-management functions. */
 export class AdminFunctionsService implements FunctionGroupProvider {
     constructor(
         private readonly socket: Socket,
         private readonly adminDbService: AdminDbService,
-        private readonly userDbService: CompanyManagementDbService,
+        private readonly companyDbService: CompanyManagementDbService,
         private readonly adminSocketService: AdminSocketService,
     ) {
 
@@ -35,18 +36,13 @@ export class AdminFunctionsService implements FunctionGroupProvider {
                     definition: getAllowSoundSiteWide,
                     function: this.getAllowSoundSiteWide
                 },
-                {
-                    definition: getAllCompanyList,
-                    function: this.getAllCompanyList
-                },
-                {
-                    definition: addCompanyDefinition,
-                    function: this.addCompanyDefinition
-                }
-            ]
+            ],
         };
 
-        return [fnGroup];
+        return [
+            fnGroup,
+            new CompaniesAiFunctionGroup(this.companyDbService)
+        ];
     };
 
     /** Implementation for setting site-wide sound allowance. */
@@ -68,7 +64,7 @@ export class AdminFunctionsService implements FunctionGroupProvider {
 
     /** Implementation for retrieving all company list. */
     private getAllCompanyList = async (): Promise<string> => {
-        const result = await this.userDbService.getAllCompanies();
+        const result = await this.companyDbService.getAllCompanies();
 
         // Return the list to the AI.
         return JSON.stringify(result);
@@ -76,7 +72,7 @@ export class AdminFunctionsService implements FunctionGroupProvider {
 
     /** Implementation for adding a company definition. */
     private addCompanyDefinition = async ({ name, website }: { name: string, website: string; }): Promise<string> => {
-        const result = await this.userDbService.addCompany(website, name);
+        const result = await this.companyDbService.addCompany(website, name);
         return `New company Added with ID: ${result?._id}`;
     };
 }
