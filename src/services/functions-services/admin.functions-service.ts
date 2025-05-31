@@ -11,6 +11,7 @@ import { AdminDbService } from "../../database/admin-db.service";
 import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { AdminSocketService } from "../../server/socket-services/admin.socket-service";
 import { CompaniesAiFunctionGroup } from "../llm-functions/companies.ai-function-group";
+import { ProgrammerAiFunctionGroup } from "../llm-functions/programming.ai-function-group";
 
 /** Provides the AI site-management functions. */
 export class AdminFunctionsService implements FunctionGroupProvider {
@@ -41,7 +42,8 @@ export class AdminFunctionsService implements FunctionGroupProvider {
 
         return [
             fnGroup,
-            new CompaniesAiFunctionGroup(this.companyDbService)
+            new CompaniesAiFunctionGroup(this.companyDbService),
+            new ProgrammerAiFunctionGroup()
         ];
     };
 
