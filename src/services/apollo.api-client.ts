@@ -1,6 +1,6 @@
 import https = require('https');
-import { ApolloOrganizationSearchQuery, ApolloPeopleRequestParams } from '../model/apollo-api-request.model';
-import { ApolloCompanySearchResponse, ApolloOrganizationOwner, ApolloPeopleSearchResponse } from '../model/apollo-api-response.model';
+import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from '../model/apollo/apollo-api-request.model';
+import { ApolloCompanySearchResponse, ApolloOrganizationOwner, ApolloPeopleSearchResponse } from '../model/apollo/apollo-api-response.model';
 import { ApolloConfiguration } from '../model/app-config.model';
 
 const APOLLO_ORGANIZATION_SEARCH_PATH = '/api/v1/mixed_companies/search'; // POST
@@ -130,7 +130,7 @@ export class ApolloApiClient {
     }
 
     /** Returns the full path needed to get organization data from Apollo, with the specified filters. */
-    private createGetOrganizationPath(request: ApolloOrganizationSearchQuery): string {
+    private createGetOrganizationPath(request: ApolloCompanySearchQuery): string {
         // The base portion.
         let result = APOLLO_ORGANIZATION_SEARCH_PATH + '?';
 
@@ -209,7 +209,7 @@ export class ApolloApiClient {
     }
 
     /** Performs a search for organizations, using specified criteria, on the Apollo.io website. */
-    async searchCompany(request: ApolloOrganizationSearchQuery): Promise<ApolloCompanySearchResponse> {
+    async searchCompany(request: ApolloCompanySearchQuery): Promise<ApolloCompanySearchResponse> {
         // Create the path for the request.
         const path = this.createGetOrganizationPath(request);
 

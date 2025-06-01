@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 export interface ApolloPhone {
   number: string;
   source?: string;
@@ -5,6 +7,8 @@ export interface ApolloPhone {
 }
 
 export interface ApolloEntity {
+  /** The MongoDB ID for this entry. */
+  _id: ObjectId;
   id: string;
   name: string;
   website_url?: string;
@@ -174,4 +178,3 @@ export interface ApolloPeopleSearchResponse extends ApolloSearchResponseBase {
   contacts: any[];
   people: ApolloPerson[];
 }
-  

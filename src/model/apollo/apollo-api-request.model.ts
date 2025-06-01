@@ -19,7 +19,7 @@ export interface ApolloPeopleRequestParams {
     perPage?: number;
 }
 
-export interface ApolloOrganizationSearchQuery {
+export interface ApolloCompanySearchQuery {
     organizationNumEmployeesRanges?: string[];       // e.g. ["1,10", "250,500"]
     organizationLocations?: string[];                // e.g. ["texas", "tokyo"]
     organizationNotLocations?: string[];             // e.g. ["minnesota", "ireland"]
