@@ -13,6 +13,8 @@ import { AdminDbService } from "./database/admin-db.service";
 import { AuthDbService } from "./database/auth-db.service";
 import { JobAnalysisFunction } from "./services/llm-functions/job-analysis.llm-function";
 import { ApolloDbService } from "./database/apollo.db-service";
+import { ApolloService } from "./services/apollo.service";
+import { ApolloApiClient } from "./services/apollo.api-client";
 
 /** If we were using dependency injection, this would be the DI services we'd inject in the necessary places. */
 
@@ -20,16 +22,20 @@ import { ApolloDbService } from "./database/apollo.db-service";
 export let dbHelper: MongoHelper;
 
 /* All DB Services. */
-export let companyDbService: CompanyManagementDbService;
-export let chatDbService: ChatDbService;
 export let appChatService: AppChatService;
 export let loggingService: LogDbService;
 export let llmChatService: LlmChatService;
-export let tarotDbService: TarotDbService;
+
+export let companyDbService: CompanyManagementDbService;
+export let chatDbService: ChatDbService;
 export let tarotImageService: TarotImageService;
+export let tarotDbService: TarotDbService;
 export let adminDbService: AdminDbService;
 export let authDbService: AuthDbService;
+
+export let apolloApiClient: ApolloApiClient;
 export let apolloDbService: ApolloDbService;
+export let apolloService: ApolloService;
 
 /* App Services. */
 export let authService: AuthService;
@@ -53,8 +59,11 @@ export async function initializeServices(): Promise<void> {
     loggingService = new LogDbService(dbHelper);
     tarotDbService = new TarotDbService(dbHelper);
     adminDbService = new AdminDbService(dbHelper);
-    apolloDbService = new ApolloDbService(dbHelper);
     llmChatService = new LlmChatService(config.openAiConfig, chatDbService, authDbService, loggingService, getChatConfigurators());
+
+    apolloDbService = new ApolloDbService(dbHelper);
+    apolloApiClient = new ApolloApiClient(config.apolloApiClientConfiguration);
+    apolloService = new ApolloService(config.apolloServiceConfiguration, apolloApiClient, apolloDbService);
 
     appChatService = new AppChatService(chatDbService, getChatConfigurators());
 
