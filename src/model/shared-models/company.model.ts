@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { Comment } from "./comments.model";
 
 export interface Company {
     _id: ObjectId;
@@ -8,8 +9,8 @@ export interface Company {
     /** Boolean value indicating whether or not this company should be archived (and hidden from view). */
     archive?: boolean;
 
-    comments?: string[];
-
+    comments?: Comment[];
+    
     /** Optional: The ID of the ApolloCompany, if one exists, in the database. */
     apolloId?: ObjectId;
 }
