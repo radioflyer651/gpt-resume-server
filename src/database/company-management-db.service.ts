@@ -4,10 +4,10 @@ import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { CompanyListingInfo } from "../model/shared-models/company-listing.model";
-import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.data";
+import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.model";
 import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/job-listing.model";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
-import { getPaginatedPipelineEnding, getUpsertMatchObject, unpackPaginatedResults } from "./db-utils";
+import { getPaginatedPipelineEnding, unpackPaginatedResults } from "./db-utils";
 import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany } from "./company-aggregations.data";
 import { JobAnalysis } from "../model/shared-models/job-tracking/job-analysis.model";
 import { PaginatedResult } from "../model/shared-models/paginated-result.model";
@@ -188,11 +188,9 @@ export class CompanyManagementDbService extends DbService {
                 return contact as CompanyContact;
 
             } else {
-                await col.updateOne(getUpsertMatchObject(contact), { $set: contact });
+                await col.updateOne({ _id: contact._id }, { $set: contact });
                 return contact as CompanyContact;
-
             }
-
         });
     }
 
@@ -216,7 +214,7 @@ export class CompanyManagementDbService extends DbService {
                 return updateDocument;
 
             } else {
-                await col.updateOne(getUpsertMatchObject(company), { $set: updateDocument });
+                await col.updateOne({ _id: company._id }, { $set: updateDocument });
                 return updateDocument;
             }
 
@@ -233,7 +231,7 @@ export class CompanyManagementDbService extends DbService {
                 return jobDescription as JobListing;
 
             } else {
-                await col.updateOne(getUpsertMatchObject(jobDescription), { $set: jobDescription });
+                await col.updateOne({ _id: jobDescription._id }, { $set: jobDescription });
                 return jobDescription as JobListing;
 
             }

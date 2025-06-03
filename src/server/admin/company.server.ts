@@ -3,7 +3,7 @@ import { companyDbService } from '../../app-globals';
 import { ObjectId } from 'mongodb';
 import { JobListing } from '../../model/shared-models/job-tracking/job-listing.model';
 import { UpsertDbItem } from '../../model/shared-models/db-operation-types.model';
-import { CompanyContact } from '../../model/shared-models/job-tracking/company-contact.data';
+import { CompanyContact } from '../../model/shared-models/job-tracking/company-contact.model';
 import { Company } from '../../model/shared-models/company.model';
 import { updateJobAnalysis } from '../../runtime-service-functions';
 

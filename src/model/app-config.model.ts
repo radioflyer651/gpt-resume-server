@@ -1,3 +1,4 @@
+import { ApolloPeopleRequestParams } from "./apollo/apollo-api-request.model";
 
 
 export interface IAppConfig {
@@ -11,7 +12,8 @@ export interface IAppConfig {
     /** The path of the socket.  This is different than the namespace. */
     chatSocketIoPath: string;
     infoFiles: string[];
-    apolloServiceConfiguration: ApolloConfiguration;
+    apolloApiClientConfiguration: ApolloConfiguration;
+    apolloServiceConfiguration: ApolloServiceConfiguration;
 }
 
 export interface OpenAiConfig {
@@ -32,4 +34,13 @@ export interface ServerConfig {
 export interface ApolloConfiguration {
     apiKey: string;
     host: string; // 'api.apollo.io'
+}
+
+export interface ApolloServiceConfiguration {
+    /** The max number of employees a company can have to download them all. */
+    maxEmployeeCount: number;
+    /** The maximum number of employee records to pull at a time, when paging data. */
+    maxPageSize: number;
+    /** When finding relevant people for a company, this is the API query used to find the right ones. */
+    employeeQuery: ApolloPeopleRequestParams;
 }

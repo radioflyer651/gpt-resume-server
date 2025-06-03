@@ -1,7 +1,8 @@
 import https = require('https');
 import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from '../model/apollo/apollo-api-request.model';
-import { ApolloCompanySearchResponse, ApolloOrganizationOwner, ApolloPeopleSearchResponse } from '../model/apollo/apollo-api-response.model';
 import { ApolloConfiguration } from '../model/app-config.model';
+import { ApolloApiError, ApolloOrganizationResponse, ApolloPeopleResponse } from '../model/apollo/apollo-api-response.model';
+import { APIError } from 'openai';
 
 const APOLLO_ORGANIZATION_SEARCH_PATH = '/api/v1/mixed_companies/search'; // POST
 const APOLLO_PEOPLE_SEARCH_PATH = '/api/v1/mixed_people/search'; // POST
@@ -34,7 +35,7 @@ export class ApolloApiClient {
     }
 
     /** Makes an API call to the Apollo service, and returns the result as a deserialized JSON object. */
-    private async makeApiCall<T>(method: 'POST' | 'GET', path: string): Promise<T> {
+    private async makeApiCall<T>(method: 'POST' | 'GET', path: string): Promise<T | ApolloApiError> {
         return new Promise<T>((res, rej) => {
             // Create the options for this request.
             const options = this.createOptions(path);
@@ -49,7 +50,13 @@ export class ApolloApiClient {
                 response.on('end', function () {
                     const body = Buffer.concat(chunks);
                     if (body) {
-                        return JSON.parse(body.toString()) as T;
+                        try {
+                            return JSON.parse(body.toString()) as T;
+                        } catch (err) {
+                            // If we can't deserialize the response, then the response is just a string.
+                            //  Which probably means the API key is wrong/missing.
+                            return body.toString();
+                        }
                     }
                 });
             });
@@ -197,24 +204,34 @@ export class ApolloApiClient {
     }
 
     /** Performs a search for people, using specified criteria, on the Apollo.io website. */
-    async searchPeople(request: ApolloPeopleRequestParams): Promise<ApolloPeopleSearchResponse> {
+    async searchPeople(request: ApolloPeopleRequestParams): Promise<ApolloPeopleResponse | ApolloApiError> {
+        // Validate the page number is not 0.
+        if (request.page === 0) {
+            throw new Error(`The 'page' property is 1-based.  0 is an invalid value.`);
+        }
+
         // Create the path for the request.
         const path = this.createGetPersonsPath(request);
 
         // Make the API call.
-        const result = await this.makeApiCall<ApolloPeopleSearchResponse>('POST', path);
+        const result = await this.makeApiCall<ApolloPeopleResponse>('POST', path);
 
         // Return the result.
         return result;
     }
 
     /** Performs a search for organizations, using specified criteria, on the Apollo.io website. */
-    async searchCompany(request: ApolloCompanySearchQuery): Promise<ApolloCompanySearchResponse> {
+    async searchCompany(request: ApolloCompanySearchQuery): Promise<ApolloOrganizationResponse | ApolloApiError> {
+        // Validate the page number is not 0.
+        if (request.page === 0) {
+            throw new Error(`The 'page' property is 1-based.  0 is an invalid value.`);
+        }
+
         // Create the path for the request.
         const path = this.createGetOrganizationPath(request);
 
         // Make the API call.
-        const result = await this.makeApiCall<ApolloCompanySearchResponse>('POST', path);
+        const result = await this.makeApiCall<ApolloOrganizationResponse>('POST', path);
 
         // Return the result.
         return result;

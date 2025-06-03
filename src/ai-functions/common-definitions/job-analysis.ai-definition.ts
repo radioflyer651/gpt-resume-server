@@ -21,6 +21,7 @@ export const jobListingAnalysisProperties_AiFunctions = {
         "otherInformation",
         "requiredTechnologies",
         "bonusTechnologies",
+        "hiringManagerClues",
     ],
     "properties": {
         "companyName": {
@@ -115,6 +116,10 @@ export const jobListingAnalysisProperties_AiFunctions = {
             "items": {
                 "type": "string"
             }
+        },
+        "hiringManagerClues": {
+            "type": "string",
+            "description": "Details found in the job description that would help identify the hiring manager(s)."
         }
     },
     "additionalProperties": false

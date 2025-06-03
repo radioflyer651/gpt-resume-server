@@ -15,6 +15,7 @@ export interface ApolloPeopleRequestParams {
     organizationIds?: string[];
     organizationNumEmployeesRange?: string[]; // 1,10; 250,500; 10000,20000
     keywords?: string[];
+    /** The page number for results, using pagination.  NOTE: This key is 1-based, so if there are 4 pages, then the page numbers are 1,2,3, and 4. */
     page?: number;
     perPage?: number;
 }

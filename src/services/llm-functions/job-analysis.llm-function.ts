@@ -35,6 +35,7 @@ export class JobAnalysisFunction extends LlmFunctionBase<JobAnalysis> {
 
         return [
             `You are a data analyzer for job openings.  You will analyze job descriptions, and organize the important information in a normalized form.`,
+            `You will assist in providing clues that might help lead to the hiring manager in another application.  Such clues might be what department the job is in, the team, or project.  Location might be a factor, but anything that might help narrow down the search for the hiring manager should be provided.`,
             `Your analysis must be passed as arguments to the return function tool.`,
             `If the role is not allowed in Minnesota, the posting will either indicate the job is "not remote", or that it might be remote, but only allowed in specific states.`,
             `
@@ -55,7 +56,7 @@ export class JobAnalysisFunction extends LlmFunctionBase<JobAnalysis> {
     }
 
     get chatModel() {
-        return 'gpt-4o-mini';
+        return 'o4-mini';
     }
 
     async getJobById(jobId: ObjectId): Promise<JobListing> {

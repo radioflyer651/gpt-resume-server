@@ -25,6 +25,9 @@ export interface CompanyContact {
 
     /** Gets or sets a set of notes associated with this person. */
     comments: string[];
+
+    /** Optional: The ID of the ApolloEmployee, in the database, if one exists. */
+    apolloId?: ObjectId;
 }
 
 /** Represents a phone number for a contact. */

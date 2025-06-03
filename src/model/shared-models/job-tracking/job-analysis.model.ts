@@ -56,4 +56,7 @@ export interface JobAnalysis {
     /** A list of any other information found in the job description that might be interesting, but not
      *   detrimental to securing this position. */
     otherInformation: string[];
+
+    /** Details found in the job description that would help identify the hiring manager(s). */
+    hiringManagerClues?: string;
 }

@@ -9,4 +9,7 @@ export interface Company {
     archive?: boolean;
 
     comments?: string[];
+
+    /** Optional: The ID of the ApolloCompany, if one exists, in the database. */
+    apolloId?: ObjectId;
 }
