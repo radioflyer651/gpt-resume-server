@@ -290,7 +290,7 @@ export class CompanyManagementDbService extends DbService {
                                 as: 'comment',
                                 in: {
                                     title: '',
-                                    description: '$$comment'
+                                    detail: '$$comment'
                                 }
                             }
                         }
