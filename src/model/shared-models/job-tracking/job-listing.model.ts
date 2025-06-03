@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { UpsertDbItem } from "../db-operation-types.model";
 import { JobAnalysis } from "./job-analysis.model";
+import { Comment } from "../comments.model";
 
 /** Represents a job posted on a job board or something similar. */
 export interface JobListing {
@@ -26,7 +27,7 @@ export interface JobListing {
     jobStatuses: JobListingStatus[];
 
     /** Gets or sets notes about this job listing. */
-    comments: string[];
+    comments: Comment[];
 
     /** An AI analysis of this job, with specific properties about the job found in the description. */
     analysis?: JobAnalysis;

@@ -7,7 +7,7 @@ import { getCompanyById, searchForCompanyByName, createJobListing, getJobListing
 import { JobListing, JobListingLine } from "../../model/shared-models/job-tracking/job-listing.model";
 import { stringToObjectIdConverter } from "../../utils/object-id-to-string-converter.utils";
 import { addCompanyDefinition, getAllCompanyList } from "../../ai-functions/admin.ai-functions";
-import { CompanyContact } from "../../model/shared-models/job-tracking/company-contact.data";
+import { CompanyContact } from "../../model/shared-models/job-tracking/company-contact.model";
 import { removeNullProperties } from "../../utils/remove-null.util";
 
 

@@ -1,10 +1,10 @@
-import { ObjectId } from "mongodb";
+import { Collection, ObjectId } from "mongodb";
 import { Company } from "../model/shared-models/company.model";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { CompanyListingInfo } from "../model/shared-models/company-listing.model";
-import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.data";
+import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.model";
 import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/job-listing.model";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
 import { getPaginatedPipelineEnding, getUpsertMatchObject, unpackPaginatedResults } from "./db-utils";
@@ -277,5 +277,30 @@ export class CompanyManagementDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection<Company[], Company>(DbCollectionNames.Companies, async (db, col) => {
             return await col.find<Company>({ $or: [{ name: { $regex: searchTerm } }, { website: { $regex: searchTerm } }] }).toArray();
         });
+    }
+
+    async refactorComments(): Promise<void> {
+        const replaceComments = async (col: Collection) => {
+            await col.updateMany({}, [
+                {
+                    $set: {
+                        comments: {
+                            $map: {
+                                input: '$comments',
+                                as: 'comment',
+                                in: {
+                                    title: '',
+                                    description: '$$comment'
+                                }
+                            }
+                        }
+                    }
+                }
+            ]);
+        };
+
+        await this.dbHelper.makeCallWithCollection(DbCollectionNames.JobListings, async (db, col) => await replaceComments(col));
+        await this.dbHelper.makeCallWithCollection(DbCollectionNames.CompanyContacts, async (db, col) => await replaceComments(col));
+        await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, col) => await replaceComments(col));
     }
 }

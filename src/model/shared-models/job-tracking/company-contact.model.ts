@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { Comment } from "../comments.model";
 
 /** Represents a person who works for a company. */
 export interface CompanyContact {
@@ -24,7 +25,7 @@ export interface CompanyContact {
     phoneNumbers: ContactPhoneNumber[];
 
     /** Gets or sets a set of notes associated with this person. */
-    comments: string[];
+    comments: Comment[];
 }
 
 /** Represents a phone number for a contact. */
@@ -37,5 +38,5 @@ export interface ContactPhoneNumber {
 
     /** Gets or sets any notes associated with this phone number.
      *   I.e. how it was obtained, when to use it, etc. */
-    comments: string[];
+    comments: Comment[];
 }
