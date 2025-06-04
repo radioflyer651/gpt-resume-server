@@ -6,12 +6,28 @@ import { UpsertDbItem } from '../../model/shared-models/db-operation-types.model
 import { CompanyContact } from '../../model/shared-models/job-tracking/company-contact.model';
 import { Company } from '../../model/shared-models/company.model';
 import { updateJobAnalysis } from '../../runtime-service-functions';
+import { TableLoadRequest } from '../../model/shared-models/table-load-request.model';
 
 
 export const companyRouter = express.Router();
 
 companyRouter.get('/companies', async (req, res) => {
     const companies = await companyDbService.getCompanyList();
+
+    res.send(companies);
+});
+
+/** This expects lazy-load info for a table. */
+companyRouter.post('/companies', async (req, res) => {
+    const tableLoadRequest = req.body as TableLoadRequest;
+
+    // Validate.
+    if (!tableLoadRequest) {
+        res.status(400).send('Missing TableLoadRequest informatoin.');
+        return;
+    }
+
+    const companies = await companyDbService.getPaginatedCompanyList(tableLoadRequest);
 
     res.send(companies);
 });

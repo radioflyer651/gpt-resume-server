@@ -11,6 +11,7 @@ import { getPaginatedPipelineEnding, getUpsertMatchObject, unpackPaginatedResult
 import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany } from "./company-aggregations.data";
 import { JobAnalysis } from "../model/shared-models/job-tracking/job-analysis.model";
 import { PaginatedResult } from "../model/shared-models/paginated-result.model";
+import { TableLoadRequest } from "../model/shared-models/table-load-request.model";
 
 /** Provide Database services for company management. */
 export class CompanyManagementDbService extends DbService {
@@ -93,10 +94,10 @@ export class CompanyManagementDbService extends DbService {
     }
 
     /** Returns a list of companies, paginated by a specified amount. */
-    async getPaginatedCompanyList(skip: number, limit: number): Promise<PaginatedResult<CompanyListingInfo>> {
+    async getPaginatedCompanyList(tableLoadRequest: TableLoadRequest): Promise<PaginatedResult<CompanyListingInfo>> {
         return await this.dbHelper.makeCallWithCollection<PaginatedResult<CompanyListingInfo>, Company>(DbCollectionNames.Companies, async (db, collection) => {
             // Create the aggregation to get this information.
-            const aggregation = [
+            const aggregation: object[] = [
                 {
                     $lookup: {
                         from: 'job-listings',
@@ -127,8 +128,23 @@ export class CompanyManagementDbService extends DbService {
                         }
                     }
                 },
-                ...getPaginatedPipelineEnding(skip, limit)
             ];
+
+            // Add the sort and filter.
+            aggregation.push(... this.createPipelineSortAndFilterPipeline(tableLoadRequest));
+
+            // Ensure the pagination is setup properly.
+            if (typeof tableLoadRequest.first !== 'number' || typeof tableLoadRequest.last !== 'number') {
+                throw new Error(`pagination properties are required (first and last).`);
+            }
+
+            // Validate.
+            if (tableLoadRequest.first >= tableLoadRequest.last - 1) {
+                throw new Error('first and last values for the tableLoadRequest are out of order.');
+            }
+
+            // Add the pagination properties.
+            aggregation.push(...getPaginatedPipelineEnding(tableLoadRequest.first, tableLoadRequest.last - tableLoadRequest.first + 1));
 
             // Unpack the pipeline result to get the paginated results.
             const result = unpackPaginatedResults<CompanyListingInfo>(await collection.aggregate(aggregation).toArray());
@@ -143,7 +159,7 @@ export class CompanyManagementDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection<CompanyContact[], CompanyContact>(DbCollectionNames.CompanyContacts, async (db, col) => {
             return await col.find({ companyId: companyId }).toArray();
         });
-    }
+    };
 
     /** Returns all job listings (shortened) for a specified company ID. */
     async getJobListingsForCompanyId(companyId: ObjectId): Promise<JobListingLine[]> {
@@ -153,7 +169,7 @@ export class CompanyManagementDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection<JobListingLine[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
             return await col.aggregate(aggregation).toArray() as JobListingLine[];
         });
-    }
+    };
 
     /** Returns the JobListingLines for all jobs in the system. */
     async getAllJobListings(): Promise<JobListingLine[]> {
@@ -163,21 +179,21 @@ export class CompanyManagementDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection<JobListingLine[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
             return await col.aggregate(aggregation).toArray() as JobListingLine[];
         });
-    }
+    };
 
     /** Returns a company job listing, specified by its ID. */
     async getJobListingById(listingId: ObjectId): Promise<JobListing | undefined> {
         return await this.dbHelper.makeCallWithCollection<JobListing | undefined, JobListing>(DbCollectionNames.JobListings, async (db, col) => {
             return await nullToUndefined(col.findOne({ _id: listingId }));
         });
-    }
+    };
 
     /** Returns a company contact, specified by its ID. */
     async getContactById(contactId: ObjectId): Promise<CompanyContact | undefined> {
         return await this.dbHelper.makeCallWithCollection<CompanyContact | undefined, CompanyContact>(DbCollectionNames.CompanyContacts, async (db, col) => {
             return await nullToUndefined(col.findOne({ _id: contactId }));
         });
-    }
+    };
 
     /** Upserts a specified company contact. */
     async upsertCompanyContact(contact: UpsertDbItem<CompanyContact>): Promise<CompanyContact> {
@@ -194,7 +210,7 @@ export class CompanyManagementDbService extends DbService {
             }
 
         });
-    }
+    };
 
     /** Updates a specified company in the database, or adds them if they don't exist. */
     async upsertCompany(company: Company): Promise<Company> {
@@ -221,7 +237,7 @@ export class CompanyManagementDbService extends DbService {
             }
 
         });
-    }
+    };
 
     /** Updates/inserts a specified job description into the database. */
     async upsertCompanyJobListing(jobDescription: UpsertDbItem<JobListing>): Promise<JobListing> {
@@ -238,21 +254,21 @@ export class CompanyManagementDbService extends DbService {
 
             }
         });
-    }
+    };
 
     /** Returns a Job Listing specified by its ID. */
     async deleteCompanyJobListingById(_id: ObjectId): Promise<void> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.JobListings, async (db, col) => {
             await col.deleteOne({ _id });
         });
-    }
+    };
 
     /** Returns a contact specified by its ID. */
     async deleteCompanyContactById(_id: ObjectId): Promise<void> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.CompanyContacts, async (db, col) => {
             await col.deleteOne({ _id });
         });
-    }
+    };
 
     /** Deletes a specified company, it's contacts, and job listings. */
     async deleteCompanyById(companyId: ObjectId): Promise<void> {
@@ -261,7 +277,7 @@ export class CompanyManagementDbService extends DbService {
             await db.collection(DbCollectionNames.JobListings).deleteMany({ companyId: companyId });
             await db.collection(DbCollectionNames.Companies).deleteOne({ _id: companyId });
         });
-    }
+    };
 
     /** Updates the analysis property on a JobListing object, specified by its ID. */
     async updateJobAnalysisForJob(jobListingId: ObjectId, analysis: JobAnalysis): Promise<void> {
@@ -270,7 +286,7 @@ export class CompanyManagementDbService extends DbService {
                 $set: { analysis }
             });
         });
-    }
+    };
 
     /** Searches the names and websites of all companies with specified criteria, and returns those that contain the search term. */
     async searchForCompanyByName(searchTerm: string): Promise<Company[]> {
