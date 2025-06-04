@@ -17,20 +17,20 @@ companyRouter.get('/companies', async (req, res) => {
     res.send(companies);
 });
 
-/** This expects lazy-load info for a table. */
-companyRouter.post('/companies', async (req, res) => {
-    const tableLoadRequest = req.body as TableLoadRequest;
+// /** This expects lazy-load info for a table. */
+// companyRouter.post('/companies', async (req, res) => {
+//     const tableLoadRequest = req.body as TableLoadRequest;
 
-    // Validate.
-    if (!tableLoadRequest) {
-        res.status(400).send('Missing TableLoadRequest informatoin.');
-        return;
-    }
+//     // Validate.
+//     if (!tableLoadRequest) {
+//         res.status(400).send('Missing TableLoadRequest informatoin.');
+//         return;
+//     }
 
-    const companies = await companyDbService.getPaginatedCompanyList(tableLoadRequest);
+//     const companies = await companyDbService.getPaginatedCompanyList(tableLoadRequest);
 
-    res.send(companies);
-});
+//     res.send(companies);
+// });
 
 companyRouter.get('/companies/:companyId', async (req, res) => {
     const { companyId } = req.params;
