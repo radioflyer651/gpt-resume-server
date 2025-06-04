@@ -55,10 +55,6 @@ export class AdminFunctionsService implements FunctionGroupProvider {
                     definition: getChatModelDefinition,
                     function: (params: { chatId: string; }) => this.getChatModelForChatId(params)
                 },
-                {
-                    definition: updateComments,
-                    function: () => this.updateComments()
-                },
             ],
         };
 
@@ -112,23 +108,5 @@ export class AdminFunctionsService implements FunctionGroupProvider {
     private getChatModelList = async () => {
         return JSON.stringify(openAiChatModels);
     };
-
-    private updateComments = async () => {
-        this.companyDbService.refactorComments();
-
-        return 'complete';
-    };
 };
 
-
-const updateComments: FunctionTool = {
-    name: 'update_comments',
-    type: 'function',
-    description: `(Admin Function) Refactors comments on specific items in the database, to a new form.`,
-    parameters: {
-        type: 'object',
-        properties: {},
-        additionalProperties: false
-    },
-    strict: true
-};

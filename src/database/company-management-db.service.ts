@@ -292,29 +292,4 @@ export class CompanyManagementDbService extends DbService {
             return await col.find<Company>({ $or: [{ name: { $regex: searchTerm } }, { website: { $regex: searchTerm } }] }).toArray();
         });
     }
-
-    async refactorComments(): Promise<void> {
-        const replaceComments = async (col: Collection) => {
-            await col.updateMany({}, [
-                {
-                    $set: {
-                        comments: {
-                            $map: {
-                                input: '$comments',
-                                as: 'comment',
-                                in: {
-                                    title: '',
-                                    detail: '$$comment'
-                                }
-                            }
-                        }
-                    }
-                }
-            ]);
-        };
-
-        await this.dbHelper.makeCallWithCollection(DbCollectionNames.JobListings, async (db, col) => await replaceComments(col));
-        await this.dbHelper.makeCallWithCollection(DbCollectionNames.CompanyContacts, async (db, col) => await replaceComments(col));
-        await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, col) => await replaceComments(col));
-    }
 }

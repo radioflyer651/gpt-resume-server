@@ -140,7 +140,7 @@ export const getContactsForCompanyId: FunctionTool = {
 export const getAllJobListings: FunctionTool = {
     name: 'get_all_job_listings',
     type: 'function',
-    description: 'Returns a list of job listings.  The listings are shortened with condensed information.',
+    description: 'Returns a list of job listings.  The listings are shortened with condensed information.  This list includes all jobs found and potentially applied for.  It is a shallow listing of the job information, and can be drilled into.',
     strict: true,
     parameters: {
         type: 'object',
