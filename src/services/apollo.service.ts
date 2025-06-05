@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { ApolloDbService } from "../database/apollo.db-service";
 import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from "../model/apollo/apollo-api-request.model";
 import { ApolloApiError, ApolloCompany, ApolloEmployee, ApolloPeopleResponse } from "../model/apollo/apollo-api-response.model";
@@ -7,6 +8,7 @@ import { ApolloServiceConfiguration } from "../model/app-config.model";
 import { LApolloOrganization } from "../model/shared-models/apollo-local.model";
 import { convertToLApolloOrganization } from "../utils/apollo-data-converter.utils";
 import { ApolloApiClient } from "./apollo.api-client";
+import { CompanyManagementDbService } from "../database/company-management-db.service";
 
 
 /** Provides support for performing searches against the Apollo.io API, and caching its data. */
@@ -15,6 +17,7 @@ export class ApolloService {
         readonly serviceConfig: ApolloServiceConfiguration,
         protected readonly apolloApiClient: ApolloApiClient,
         protected readonly apolloDbService: ApolloDbService,
+        protected readonly companyDbService: CompanyManagementDbService,
     ) {
         // Ensure we have the right parameters for the service configuration.
         if (!serviceConfig) {
@@ -32,6 +35,56 @@ export class ApolloService {
             ...this.serviceConfig.employeeQuery,
             perPage: this.serviceConfig.maxEmployeeCount
         };
+    }
+
+    /** Attempts to update an Apollo company in the database using the domain of a local company, specified by its ID. 
+     *   The ID of the ApolloCompany is returned, if one was found. */
+    async updateApolloCompanyByCompanyDomain(localCompanyId: ObjectId): Promise<ObjectId> {
+        // Get the company by the ID.
+        const company = await this.companyDbService.getCompanyById(localCompanyId);
+
+        // If not found, then we can't do much.
+        if (!company) {
+            throw new Error(`Company does not exist with the id ${localCompanyId}.  NOTE: This is not the Apollo company ID, but the local company ID of the application.`);
+        }
+
+        // Ensure we have a valid domain.
+        if (typeof company.website !== 'string' || company.website.trim() === '') {
+            throw new Error(`Company ${company.name} does not have a valid domain/website.`);
+        }
+
+        // Get the domain from the website.
+        const websiteMatch = /(([\w+\d_\-]+)\.)+([\w+\d_\-]+)/i.exec(company.website);
+
+        // If no match, then we can't do anything.
+        if (!websiteMatch) {
+            throw new Error(`Could not extract the domain from the website value: ${company.website}`);
+        }
+
+        // Get the domain.
+        const website = websiteMatch[0];
+
+        // Now we have to make sure it doesn't start with www., per the Apollo instructions.
+        const domainMatch = /(www\.)?(.+)/.exec(website)!;
+        const domain = domainMatch[2];
+
+        // Perform the update.
+        const result = await this.getCompanyByDomain(domain);
+
+        // If no result was found, then even though there was no error, we can't link this
+        //  to the company.  We'll throw the error here.
+        if (!result) {
+            throw new Error(`No company was found in Apollo with the domain: ${domain}`);
+        }
+
+        // Link the company to the apollo company.
+        company.apolloId = result._id;
+
+        // Update the company with its new ID.
+        this.companyDbService.upsertCompany(company);
+
+        // Return the ID of the company.
+        return result._id;
     }
 
     /** Returns an Apollo organization, using its domain name as search criteria. */
@@ -62,8 +115,16 @@ export class ApolloService {
             }
         }
 
+        // Get the company list, since they're not all int he same array.
+        const companyList = [...apolloResult.accounts, ...apolloResult.organizations] as ApolloCompany[];
+
+        // Ensure their _id's are all set.
+        companyList.forEach(c => {
+            c._id = new ObjectId(c.organization_id ? c.organization_id : c.id);
+        });
+
         // Insert the results and convert them to the right type.
-        const result = await this.storeApolloCompanies([...apolloResult.accounts, ...apolloResult.organizations]);
+        const result = await this.storeApolloCompanies(companyList);
 
         // We only expect to have one or zero, so if we don't, then we have a problem.
         if (result.length > 0) {

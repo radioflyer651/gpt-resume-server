@@ -7,9 +7,12 @@ import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { getUpsertMatchObject } from "./db-utils";
 import { ApolloDataInfo } from "../model/apollo/apollo-data-info.model";
+import { ApolloCompanyShortened } from "../model/apollo/apollo-api-derived.models";
 
 function refreshId(target: { _id?: ObjectId, id: string; }): void {
     if (!target._id) {
+        // If this is an "Account" then we need to use the organization_id.  Otherwise, just the id.
+
         target._id = new ObjectId(target.id);
     }
 }
@@ -58,6 +61,13 @@ export class ApolloDbService extends DbService {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.ApolloOrganizations, async (db, col) => {
             return nullToUndefined(await col.findOne<ApolloCompany>({ _id: objId }));
         });
+    }
+
+    /** Returns all organizations in the database, with a shortened data set. */
+    async getAllOrganizations(): Promise<ApolloCompanyShortened[]> {
+        return await this.dbHelper.findDataItemWithProjection<ApolloCompany>(DbCollectionNames.ApolloOrganizations, {},
+            { _id: 1, id: 1, name: 1, linkedin_url: 1, website_url: 1, primary_domain: 1, domain: 1, organization_id: 1 },
+            { findOne: false }) as ApolloCompanyShortened[];
     }
 
     /** Inserts a set of ApolloCompany objects into the database. */

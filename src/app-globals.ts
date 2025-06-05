@@ -63,7 +63,7 @@ export async function initializeServices(): Promise<void> {
 
     apolloDbService = new ApolloDbService(dbHelper);
     apolloApiClient = new ApolloApiClient(config.apolloApiClientConfiguration);
-    apolloService = new ApolloService(config.apolloServiceConfiguration, apolloApiClient, apolloDbService);
+    apolloService = new ApolloService(config.apolloServiceConfiguration, apolloApiClient, apolloDbService, companyDbService);
 
     appChatService = new AppChatService(chatDbService, getChatConfigurators());
 

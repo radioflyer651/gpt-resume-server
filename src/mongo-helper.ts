@@ -9,6 +9,9 @@ import { nullToUndefined } from "./utils/empty-and-null.utils";
 // const defaultConnectionString = 'mongodb://localhost:27017'
 const defaultConnectionString = 'mongodb://mongo.fingercraft.run:27017';
 
+type PropertyMapping<T, K> = { [n in keyof T]: K; };
+type ProjectionMap<T, P extends PropertyMapping<T, 1>> = { [k in keyof P & keyof T]: T[k] };
+
 export class MongoHelper {
     constructor(private connectionString?: string, private readonly databaseName: string = 'chat-session-db') {
         if (!connectionString) {
@@ -140,15 +143,29 @@ export class MongoHelper {
         });
     }
 
-    async findDataItem<R extends Document, T extends Document = Partial<R>>(collectionName: string, query: T): Promise<R[]>;
-    async findDataItem<R extends Document, T extends Document = Partial<R>>(collectionName: string, query: T, config: { findOne: false; }): Promise<R[]>;
-    async findDataItem<R extends Document, T extends Document = Partial<R>>(collectionName: string, query: T, config: { findOne: true; }): Promise<R | undefined>;
-    async findDataItem<R extends Document, T extends Document = Partial<R>>(collectionName: string, query: T, config?: { findOne: boolean; }): Promise<R | R[] | undefined> {
-        return await this.makeCallWithCollection<R[] | R | undefined, T>(collectionName, async (db, col) => {
+    async findDataItem<C extends Document, T extends Document = Partial<C>>(collectionName: string, query: T): Promise<C[]>;
+    async findDataItem<C extends Document, T extends Document = Partial<C>>(collectionName: string, query: T, config: { findOne: false; }): Promise<C[]>;
+    async findDataItem<C extends Document, T extends Document = Partial<C>>(collectionName: string, query: T, config: { findOne: true; }): Promise<C | undefined>;
+    async findDataItem<C extends Document, T extends Document = Partial<C>>(collectionName: string, query: T, config?: { findOne: boolean; }): Promise<C | C[] | undefined> {
+        return await this.makeCallWithCollection<C[] | C | undefined, T>(collectionName, async (db, col) => {
             if (config?.findOne === true) {
-                return nullToUndefined(await col.findOne<R>(query));
+                return nullToUndefined(await col.findOne<C>(query));
             } else {
-                return await col.find<R>(query).toArray();
+                return await col.find<C>(query).toArray();
+            }
+        });
+    }
+
+
+    async findDataItemWithProjection<C extends Document, P extends PropertyMapping<Partial<C>, 1> = PropertyMapping<Partial<C>, 1>, T extends Document = Partial<C>>(collectionName: string, query: T, projection: P): Promise<C[]>;
+    async findDataItemWithProjection<C extends Document, P extends PropertyMapping<Partial<C>, 1> = PropertyMapping<Partial<C>, 1>, T extends Document = Partial<C>>(collectionName: string, query: T, projection: P, config: { findOne: false; }): Promise<C[]>;
+    async findDataItemWithProjection<C extends Document, P extends PropertyMapping<Partial<C>, 1> = PropertyMapping<Partial<C>, 1>, T extends Document = Partial<C>>(collectionName: string, query: T, projection: P, config: { findOne: true; }): Promise<C | undefined>;
+    async findDataItemWithProjection<C extends Document, P extends PropertyMapping<Partial<C>, 1> = PropertyMapping<Partial<C>, 1>, T extends Document = Partial<C>>(collectionName: string, query: T, projection: P, config?: { findOne: boolean; }): Promise<C | C[] | undefined> {
+        return await this.makeCallWithCollection<C[] | C | undefined, T>(collectionName, async (db, col) => {
+            if (config?.findOne === true) {
+                return nullToUndefined(await col.findOne<C>(query, { projection }));
+            } else {
+                return await col.find<C>(query, { projection }).toArray();
             }
         });
     }

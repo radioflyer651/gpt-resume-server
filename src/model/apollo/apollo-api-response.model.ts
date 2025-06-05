@@ -282,5 +282,59 @@ export interface ApolloApiErrorObject {
 /** When an API Key is incorrect during an Apollo API call, a string is returned.  Otherwise a JSON object. */
 export type ApolloApiError = ApolloApiErrorObject | string;
 
-export type ApolloCompany = ApolloAccount & Partial<ApolloOrganization>;
+export type ApolloCompany = ApolloOrganization & Partial<ApolloAccount>;
 export type ApolloEmployee = ApolloPerson & Partial<ApolloContact>;
+
+/** TypeGuard for ApolloAccount. */
+export function isAccount(target: any): target is ApolloAccount {
+  if (typeof target !== 'object') {
+    return false;
+  }
+
+  return isOrganization(target) && 'organization_id' in target;
+}
+
+/** TypeGuard for ApolloOrganization. */
+export function isOrganization(target: any): target is ApolloOrganization {
+  if (typeof target !== 'object') {
+    return false;
+  }
+
+  return !('organization_id' in target) &&
+    ('id' in target &&
+      'has_intent_signal_account' in target &&
+      'languages' in target &&
+      'show_intent' in target);
+}
+
+/** TypeGuard for ApolloPerson. */
+export function isPerson(target: any): target is ApolloPerson {
+  if (typeof target !== 'object') {
+    return false;
+  }
+
+  const hardProps = [
+    'id',
+    'first_name', 'last_name', 'show_intent'
+  ];
+
+  return hardProps.every(p => p in target);
+}
+
+/** TypeGuard for ApolloContact. */
+export function isContact(target: any): target is ApolloContact {
+  if (typeof target !== 'object') {
+    return false;
+  }
+
+  if (!isPerson(target)) {
+    return false;
+  }
+
+  const hardProps = [
+    'contact_roles', 'email_needs_tickling',
+    'has_pending_email_arcgate_request', 'has_email_arcgate_request'
+  ];
+
+  return hardProps.every(p => p in target);
+}
