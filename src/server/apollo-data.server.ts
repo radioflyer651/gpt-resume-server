@@ -1,6 +1,7 @@
 import express from 'express';
 import { ObjectId } from 'mongodb';
 import { apolloDbService, apolloService } from '../app-globals';
+import { convertToLApolloOrganization } from '../utils/apollo-data-converter.utils';
 
 export const apolloOrganizationRouter = express.Router();
 
@@ -49,7 +50,15 @@ apolloOrganizationRouter.get('/companies/:companyId', async (req, res) => {
     }
 
     // Get the value from the database.
-    const result = await apolloDbService.getOrganizationById(new ObjectId(id));
+    const dbResult = await apolloDbService.getOrganizationById(new ObjectId(id));
+
+    if (!dbResult) {
+        res.status(404).send('Organization not found');
+        return;
+    }
+
+    // Convert the result to a LApolloOrganization.
+    const result = convertToLApolloOrganization(dbResult);
 
     // Return it.
     res.send(result);

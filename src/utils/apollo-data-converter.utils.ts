@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import { ApolloCompany, ApolloContactEmail, ApolloEmployee } from "../model/apollo/apollo-api-response.model";
 import { LApolloOrganization, LApolloPerson, LApolloContactEmail } from "../model/shared-models/apollo-local.model";
-import { NewDbItem } from "../model/shared-models/db-operation-types.model";
 
 /**
  * Converts an ApolloOrganization to an LApolloOrganization.
@@ -10,6 +9,7 @@ import { NewDbItem } from "../model/shared-models/db-operation-types.model";
  */
 export function convertToLApolloOrganization(org: undefined): undefined;
 export function convertToLApolloOrganization(org: ApolloCompany): LApolloOrganization;
+export function convertToLApolloOrganization(org: ApolloCompany | undefined): LApolloOrganization | undefined;
 export function convertToLApolloOrganization(org: ApolloCompany | undefined): LApolloOrganization | undefined {
     if (!org) {
         return undefined;
@@ -34,9 +34,7 @@ export function convertToLApolloOrganization(org: ApolloCompany | undefined): LA
         websiteUrl: org.website_url,
         linkedInUrl: org.linkedin_url,
         twitterUrl: org.twitter_url,
-        primaryPhone: org.primary_domain, // Assuming primary domain as phone placeholder
-        organizationHeadcount: org.organization_headcount_twelve_month_growth,
-        organizationRevenue: org.organization_revenue || undefined,
+        primaryPhone: org.primary_phone?.number ?? org.phone ?? '', // Assuming primary domain as phone placeholder
         intentStrength: org.intent_strength,
         foundedYear: org.founded_year,
         logoUrl: org.logo_url,

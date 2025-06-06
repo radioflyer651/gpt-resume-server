@@ -23,8 +23,6 @@ export interface LApolloOrganization {
     primaryPhone?: string;
 
     /** Clue-related information */
-    organizationHeadcount?: number;
-    organizationRevenue?: number;
     intentStrength?: number | null;
     foundedYear?: number;
     logoUrl?: string;
