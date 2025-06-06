@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { ApolloDbService } from "../database/apollo.db-service";
 import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from "../model/apollo/apollo-api-request.model";
-import { ApolloApiError, ApolloCompany, ApolloEmployee, ApolloPeopleResponse } from "../model/apollo/apollo-api-response.model";
+import { ApolloAccount, ApolloApiError, ApolloCompany, ApolloEmployee, ApolloPeopleResponse } from "../model/apollo/apollo-api-response.model";
 import { isApolloApiErrorObject, isApolloCompanyApiResponse, isApolloPeopleApiResponse } from "../model/apollo/apollo-api.data-helpers";
 import { ApolloDataInfo, createNewApolloDataInfo } from "../model/apollo/apollo-data-info.model";
 import { ApolloServiceConfiguration } from "../model/app-config.model";
@@ -81,7 +81,7 @@ export class ApolloService {
         company.apolloId = result._id;
 
         // Update the company with its new ID.
-        this.companyDbService.upsertCompany(company);
+        await this.companyDbService.upsertCompany(company);
 
         // Return the ID of the company.
         return result._id;
@@ -89,6 +89,9 @@ export class ApolloService {
 
     /** Returns an Apollo organization, using its domain name as search criteria. */
     async getCompanyByDomain(domainName: string): Promise<LApolloOrganization | undefined> {
+        // Be sure the domain is lower case.
+        domainName = domainName.toLowerCase().trim();
+
         // First, check the database.
         const dbResult = await this.apolloDbService.getOrganizationByDomain(domainName);
 
@@ -124,15 +127,22 @@ export class ApolloService {
         });
 
         // Insert the results and convert them to the right type.
-        const result = await this.storeApolloCompanies(companyList);
+        const results = await this.storeApolloCompanies(companyList);
 
         // We only expect to have one or zero, so if we don't, then we have a problem.
-        if (result.length > 0) {
-            throw new Error(`Expected to have 0 or 1 results from Apollo, but received ${result.length}`);
+        if (results.length > 0) {
+            console.warn(`Expected to have 0 or 1 results from Apollo, but received ${results.length}`);
+        }
+
+        // Domain searches will be a partial match, so we may get multiple results.
+        //  Make sure the domain matches exactly, if we don't have a single result.
+        let result: LApolloOrganization | undefined = results[0];
+        if (results.length > 1) {
+            result = results.find(r => r.domain?.toLocaleLowerCase() === domainName || r.primaryDomain?.toLocaleLowerCase() === domainName);
         }
 
         // Return the results.
-        return result[0];
+        return results[0];
     }
 
     /** Returns an Apollo organization, using its Apollo ID as search criteria. */
@@ -167,6 +177,7 @@ export class ApolloService {
         const result = await this.storeApolloCompanies([...apolloResult.accounts, ...apolloResult.organizations]);
 
         // We only expect to have one or zero, so if we don't, then we have a problem.
+        //  Since we have an exact ID, it would be a little odd if we have more than one.
         if (result.length > 0) {
             throw new Error(`Expected to have 0 or 1 results from Apollo, but received ${result.length}`);
         }

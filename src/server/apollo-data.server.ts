@@ -4,10 +4,6 @@ import { apolloDbService, apolloService } from '../app-globals';
 
 export const apolloOrganizationRouter = express.Router();
 
-apolloOrganizationRouter.use('/apollo', (req, res, next) => {
-    next();
-});
-
 apolloOrganizationRouter.get('/companies', async (req, res) => {
     // Get all of the companies.
     const companies = await apolloDbService.getAllOrganizations();

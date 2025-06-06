@@ -213,25 +213,16 @@ export class CompanyManagementDbService extends DbService {
     /** Updates a specified company in the database, or adds them if they don't exist. */
     async upsertCompany(company: Company): Promise<Company> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, col) => {
-            // Ensure the company data is pure.
-            const updateDocument = {
-                _id: company._id,
-                name: company.name,
-                website: company.website,
-                comments: company.comments,
-                archive: company.archive,
-            } as any;
-
             if (!company._id) {
-                const result = await col.insertOne(updateDocument);
-                updateDocument._id = result.insertedId;
+                const result = await col.insertOne(company);
+                company._id = result.insertedId;
 
                 // Return the company back, with the new ID.
-                return updateDocument;
+                return company;
 
             } else {
-                await col.updateOne({ _id: company._id }, { $set: updateDocument });
-                return updateDocument;
+                await col.updateOne({ _id: company._id }, { $set: company });
+                return company;
             }
 
         });

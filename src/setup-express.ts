@@ -16,6 +16,7 @@ import { siteInfoRouter } from './server/site-info.server';
 import { loggingService } from './app-globals';
 import { AuthenticatedSpecialRequest } from './model/authenticated-request.model';
 import { adminRouter } from './server/admin/admin.server';
+import { apolloOrganizationRouter } from './server/apollo-data.server';
 
 /** Initializes all routes and middleware for an express app. */
 export async function initializeExpressApp() {
@@ -99,6 +100,7 @@ export async function initializeExpressApp() {
   app.use(chatRouter);
   app.use(tarotRouter);
   app.use(siteInfoRouter);
+  app.use('/apollo', apolloOrganizationRouter);
 
   app.use(adminRouter);
 

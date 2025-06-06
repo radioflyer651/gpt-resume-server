@@ -15,7 +15,15 @@ export function convertToLApolloOrganization(org: ApolloCompany | undefined): LA
         return undefined;
     }
 
-    const _id = org._id ?? new ObjectId(org.id);
+    // Get the ID, because it could be the organization_id or the id.
+    let _id: ObjectId = org._id;
+    if (!_id) {
+        if (org.organization_id) {
+            _id = new ObjectId(org.organization_id);
+        }
+
+        _id = new ObjectId(org.id);
+    }
 
     return {
         _id,
@@ -31,7 +39,9 @@ export function convertToLApolloOrganization(org: ApolloCompany | undefined): LA
         organizationRevenue: org.organization_revenue || undefined,
         intentStrength: org.intent_strength,
         foundedYear: org.founded_year,
-        logoUrl: org.logo_url
+        logoUrl: org.logo_url,
+        domain: org.domain,
+        primaryDomain: org.primary_domain
     };
 }
 
@@ -46,7 +56,7 @@ export function convertToLApolloPerson(person: ApolloEmployee | undefined): LApo
     if (!person) {
         return undefined;
     }
-    
+
     const _id = person._id ?? new ObjectId(person.id);
 
     return {

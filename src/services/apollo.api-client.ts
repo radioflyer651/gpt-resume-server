@@ -36,7 +36,7 @@ export class ApolloApiClient {
 
     /** Makes an API call to the Apollo service, and returns the result as a deserialized JSON object. */
     private async makeApiCall<T>(method: 'POST' | 'GET', path: string): Promise<T | ApolloApiError> {
-        return new Promise<T>((res, rej) => {
+        return new Promise<T | ApolloApiError>((res, rej) => {
             // Create the options for this request.
             const options = this.createOptions(path);
 
@@ -51,13 +51,21 @@ export class ApolloApiClient {
                     const body = Buffer.concat(chunks);
                     if (body) {
                         try {
-                            return JSON.parse(body.toString()) as T;
+                            res(JSON.parse(body.toString()) as T);
+                            return;
                         } catch (err) {
                             // If we can't deserialize the response, then the response is just a string.
                             //  Which probably means the API key is wrong/missing.
-                            return body.toString();
+                            res(body.toString());
+                            return;
                         }
                     }
+
+                    res('No response body received.');
+                });
+
+                response.on('error', function (err) {
+                    rej(err);
                 });
             });
 
@@ -68,7 +76,7 @@ export class ApolloApiClient {
     /** Returns the full path needed to get people data from Apollo, with the specified filters. */
     private createGetPersonsPath(request: ApolloPeopleRequestParams): string {
         // The base portion.
-        let result = APOLLO_PEOPLE_SEARCH_PATH + '?';
+        let result = APOLLO_PEOPLE_SEARCH_PATH;
 
         // This will be added to the result before each new addition.
         //  After the first addition, it will be changed to "&".
@@ -139,7 +147,7 @@ export class ApolloApiClient {
     /** Returns the full path needed to get organization data from Apollo, with the specified filters. */
     private createGetOrganizationPath(request: ApolloCompanySearchQuery): string {
         // The base portion.
-        let result = APOLLO_ORGANIZATION_SEARCH_PATH + '?';
+        let result = APOLLO_ORGANIZATION_SEARCH_PATH;
 
         // This will be added to the result before each new addition.
         //  After the first addition, it will be changed to "&".

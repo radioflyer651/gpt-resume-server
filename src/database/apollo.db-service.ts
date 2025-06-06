@@ -48,7 +48,13 @@ export class ApolloDbService extends DbService {
     /** Attempts to get an organization by their domain, if they exist in the system. */
     async getOrganizationByDomain(domainName: string): Promise<ApolloCompany | undefined> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.ApolloOrganizations, async (db, col) => {
-            return nullToUndefined(await col.findOne<ApolloCompany>({ primary_domain: domainName }));
+            return nullToUndefined(await col.findOne<ApolloCompany>({
+                $or: [
+                    { primary_domain: { $eq: domainName.toLocaleLowerCase() } },
+                    { domain: { $eq: domainName.toLocaleLowerCase() } }
+                ]
+            }
+            ));
         });
     }
 

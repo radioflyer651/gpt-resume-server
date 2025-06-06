@@ -28,6 +28,9 @@ export interface LApolloOrganization {
     intentStrength?: number | null;
     foundedYear?: number;
     logoUrl?: string;
+
+    domain?: string;
+    primaryDomain?: string;
 }
 
 export interface LApolloPerson {
