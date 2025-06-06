@@ -276,7 +276,8 @@ export interface ApolloPeopleResponse {
 
 /** The type returned if there was an error when retrieving data. */
 export interface ApolloApiErrorObject {
-  message: string;
+  message?: string;
+  error?: string;
 }
 
 /** When an API Key is incorrect during an Apollo API call, a string is returned.  Otherwise a JSON object. */

@@ -63,3 +63,69 @@ apolloOrganizationRouter.get('/companies/:companyId', async (req, res) => {
     // Return it.
     res.send(result);
 });
+
+/** Instructs the server to obtain employee data for an Apollo Company, specified by it's ID. */
+apolloOrganizationRouter.post('/companies/update-employees/:apolloCompanyId', async (req, res) => {
+    // Get the ID from the params.
+    const id = req.params.apolloCompanyId;
+
+    // Validate.
+    if (!ObjectId.isValid(id)) {
+        res.send(400);
+        return;
+    }
+
+    // Perform the update.
+    const result = await apolloService.loadEmployeesForCompany(id, true);
+
+    // Return the status of the update.
+    if (result.state === 'complete') {
+        res.sendStatus(200);
+    } else if (result.state === 'error') {
+        res.status(500).send(result.errorMessage!);
+    } else {
+        // We shouldn't hit any other status, so... error??
+        res.status(500).send('Unexpected status state: ' + result.state);
+    }
+});
+
+/** Returns the status (Info object) of the last attempt to load employee data for an Apollo Company, specified by its apollo organization ID. */
+apolloOrganizationRouter.get('/companies/employee-data-status/:apolloCompanyId', async (req, res) => {
+    // Get the ID from the params.
+    const id = req.params.apolloCompanyId;
+
+    // Validate.
+    if (!ObjectId.isValid(id)) {
+        res.send(400);
+        return;
+    }
+
+    // Get the status of the last attempt to load employee data.
+    const status = await apolloService.getInfoForApolloCompanyId(id);
+
+    // If none, then we'll indicate that it's not been loaded.
+    if (!status) {
+        res.sendStatus(404);
+        return;
+    }
+
+    // Return it.
+    res.send(status);
+});
+
+apolloOrganizationRouter.get('/companies/:apolloCompanyId/employees', async (req, res) => {
+    // Get the ID from the params.
+    const id = req.params.apolloCompanyId;
+
+    // Validate.
+    if (!ObjectId.isValid(id)) {
+        res.send(400);
+        return;
+    }
+
+    // Get the employees for the specified Apollo company ID.
+    const employees = await apolloService.getApolloEmployeesForApolloCompany(id);
+
+    // Return them.
+    res.send(employees);
+});

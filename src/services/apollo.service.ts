@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
 import { ApolloDbService } from "../database/apollo.db-service";
-import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from "../model/apollo/apollo-api-request.model";
+import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from "../model/shared-models/apollo/apollo-api-request.model";
 import { ApolloAccount, ApolloApiError, ApolloCompany, ApolloEmployee, ApolloPeopleResponse } from "../model/apollo/apollo-api-response.model";
 import { isApolloApiErrorObject, isApolloCompanyApiResponse, isApolloPeopleApiResponse } from "../model/apollo/apollo-api.data-helpers";
-import { ApolloDataInfo, createNewApolloDataInfo } from "../model/apollo/apollo-data-info.model";
+import { ApolloDataInfo, createNewApolloDataInfo } from "../model/shared-models/apollo/apollo-data-info.model";
 import { ApolloServiceConfiguration } from "../model/app-config.model";
-import { LApolloOrganization } from "../model/shared-models/apollo-local.model";
+import { LApolloOrganization } from "../model/shared-models/apollo/apollo-local.model";
 import { convertToLApolloOrganization } from "../utils/apollo-data-converter.utils";
 import { ApolloApiClient } from "./apollo.api-client";
 import { CompanyManagementDbService } from "../database/company-management-db.service";
@@ -33,7 +33,7 @@ export class ApolloService {
         return {
             ...query,
             ...this.serviceConfig.employeeQuery,
-            perPage: this.serviceConfig.maxEmployeeCount
+            perPage: this.serviceConfig.maxPageSize
         };
     }
 
@@ -130,7 +130,7 @@ export class ApolloService {
         const results = await this.storeApolloCompanies(companyList);
 
         // We only expect to have one or zero, so if we don't, then we have a problem.
-        if (results.length > 0) {
+        if (results.length > 1) {
             console.warn(`Expected to have 0 or 1 results from Apollo, but received ${results.length}`);
         }
 
@@ -224,6 +224,20 @@ export class ApolloService {
         return info;
     }
 
+    /** Returns the employees in the database for a specified apollo company ID. */
+    async getApolloEmployeesForApolloCompany(apolloCompanyId: string): Promise<ApolloEmployee[]> {
+        // Get the data info for the company.
+        const dataInfo = await this.getInfoForApolloCompanyId(apolloCompanyId);
+
+        // If we're not complete, then we can't return the employees.
+        if (dataInfo.state !== 'complete') {
+            throw new Error(`Cannot get employees for company ${apolloCompanyId} because the data is not complete.  Current state: ${dataInfo.state}`);
+        }
+
+        // Get the employees from the database.
+        return await this.apolloDbService.getEmployeesForApolloCompanyId(apolloCompanyId);
+    }
+
     /** Given a specified Apollo company ID, attempts to load all employee data into the system, if it has not already been done. 
      *   The ApolloDataInfo object is returned for the company to signify the status of the operation. */
     async loadEmployeesForCompany(apolloCompanyId: string, reloadIfError: boolean): Promise<ApolloDataInfo> {
@@ -246,14 +260,14 @@ export class ApolloService {
         }
 
         // Perform the download process.
-        dataInfo = await this.loadEmployeesForCompanyInternal(dataInfo);
+        dataInfo = await this.loadEmployeesForCompanyInternal({ organizationIds: [apolloCompanyId] }, dataInfo);
 
         // Return the result.
         return dataInfo;
     }
 
     /** Process to load all employees from apollo. */
-    private async loadEmployeesForCompanyInternal(dataInfo: ApolloDataInfo): Promise<ApolloDataInfo> {
+    private async loadEmployeesForCompanyInternal(query: ApolloPeopleRequestParams, dataInfo: ApolloDataInfo): Promise<ApolloDataInfo> {
         // The first page in API calls is 1.  This will be the running page number for calls being made.
         let pageCounter = 1;
 
@@ -268,14 +282,15 @@ export class ApolloService {
         while (loadNextSet) {
             // Create the query for this call.  It should be good as-is from the configuration.
             //  With the addition of the page information.
-            let query = this.createBasePeopleQuery({
+            let internalQuery = this.createBasePeopleQuery({
                 perPage: this.serviceConfig.maxPageSize,
-                page: pageCounter++
+                page: pageCounter++,
+                ...query,
             });
 
             // Ensure that we don't exceed the maximum pull count.
             //  This is a temporary safety measure for now.
-            if (pageCounter > maxPullCount) {
+            if (internalQuery.page! > maxPullCount) {
                 dataInfo.state = 'error';
                 dataInfo.errorState = 'exceeds-max-record-count';
                 dataInfo.errorMessage = `The max API calls for people, on a single company, is ${maxPullCount}.  This has been exceeded.`;
@@ -283,7 +298,7 @@ export class ApolloService {
             }
 
             // This is a DEV constraint for now.
-            if (pageCounter > maxPullCount) {
+            if (internalQuery.page! > DEV_MAX_CALL_COUNT) {
                 dataInfo.state = 'error';
                 dataInfo.errorState = 'max-safety-count-error';
                 dataInfo.errorMessage = `The maximum call count of ${DEV_MAX_CALL_COUNT} for development purposes has been exceeded.`;
@@ -292,10 +307,21 @@ export class ApolloService {
 
             try {
                 // Load this set.
-                const newDataSet = await this.apolloApiClient.searchPeople(query);
+                const newDataSet = await this.apolloApiClient.searchPeople(internalQuery);
 
                 // Update the info status.
-                dataInfo = await this.intraOpPeopleUpdateDataInfo(dataInfo, newDataSet, query);
+                dataInfo = await this.intraOpPeopleUpdateDataInfo(dataInfo, newDataSet, internalQuery);
+
+                if (dataInfo.state !== 'error') {
+                    // Get the employees from the response.
+                    const employees = getEmployeesFromPeopleResponse(newDataSet as ApolloPeopleResponse);
+
+                    // Insert them into the database.
+                    for (const employee of employees) {
+                        await this.apolloDbService.upsertApolloEmployee(employee);
+                    }
+                }
+
 
                 // Determine if we're done or not.
                 loadNextSet = dataInfo.state === 'in-progress';
@@ -334,7 +360,13 @@ export class ApolloService {
 
             } else if (isApolloApiErrorObject(apiResponse)) {
                 resultInfo.errorState = 'api-error-response';
-                resultInfo.errorMessage = apiResponse.message;
+                if (apiResponse.error) {
+                    resultInfo.errorMessage = apiResponse.error;
+                } else if (apiResponse.message) {
+                    resultInfo.errorMessage = apiResponse.message;
+                } else {
+                    resultInfo.errorMessage = 'Unknown Apollo API error response';
+                }
 
             } else {
                 // Unknown!!
@@ -366,7 +398,7 @@ export class ApolloService {
             resultInfo.errorState = 'exceeds-max-record-count';
             resultInfo.errorMessage = 'The number of employees to retrieve, for the specified filter, exceeds the maximum number of employees allowed to download.';
         } else {
-            if (apiResponse.pagination.page === apiResponse.pagination.total_pages) {
+            if (apiResponse.pagination.page >= apiResponse.pagination.total_pages) {
                 resultInfo.state = 'complete';
             } else {
                 resultInfo.state = 'in-progress';

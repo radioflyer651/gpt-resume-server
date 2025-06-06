@@ -6,7 +6,7 @@ import { MongoHelper } from "../mongo-helper";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { getUpsertMatchObject } from "./db-utils";
-import { ApolloDataInfo } from "../model/apollo/apollo-data-info.model";
+import { ApolloDataInfo } from "../model/shared-models/apollo/apollo-data-info.model";
 import { ApolloCompanyShortened } from "../model/apollo/apollo-api-derived.models";
 
 function refreshId(target: { _id?: ObjectId, id: string; }): void {
@@ -56,6 +56,13 @@ export class ApolloDbService extends DbService {
             }
             ));
         });
+    }
+
+    /** Given a specified apollo company ID, returns all employees in the database. */
+    async getEmployeesForApolloCompanyId(apolloCompanyId: string): Promise<ApolloEmployee[]> {
+        return await this.dbHelper.findDataItem<ApolloEmployee>(DbCollectionNames.ApolloPersons, {
+            organization_id: apolloCompanyId
+        }, { findOne: false });
     }
 
     /** Attempts to return an Apollo Company using its object ID.  Note: The Apollo ID is the string value of the ObjectId of the local record. */

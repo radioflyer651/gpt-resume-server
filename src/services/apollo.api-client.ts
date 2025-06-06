@@ -1,5 +1,5 @@
 import https = require('https');
-import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from '../model/apollo/apollo-api-request.model';
+import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from '../model/shared-models/apollo/apollo-api-request.model';
 import { ApolloConfiguration } from '../model/app-config.model';
 import { ApolloApiError, ApolloOrganizationResponse, ApolloPeopleResponse } from '../model/apollo/apollo-api-response.model';
 import { APIError } from 'openai';

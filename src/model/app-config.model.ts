@@ -1,4 +1,4 @@
-import { ApolloPeopleRequestParams } from "./apollo/apollo-api-request.model";
+import { ApolloPeopleRequestParams } from "./shared-models/apollo/apollo-api-request.model";
 
 
 export interface IAppConfig {

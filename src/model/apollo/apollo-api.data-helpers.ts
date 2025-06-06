@@ -16,7 +16,7 @@ export function isApolloCompanyApiResponse(target: any): target is ApolloOrganiz
     if (typeof target !== 'object') {
         return false;
     }
-    
+
     // Test the object for the right fields.
     return 'accounts' in target && 'organizations' in target;
 }
@@ -28,5 +28,5 @@ export function isApolloApiErrorObject(target: any): target is ApolloApiErrorObj
         return false;
     }
 
-    return 'message' in target;
+    return 'message' in target || 'error' in target;
 }

@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { ApolloPeopleRequestParams } from "./apollo-api-request.model";
-import { NewDbItem } from "../shared-models/db-operation-types.model";
+import { NewDbItem } from "../db-operation-types.model";
 
 export type ApolloDataStateTypes = 'complete' | 'in-progress' | 'error' | 'new';
 
