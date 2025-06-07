@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
-import { ApolloAccount, ApolloCompany, ApolloContact, ApolloEmployee, ApolloOrganization, ApolloPerson } from "../model/apollo/apollo-api-response.model";
+import { ApolloAccount, ApolloCompany, ApolloContact, ApolloEmployee, ApolloOrganization, ApolloPerson } from "../model/shared-models/apollo/apollo-api-response.model";
 import { MongoHelper } from "../mongo-helper";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
@@ -60,9 +60,33 @@ export class ApolloDbService extends DbService {
 
     /** Given a specified apollo company ID, returns all employees in the database. */
     async getEmployeesForApolloCompanyId(apolloCompanyId: string): Promise<ApolloEmployee[]> {
-        return await this.dbHelper.findDataItem<ApolloEmployee>(DbCollectionNames.ApolloPersons, {
-            organization_id: apolloCompanyId
-        }, { findOne: false });
+        const apolloSeniorityOrder = [
+            'owner',
+            'founder',
+            'c_suite',
+            'partner',
+            'vp',
+            'head',
+            'director',
+            'manager',
+            'senior',
+            'entry',
+            'intern'
+        ];
+        return await this.dbHelper.makeCallWithCollection<ApolloEmployee[], ApolloEmployee>(DbCollectionNames.ApolloPersons, async (db, col) => {
+            const pipeline = [
+                { $match: { organization_id: apolloCompanyId } },
+                {
+                    $addFields: {
+                        seniorityOrder: {
+                            $indexOfArray: [apolloSeniorityOrder, { $toLower: "$seniority" }]
+                        }
+                    }
+                },
+                { $sort: { country: -1, seniorityOrder: 1, title: 1 } }
+            ];
+            return await col.aggregate(pipeline).toArray() as ApolloEmployee[];
+        });
     }
 
     /** Attempts to return an Apollo Company using its object ID.  Note: The Apollo ID is the string value of the ObjectId of the local record. */

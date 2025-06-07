@@ -1,4 +1,4 @@
-import { ApolloApiErrorObject, ApolloOrganizationResponse, ApolloPeopleResponse } from "./apollo-api-response.model";
+import { ApolloApiErrorObject, ApolloOrganizationResponse, ApolloPeopleResponse } from "../shared-models/apollo/apollo-api-response.model";
 
 /** TypeGuard for the ApolloPeopleResponse type. */
 export function isApolloPeopleApiResponse(target: any): target is ApolloPeopleResponse {

@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { ApolloDbService } from "../database/apollo.db-service";
 import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from "../model/shared-models/apollo/apollo-api-request.model";
-import { ApolloAccount, ApolloApiError, ApolloCompany, ApolloEmployee, ApolloPeopleResponse } from "../model/apollo/apollo-api-response.model";
+import { ApolloAccount, ApolloApiError, ApolloCompany, ApolloEmployee, ApolloPeopleResponse } from "../model/shared-models/apollo/apollo-api-response.model";
 import { isApolloApiErrorObject, isApolloCompanyApiResponse, isApolloPeopleApiResponse } from "../model/apollo/apollo-api.data-helpers";
 import { ApolloDataInfo, createNewApolloDataInfo } from "../model/shared-models/apollo/apollo-data-info.model";
 import { ApolloServiceConfiguration } from "../model/app-config.model";
@@ -258,6 +258,21 @@ export class ApolloService {
             // Clean up.
             await this.resetApolloCompanyData(apolloCompanyId, dataInfo);
         }
+
+        // Perform the download process.
+        dataInfo = await this.loadEmployeesForCompanyInternal({ organizationIds: [apolloCompanyId] }, dataInfo);
+
+        // Return the result.
+        return dataInfo;
+    }
+
+    /** Resets the state for the apollo employee data, and attempts to retrieve the data from the server again. */
+    async resetAndReloadEmployeesForCompany(apolloCompanyId: string): Promise<ApolloDataInfo> {
+        // Get the data info for the company.
+        let dataInfo = await this.getInfoForApolloCompanyId(apolloCompanyId);
+
+        // Clean up.
+        await this.resetApolloCompanyData(apolloCompanyId, dataInfo);
 
         // Perform the download process.
         dataInfo = await this.loadEmployeesForCompanyInternal({ organizationIds: [apolloCompanyId] }, dataInfo);

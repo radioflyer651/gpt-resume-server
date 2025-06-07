@@ -33,3 +33,32 @@ export interface ApolloCompanySearchQuery {
     page?: number;                                   // e.g. 4
     perPage?: number;                                // e.g. 10
 }
+
+export const apolloSeniorityOrder = [
+    'owner',
+    'founder',
+    'c_suite',
+    'partner',
+    'vp',
+    'head',
+    'director',
+    'manager',
+    'senior',
+    'entry',
+    'intern'
+];
+
+/** Given a specified seniority value (preferably a PersonSeniorityTypes value), returns their rank.
+ *   This can be used for sorting. */
+export function getApolloSeniorityOrder(position: string): number {
+    // Try to find their position in the order list.
+    const order = apolloSeniorityOrder.indexOf(position);
+
+    // If not found, then it should be the max value.
+    if (order < 0) {
+        return apolloSeniorityOrder.length;
+    }
+
+    // Return the order, since it was found.
+    return order;
+}

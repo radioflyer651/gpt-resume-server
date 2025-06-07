@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { ApolloCompany, ApolloContactEmail, ApolloEmployee } from "../model/apollo/apollo-api-response.model";
+import { ApolloCompany, ApolloContactEmail, ApolloEmployee } from "../model/shared-models/apollo/apollo-api-response.model";
 import { LApolloOrganization, LApolloPerson, LApolloContactEmail } from "../model/shared-models/apollo/apollo-local.model";
 
 /**

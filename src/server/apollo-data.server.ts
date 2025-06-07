@@ -80,7 +80,33 @@ apolloOrganizationRouter.post('/companies/update-employees/:apolloCompanyId', as
 
     // Return the status of the update.
     if (result.state === 'complete') {
-        res.sendStatus(200);
+        res.send(result);
+    } else if (result.state === 'error') {
+        res.status(500).send(result.errorMessage!);
+    } else {
+        // We shouldn't hit any other status, so... error??
+        res.status(500).send('Unexpected status state: ' + result.state);
+    }
+});
+
+
+/** Instructs the server to reset any existing download state, and obtain employee data for an Apollo Company, specified by it's ID. */
+apolloOrganizationRouter.post('/companies/update-employees/:apolloCompanyId/reset', async (req, res) => {
+    // Get the ID from the params.
+    const id = req.params.apolloCompanyId;
+
+    // Validate.
+    if (!ObjectId.isValid(id)) {
+        res.send(400);
+        return;
+    }
+
+    // Perform the update.
+    const result = await apolloService.resetAndReloadEmployeesForCompany(id);
+
+    // Return the status of the update.
+    if (result.state === 'complete') {
+        res.send(result);
     } else if (result.state === 'error') {
         res.status(500).send(result.errorMessage!);
     } else {

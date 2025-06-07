@@ -1,7 +1,7 @@
 import https = require('https');
 import { ApolloCompanySearchQuery, ApolloPeopleRequestParams } from '../model/shared-models/apollo/apollo-api-request.model';
 import { ApolloConfiguration } from '../model/app-config.model';
-import { ApolloApiError, ApolloOrganizationResponse, ApolloPeopleResponse } from '../model/apollo/apollo-api-response.model';
+import { ApolloApiError, ApolloOrganizationResponse, ApolloPeopleResponse } from '../model/shared-models/apollo/apollo-api-response.model';
 import { APIError } from 'openai';
 
 const APOLLO_ORGANIZATION_SEARCH_PATH = '/api/v1/mixed_companies/search'; // POST
