@@ -2,7 +2,6 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { authRouter } from './server/auth.server';
-import { characterChatRouter } from './server/character-chat.server';
 import { bodyObjectIdsToStringMiddleware } from './server/middleware/body-object-ids-to-string.middleware';
 import { bodyStringsToObjectIdsMiddleware } from './server/middleware/body-strings-to-object-ids.middleware';
 import { getAppConfig } from './config';
@@ -96,7 +95,6 @@ export async function initializeExpressApp() {
     next();
   });
 
-  app.use(characterChatRouter);
   app.use(chatRouter);
   app.use(tarotRouter);
   app.use(siteInfoRouter);
