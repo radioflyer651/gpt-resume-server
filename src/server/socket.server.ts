@@ -295,6 +295,9 @@ export class SocketServer {
                                 subscriber.complete();
                             });
                         });
+
+                        // Add the observable.
+                        (socket as any)[disconnectObservableName] = disconnectObservable;
                     }
 
                     // Return the observable with the disconnect attached to it.  Now, if the socket disconnects

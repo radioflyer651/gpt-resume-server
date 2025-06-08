@@ -3,6 +3,9 @@ import { OpenAiConfig } from "../../model/app-config.model";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../../model/shared-models/functions/ai-function-group.model";
 import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall } from "../../forwarded-types.model";
 
+/** Represents a method/function, just like one that would be called through code, except this uses
+ *   an LLM to perform the actual call, and/or action.  For instance, given a freeform message, and a function "definition"
+ *   the AI could call the function to create a new company, filling in the inputs to the function from the freeform message. */
 export abstract class LlmFunctionBase<T_RESULT, T_LLM_RESPONSE = T_RESULT> {
     private readonly openAi: OpenAI;
 
