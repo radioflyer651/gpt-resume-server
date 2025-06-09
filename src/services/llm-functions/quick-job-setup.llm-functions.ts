@@ -143,8 +143,16 @@ export class QuickJobSetupFunction extends LlmFunctionBase<QuickJobSetupResult, 
             return url;
         }
 
-        // Return the domain only.
-        return webMatch.groups!['domain'];
+        // Get the domain we found.
+        let domain = webMatch.groups!['domain'];
+
+        // Check if we need to add www to it.
+        if (!domain.startsWith('www.')) {
+            domain = 'www.' + domain;
+        }
+
+        // Return it.
+        return domain;
     }
 
     /** Creates the new job posting so we can do the analysis for it. */
