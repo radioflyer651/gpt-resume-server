@@ -7,6 +7,10 @@ import { CompanyContact } from '../../model/shared-models/job-tracking/company-c
 import { Company } from '../../model/shared-models/company.model';
 import { updateJobAnalysis } from '../../runtime-service-functions';
 import { TableLoadRequest } from '../../model/shared-models/table-load-request.model';
+import { QuickJobSetupRequest } from '../../model/shared-models/quick-job-setup-request.model';
+import { isQuickJobSetupRequest } from '../../utils/quick-job-validation.utils';
+import { QuickJobSetupFunction } from '../../services/llm-functions/quick-job-setup.llm-functions';
+import { getAppConfig } from '../../config';
 
 
 export const companyRouter = express.Router();
@@ -231,4 +235,26 @@ companyRouter.get('/job-listings/get-updated-analysis/:jobListingId', async (req
         // Error - return that instead.
         res.status(500).send(err);
     }
+});
+
+companyRouter.post(`/job-listings/create-from-description`, async (req, res) => {
+    // Get the body.
+    const quickJobSetup = req.body as QuickJobSetupRequest;
+
+    // Validate it.
+    if (!isQuickJobSetupRequest(quickJobSetup)) {
+        res.sendStatus(400);
+    }
+
+    // Get the app configuration.
+    const appConfig = await getAppConfig();
+
+    // Create the new function.
+    const workFunction = new QuickJobSetupFunction(appConfig.openAiConfig, companyDbService, quickJobSetup);
+
+    // Create the response.
+    const response = await workFunction.execute();
+
+    // Return the result.
+    res.send(response);
 });

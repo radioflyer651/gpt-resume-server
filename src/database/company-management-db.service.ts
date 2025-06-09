@@ -23,6 +23,16 @@ export class CompanyManagementDbService extends DbService {
         });
     }
 
+    /** Attempts to find/return a company with a specified domain. */
+    async getCompanyByDomain(domain: string): Promise<Company | undefined> {
+        // Ensure it's just the domain, and not the website.
+        domain = domain.replace(/^((https?:\/\/)(www\.)?|(www\.))/, '');
+
+        return this.dbHelper.findDataItem(DbCollectionNames.Companies, {
+            website: new RegExp(domain, 'i')
+        }, { findOne: true });
+    }
+
     /** Returns all companies from the database. */
     async getAllCompanies(): Promise<Company[]> {
         return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, collection) => {
@@ -211,18 +221,18 @@ export class CompanyManagementDbService extends DbService {
     };
 
     /** Updates a specified company in the database, or adds them if they don't exist. */
-    async upsertCompany(company: Company): Promise<Company> {
-        return await this.dbHelper.makeCallWithCollection(DbCollectionNames.Companies, async (db, col) => {
+    async upsertCompany(company: UpsertDbItem<Company>): Promise<Company> {
+        return await this.dbHelper.makeCallWithCollection<Company>(DbCollectionNames.Companies, async (db, col) => {
             if (!company._id) {
                 const result = await col.insertOne(company);
                 company._id = result.insertedId;
 
                 // Return the company back, with the new ID.
-                return company;
+                return company as Company;
 
             } else {
                 await col.updateOne({ _id: company._id }, { $set: company });
-                return company;
+                return company as Company;
             }
 
         });

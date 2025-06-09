@@ -1,10 +1,22 @@
 
+
+export type OpenAiChatModelValue =
+    | 'o3-mini'
+    | 'o3-2025-04-16'
+    | 'gpt-4.1'
+    | 'gpt-4.1-nano'
+    | 'gpt-4o-mini'
+    | 'o4-mini'
+    | 'gpt-4.1-mini'
+    | 'gpt-4o';
+
+
 /** Information about the chat models used in the application. */
 export interface ChatModelInfo {
     /** User friendly name of the model. */
     label: string;
     /** The actual model name used in the chat. */
-    value: string;
+    value: OpenAiChatModelValue;
     /** The cost, in dollars, of input tokens, per million. */
     inputCost: number;
     /** The cost, in dollars, of output tokens, per million. */

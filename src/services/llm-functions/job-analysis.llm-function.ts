@@ -7,6 +7,7 @@ import { JobAnalysis } from "../../model/shared-models/job-tracking/job-analysis
 import { FunctionTool } from "../../forwarded-types.model";
 import { CompanyManagementDbService } from "../../database/company-management-db.service";
 import { jobListingAnalysisProperties_AiFunctions } from "../../ai-functions/common-definitions/job-analysis.ai-definition";
+import { OpenAiChatModelValue } from "../../model/shared-models/chat-models.data";
 
 export class JobAnalysisFunction extends LlmFunctionBase<JobAnalysis> {
     constructor(
@@ -56,7 +57,7 @@ export class JobAnalysisFunction extends LlmFunctionBase<JobAnalysis> {
     }
 
     get chatModel() {
-        return 'o4-mini';
+        return 'o4-mini' as OpenAiChatModelValue;
     }
 
     async getJobById(jobId: ObjectId): Promise<JobListing> {

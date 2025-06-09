@@ -24,22 +24,27 @@ export function objectIdToStringConverter(target: any) {
         const value = obj[prop];
         const type = typeof value;
 
-        if (value instanceof ObjectId) {
-            // If this is an object ID, then convert it to a string.
-            obj[prop] = value.toHexString();
+        // We're being lazy here...  But - what can I say?  It's a personal project.
+        try {
+            if (value instanceof ObjectId) {
+                // If this is an object ID, then convert it to a string.
+                obj[prop] = value.toHexString();
 
-        } else if (Array.isArray(value)) {
-            // If this is an array, then recurse.  No need to clone,
-            //  as we're already cloning the parent.
-            obj[prop] = value.map(v => objectIdToStringConverter(v));
+            } else if (Array.isArray(value)) {
+                // If this is an array, then recurse.  No need to clone,
+                //  as we're already cloning the parent.
+                obj[prop] = value.map(v => objectIdToStringConverter(v));
 
-        } else if (type === "object") {
-            // If this is an object, then recurse.  No need to clone,
-            //  as we're already cloning the parent.
-            obj[prop] = objectIdToStringConverter(value);
+            } else if (type === "object") {
+                // If this is an object, then recurse.  No need to clone,
+                //  as we're already cloning the parent.
+                obj[prop] = objectIdToStringConverter(value);
 
-        } else {
-            // Otherwise, do nothing - this is a primitive type.
+            } else {
+                // Otherwise, do nothing - this is a primitive type.
+            }
+        } catch (err) {
+            console.warn(`Error while converting ObjectIds: `, err);
         }
     }
 

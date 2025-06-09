@@ -81,4 +81,3 @@ export const jobListingProperties_AiFunctions = {
         analysis: jobListingAnalysisProperties_AiFunctions
     },
 };
-

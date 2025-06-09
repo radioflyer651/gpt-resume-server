@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { OpenAiConfig } from "../../model/app-config.model";
 import { AiFunctionDefinitionPackage, AiFunctionGroup, convertFunctionGroupsToPackages } from "../../model/shared-models/functions/ai-function-group.model";
 import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctionToolCall } from "../../forwarded-types.model";
+import { OpenAiChatModelValue } from "../../model/shared-models/chat-models.data";
 
 /** Represents a method/function, just like one that would be called through code, except this uses
  *   an LLM to perform the actual call, and/or action.  For instance, given a freeform message, and a function "definition"
@@ -9,7 +10,7 @@ import { FunctionCallOutput, FunctionTool, ResponseCreateParams, ResponseFunctio
 export abstract class LlmFunctionBase<T_RESULT, T_LLM_RESPONSE = T_RESULT> {
     private readonly openAi: OpenAI;
 
-    constructor(config: OpenAiConfig) {
+    constructor(protected readonly config: OpenAiConfig) {
         this.openAi = new OpenAI({
             apiKey: config.openAiKey,
             organization: config.openAiOrg,
@@ -41,12 +42,10 @@ export abstract class LlmFunctionBase<T_RESULT, T_LLM_RESPONSE = T_RESULT> {
     }
 
     /** Returns the model to use for LLM chat. */
-    protected abstract get chatModel(): string;
+    protected abstract get chatModel(): OpenAiChatModelValue;
     protected async initialize(): Promise<void> { }
 
-    protected abstract processResult(
-        llmResult: T_LLM_RESPONSE
-    ): Promise<T_RESULT>;
+    protected abstract processResult(llmResult: T_LLM_RESPONSE): Promise<T_RESULT>;
 
     /** When set to true, additional instructions are provided to the LLM that the goal
      *   of the operation is to call the requiredOutputToolName for function completion. */
@@ -82,7 +81,7 @@ export abstract class LlmFunctionBase<T_RESULT, T_LLM_RESPONSE = T_RESULT> {
             const fnCalls = apiResult.output.filter(x => x.type === 'function_call');
             if (fnCalls.length < 1) {
                 // This is a message.  We should store it, so we can continue on.
-                // messages.push(apiResult);
+                messages.push(apiResult);
 
                 // Actually - we probably shouldn't obtain any messages.  This is probably an error.
 
@@ -98,6 +97,11 @@ export abstract class LlmFunctionBase<T_RESULT, T_LLM_RESPONSE = T_RESULT> {
                 if (targetFunction) {
                     const rawResult = await targetFunction.resultPromise;
                     return rawResult.output as T_LLM_RESPONSE;
+                }
+
+                // Check if it called the error method.
+                if (functionCalls.find(f => f.call.name === errorFunctionPackage.definition.name)) {
+                    throw new Error(`The LLM threw an error.`);
                 }
 
                 // Add the results to the chat history.
@@ -173,6 +177,7 @@ const errorFunctionPackage: AiFunctionDefinitionPackage = {
         description: `Called by the LLM, when it detects an error scenario, and cannot resolve it.  This is to report the error to the calling function, and end the process.`
     },
     function: ({ message }: { message: string; }) => {
-        throw new Error(message);
+        console.error(`The LLM called the error function: ${message}`);
+        return 'Error Reported';
     }
 };
