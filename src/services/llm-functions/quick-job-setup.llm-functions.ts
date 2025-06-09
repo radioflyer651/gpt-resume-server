@@ -8,7 +8,7 @@ import { Comment } from '../../model/shared-models/comments.model';
 import { JobListing } from "../../model/shared-models/job-tracking/job-listing.model";
 import { OpenAiChatModelValue } from "../../model/shared-models/chat-models.data";
 import { QuickJobSetupResult, QuickJobSetupRequest } from "../../model/shared-models/quick-job-setup-request.model";
-import { jobAnalysisAiFunctionDefinition } from "./job-analysis.llm-function";
+import { getCommonAnalysisLlmInstructions, jobAnalysisAiFunctionDefinition } from "./job-analysis.llm-function";
 import { NewDbItem } from "../../model/shared-models/db-operation-types.model";
 import { JobAnalysis } from "../../model/shared-models/job-tracking/job-analysis.model";
 
@@ -23,18 +23,7 @@ export class QuickJobSetupFunction extends LlmFunctionBase<QuickJobSetupResult, 
 
     async getLlmInstructions(): Promise<string[]> {
         return [
-            `You are a data analyzer for job openings.  You will analyze job descriptions, and organize the important information in a normalized form.`,
-            `You will assist in providing clues that might help lead to the hiring manager in another application.  Such clues might be what department the job is in, the team, or project.  Location might be a factor, but anything that might help narrow down the search for the hiring manager should be provided.`,
-            `Your analysis must be passed as arguments to the return function tool.`,
-            `If the role is not allowed in Minnesota, the posting will either indicate the job is "not remote", or that it might be remote, but only allowed in specific states.`,
-            `
-                When considering if a job allows people who work in Minnesota, consider the following two questions:
-                  - Does the job specifically state that only residents of a certain state will be able to apply?  (If so, and Minnesota (MN) is not in the list, then Minnesotans are not allowed to apply.)
-                  - Does the job NOT say it is remote anywhere? (If the job does not say "Remote" anywhere, and DOES list a location, then Minnesotans are not allowed to apply.)
-                
-                If the previous two questions do not disqualify Minnesotans, then Minnesotans are eligible.
-                This information is in regards specifically to the allowWorkInMn property.
-            `,
+            ...getCommonAnalysisLlmInstructions(),
             `Todays date is ${new Date().toDateString()}`,
             `The following is the job description to analyze: \n\n${this.quickJobSetupRequest.jobDescription}`,
         ];
