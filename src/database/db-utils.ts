@@ -51,11 +51,11 @@ export interface MongoPaginatedResult<T> {
 export function unpackPaginatedResults<T>(resultsArray: Document[]): PaginatedResult<T> {
 
     // There's only one item in this result list.  get it.
-    const results = (resultsArray as unknown as MongoPaginatedResult<T>[])[0];
+    const results = (resultsArray)[0];
 
     // Return the result.
     return {
         data: results.result,
-        totalCount: results.totalCount.totalCount
+        totalCount: results.totalCount[0].totalCount
     };
 }

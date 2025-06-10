@@ -65,7 +65,7 @@ export class CompanyManagementDbService extends DbService {
     async getCompanyList(): Promise<CompanyListingInfo[]> {
         return await this.dbHelper.makeCallWithCollection<CompanyListingInfo[], Company>(DbCollectionNames.Companies, async (db, collection) => {
             // Create the aggregation to get this information.
-            const aggregation = [
+            const aggregation: object[] = [
                 {
                     $lookup: {
                         from: 'job-listings',
@@ -83,9 +83,39 @@ export class CompanyManagementDbService extends DbService {
                     }
                 },
                 {
-                    $addFields: {
-                        companyContacts: {
-                            $size: '$companyContacts'
+                    $set: {
+                        jobListings: {
+                            $map: {
+                                input: '$jobListings',
+                                as: 'jobListing',
+                                in: {
+                                    $mergeObjects: [
+                                        '$$jobListing',
+                                        {
+                                            isClosed: {
+                                                $anyElementTrue: {
+                                                    $map: {
+                                                        input: { $ifNull: ["$$jobListing.jobStatuses", []] }, // <-- fix here
+                                                        as: "status",
+                                                        in: { $eq: ["$$status.isClosed", true] }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $set: {
+                        openJobListings: {
+                            $filter: {
+                                input: '$jobListings',
+                                as: 'jobListing',
+                                cond: { $eq: ['$$jobListing.isClosed', false] },
+                            }
                         }
                     }
                 },
@@ -93,9 +123,15 @@ export class CompanyManagementDbService extends DbService {
                     $addFields: {
                         jobListings: {
                             $size: '$jobListings'
+                        },
+                        openJobListings: {
+                            $size: '$openJobListings'
+                        },
+                        companyContacts: {
+                            $size: '$companyContacts'
                         }
                     }
-                }
+                },
             ];
 
             const result = await collection.aggregate(aggregation).toArray();
@@ -125,9 +161,39 @@ export class CompanyManagementDbService extends DbService {
                     }
                 },
                 {
-                    $addFields: {
-                        companyContacts: {
-                            $size: '$companyContacts'
+                    $set: {
+                        jobListings: {
+                            $map: {
+                                input: '$jobListings',
+                                as: 'jobListing',
+                                in: {
+                                    $mergeObjects: [
+                                        '$$jobListing',
+                                        {
+                                            isClosed: {
+                                                $anyElementTrue: {
+                                                    $map: {
+                                                        input: { $ifNull: ["$$jobListing.jobStatuses", []] }, // <-- fix here
+                                                        as: "status",
+                                                        in: { $eq: ["$$status.isClosed", true] }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $set: {
+                        openJobListings: {
+                            $filter: {
+                                input: '$jobListings',
+                                as: 'jobListing',
+                                cond: { $not: '$$jobListing.isClosed' },
+                            }
                         }
                     }
                 },
@@ -135,6 +201,12 @@ export class CompanyManagementDbService extends DbService {
                     $addFields: {
                         jobListings: {
                             $size: '$jobListings'
+                        },
+                        openJobListings: {
+                            $size: '$openJobListings'
+                        },
+                        companyContacts: {
+                            $size: '$companyContacts'
                         }
                     }
                 },
@@ -144,17 +216,17 @@ export class CompanyManagementDbService extends DbService {
             aggregation.push(... this.createPipelineSortAndFilterPipeline(tableLoadRequest));
 
             // Ensure the pagination is setup properly.
-            if (typeof tableLoadRequest.first !== 'number' || typeof tableLoadRequest.last !== 'number') {
-                throw new Error(`pagination properties are required (first and last).`);
+            if (typeof tableLoadRequest.first !== 'number' || typeof tableLoadRequest.rows !== 'number') {
+                throw new Error(`pagination properties are required (first and rows).`);
             }
 
             // Validate.
-            if (tableLoadRequest.first >= tableLoadRequest.last - 1) {
-                throw new Error('first and last values for the tableLoadRequest are out of order.');
+            if (tableLoadRequest.first > tableLoadRequest.rows) {
+                // throw new Error(`first and last values for the tableLoadRequest are out of order. (first: ${tableLoadRequest.first}, last: ${tableLoadRequest.rows}) `);
             }
 
             // Add the pagination properties.
-            aggregation.push(...getPaginatedPipelineEnding(tableLoadRequest.first, tableLoadRequest.last - tableLoadRequest.first + 1));
+            aggregation.push(...getPaginatedPipelineEnding(tableLoadRequest.first, Math.max(tableLoadRequest.rows, 1)));
 
             // Unpack the pipeline result to get the paginated results.
             const result = unpackPaginatedResults<CompanyListingInfo>(await collection.aggregate(aggregation).toArray());

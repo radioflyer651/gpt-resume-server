@@ -2,6 +2,14 @@
  *  Copied from PrimeNG, as this is the info sent in the lazy load requests.
  ***********/
 
+export type FilterTypes = FilterMetadata | FilterMetadata[] | undefined;
+
+export type FilterOperatorTypes = 'AND' | 'OR';
+
+export type FilterDefinition = {
+    [s: string]: FilterTypes;
+};
+
 /**
  * Meta data for lazy load event.
  * @group Interface
@@ -11,9 +19,7 @@ export interface TableLoadRequest {
     rows?: number | undefined | null;
     sortField?: string | string[] | null | undefined;
     sortOrder?: number | undefined | null;
-    filters?: {
-        [s: string]: FilterMetadata | FilterMetadata[] | undefined;
-    };
+    filters?: FilterDefinition;
     globalFilter?: string | string[] | undefined | null;
     multiSortMeta?: SortMeta[] | undefined | null;
     forceUpdate?: Function;
@@ -39,7 +45,6 @@ export interface FilterMetadata {
     operator?: FilterOperatorTypes;
 }
 
-export type FilterOperatorTypes = 'AND' | 'OR';
 
 /**
  * Defines the possible match modes for filtering.
@@ -68,4 +73,30 @@ export type FilterMatchMode =
 export interface SortMeta {
     field: string;
     order: number;
+}
+
+export function isSortMeta(obj: any): obj is SortMeta {
+    return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        typeof obj.field === 'string' &&
+        typeof obj.order === 'number'
+    );
+}
+
+export function isFilterMetadata(obj: any): obj is FilterMetadata {
+    if (typeof obj !== 'object' || obj === null) {
+        return false;
+    }
+
+    // value can be any type, so no check
+    if ('matchMode' in obj && obj.matchMode !== undefined && typeof obj.matchMode !== 'string') {
+        return false;
+    };
+
+    if ('operator' in obj && obj.operator !== undefined && (obj.operator !== 'AND' && obj.operator !== 'OR')) {
+        return false;
+    };
+
+    return true;
 }

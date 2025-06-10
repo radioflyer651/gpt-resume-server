@@ -8,5 +8,6 @@ export interface CompanyListingInfo extends Company {
 
     /** The number of job listings found for this company. */
     jobListings: number;
-
+    
+    openJobListings?: number;
 }
