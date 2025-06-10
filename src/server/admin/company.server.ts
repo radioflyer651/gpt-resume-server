@@ -21,20 +21,23 @@ companyRouter.get('/companies', async (req, res) => {
     res.send(companies);
 });
 
-/** This expects lazy-load info for a table. */
-companyRouter.post('/companies', async (req, res) => {
-    const tableLoadRequest = req.body as TableLoadRequest;
+// /** This expects lazy-load info for a table. */
+// companyRouter.post('/companies', async (req, res) => {
 
-    // Validate.
-    if (!tableLoadRequest) {
-        res.status(400).send('Missing TableLoadRequest information.');
-        return;
-    }
+//     throw new Error(`POST is already used for this path.`);
 
-    const companies = await companyDbService.getPaginatedCompanyList(tableLoadRequest);
+//     const tableLoadRequest = req.body as TableLoadRequest;
 
-    res.send(companies);
-});
+//     // Validate.
+//     if (!tableLoadRequest) {
+//         res.status(400).send('Missing TableLoadRequest information.');
+//         return;
+//     }
+
+//     const companies = await companyDbService.getPaginatedCompanyList(tableLoadRequest);
+
+//     res.send(companies);
+// });
 
 companyRouter.get('/companies/:companyId', async (req, res) => {
     const { companyId } = req.params;
