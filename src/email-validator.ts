@@ -53,10 +53,10 @@ async function appendEmailVerification(verification: EmailVerification): Promise
 }
 
 
-export async function verifyEmail(email: string): Promise<boolean> {
-    https.get({
-        path: `https://emailverification.whoisxmlapi.com/api/v3?apiKey=at_4NTelz5Xg8gfmoF8oYduLHvGdDeWY&emailAddress=${email}`
-    }, (res) => {
+// export async function verifyEmail(email: string): Promise<boolean> {
+//     https.get({
+//         path: `https://emailverification.whoisxmlapi.com/api/v3?apiKey=at_4NTelz5Xg8gfmoF8oYduLHvGdDeWY&emailAddress=${email}`
+//     }, (res) => {
 
-    });
-}
+//     });
+// }
