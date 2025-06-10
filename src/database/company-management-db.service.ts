@@ -5,10 +5,10 @@ import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
 import { CompanyListingInfo } from "../model/shared-models/company-listing.model";
 import { CompanyContact } from "../model/shared-models/job-tracking/company-contact.model";
-import { JobListing, JobListingLine } from "../model/shared-models/job-tracking/job-listing.model";
+import { JobListing, JobListingLine, JobListingLineWithCompany } from "../model/shared-models/job-tracking/job-listing.model";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
 import { getPaginatedPipelineEnding, unpackPaginatedResults } from "./db-utils";
-import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany } from "./company-aggregations.data";
+import { getJobListingAggregationPipeline, getJobListingAggregationPipelineForCompany, getJobListingAggregationPipelineWithCompanies } from "./company-aggregations.data";
 import { JobAnalysis } from "../model/shared-models/job-tracking/job-analysis.model";
 import { PaginatedResult } from "../model/shared-models/paginated-result.model";
 import { TableLoadRequest } from "../model/shared-models/table-load-request.model";
@@ -254,12 +254,12 @@ export class CompanyManagementDbService extends DbService {
     };
 
     /** Returns the JobListingLines for all jobs in the system. */
-    async getAllJobListings(): Promise<JobListingLine[]> {
+    async getAllJobListings(): Promise<JobListingLineWithCompany[]> {
         // Create the aggregation to get this information.
-        const aggregation = getJobListingAggregationPipeline();
+        const aggregation = getJobListingAggregationPipelineWithCompanies();
 
-        return await this.dbHelper.makeCallWithCollection<JobListingLine[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
-            return await col.aggregate(aggregation).toArray() as JobListingLine[];
+        return await this.dbHelper.makeCallWithCollection<JobListingLineWithCompany[], JobListing>(DbCollectionNames.JobListings, async (db, col) => {
+            return await col.aggregate(aggregation).toArray() as JobListingLineWithCompany[];
         });
     };
 

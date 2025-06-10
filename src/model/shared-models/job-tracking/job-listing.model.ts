@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { UpsertDbItem } from "../db-operation-types.model";
 import { JobAnalysis } from "./job-analysis.model";
 import { Comment } from "../comments.model";
+import { Company } from "../company.model";
 
 /** Represents a job posted on a job board or something similar. */
 export interface JobListing {
@@ -47,8 +48,13 @@ export interface JobListingStatus {
 
 /** A shortened version of the JobListing it allow it to be listed in a table. */
 export type JobListingLine = Pick<JobListing,
-    '_id' | 'urlLink' | 'postingDate' | 'jobTitle'>
+    '_id' | 'urlLink' | 'postingDate' | 'jobTitle' | 'companyId'>
     & { currentStatus?: JobListingStatus; };
+
+export type JobListingCompany = Pick<Company, '_id' | 'name' | 'website'>;
+
+/** A shortened version of the JobListing, and includes some company details. */
+export type JobListingLineWithCompany = JobListingLine & { company: JobListingCompany; };
 
 /**
  * Returns an UpsertDbItem of JobListing with all fields initialized empty 
