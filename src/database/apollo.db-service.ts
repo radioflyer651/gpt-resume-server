@@ -1,11 +1,9 @@
 import { ObjectId } from "mongodb";
 import { DbCollectionNames } from "../model/db-collection-names.constants";
 import { UpsertDbItem } from "../model/shared-models/db-operation-types.model";
-import { ApolloAccount, ApolloCompany, ApolloContact, ApolloEmployee, ApolloOrganization, ApolloPerson } from "../model/shared-models/apollo/apollo-api-response.model";
-import { MongoHelper } from "../mongo-helper";
+import { ApolloCompany, ApolloEmployee } from "../model/shared-models/apollo/apollo-api-response.model";
 import { nullToUndefined } from "../utils/empty-and-null.utils";
 import { DbService } from "./db-service";
-import { getUpsertMatchObject } from "./db-utils";
 import { ApolloDataInfo } from "../model/shared-models/apollo/apollo-data-info.model";
 import { ApolloCompanyShortened } from "../model/apollo/apollo-api-derived.models";
 
@@ -167,5 +165,29 @@ export class ApolloDbService extends DbService {
     /** Deletes one or more ApolloDataInfo object. */
     async deleteDataInfo(dataInfoQuery: Partial<ApolloDataInfo>, deleteMany: boolean = false) {
         return await this.dbHelper.deleteDataItems<ApolloDataInfo>(DbCollectionNames.ApolloDataInfos, dataInfoQuery, { deleteMany });
+    }
+
+    /** Returns an Apollo employee, specified by its apollo ID. */
+    async getEmployeeById(apolloId: string): Promise<ApolloEmployee | undefined> {
+        const result = await this.dbHelper.findDataItem(DbCollectionNames.ApolloPersons, { $or: [{ id: apolloId }, { person_id: apolloId }] }, { findOne: false }) as ApolloEmployee[];
+        // If there's one or none, then just return the result.
+        if (result.length < 2) {
+            return result[0];
+        }
+
+        // If we have more than 1, (which is probably only 2), then we want the one that's the "contact" shape, and not the "person" shape.
+        //  We should probably warn if we have more than 2 though, because that would be odd.
+        if (result.length > 2) {
+            console.warn(`getEmployeeById yielded more than 2 results, which was unexpected.  Actual count: ${result.length}.`);
+        }
+
+        let final = result.find(r => !!r.person_id);
+        // If found - return it.
+        if (final) {
+            return final;
+        }
+
+        // We shouldn't reach this point, but if we did, then let's just return the first item.  Not sure what else to do.
+        return result[0];
     }
 }

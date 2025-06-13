@@ -28,7 +28,7 @@ export interface CompanyContact {
     comments: Comment[];
 
     /** Optional: The ID of the ApolloEmployee, in the database, if one exists. */
-    apolloId?: ObjectId;
+    apolloId?: string;
 }
 
 /** Represents a phone number for a contact. */

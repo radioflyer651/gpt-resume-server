@@ -15,6 +15,7 @@ import { JobAnalysisFunction } from "./services/llm-functions/job-analysis.llm-f
 import { ApolloDbService } from "./database/apollo.db-service";
 import { ApolloService } from "./services/apollo.service";
 import { ApolloApiClient } from "./services/apollo.api-client";
+import { CompanyManagementService } from "./services/company-management.service";
 
 /** If we were using dependency injection, this would be the DI services we'd inject in the necessary places. */
 
@@ -36,6 +37,7 @@ export let authDbService: AuthDbService;
 export let apolloApiClient: ApolloApiClient;
 export let apolloDbService: ApolloDbService;
 export let apolloService: ApolloService;
+export let companyService: CompanyManagementService;
 
 /* App Services. */
 export let authService: AuthService;
@@ -64,6 +66,7 @@ export async function initializeServices(): Promise<void> {
     apolloDbService = new ApolloDbService(dbHelper);
     apolloApiClient = new ApolloApiClient(config.apolloApiClientConfiguration);
     apolloService = new ApolloService(config.apolloServiceConfiguration, apolloApiClient, apolloDbService, companyDbService);
+    companyService = new CompanyManagementService(companyDbService, apolloDbService);
 
     appChatService = new AppChatService(chatDbService, getChatConfigurators());
 

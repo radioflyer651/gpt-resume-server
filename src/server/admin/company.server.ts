@@ -1,12 +1,11 @@
 import express from 'express';
-import { companyDbService } from '../../app-globals';
+import { companyDbService, companyService } from '../../app-globals';
 import { ObjectId } from 'mongodb';
 import { JobListing } from '../../model/shared-models/job-tracking/job-listing.model';
 import { UpsertDbItem } from '../../model/shared-models/db-operation-types.model';
 import { CompanyContact } from '../../model/shared-models/job-tracking/company-contact.model';
 import { Company } from '../../model/shared-models/company.model';
 import { updateJobAnalysis } from '../../runtime-service-functions';
-import { TableLoadRequest } from '../../model/shared-models/table-load-request.model';
 import { QuickJobSetupRequest } from '../../model/shared-models/quick-job-setup-request.model';
 import { isQuickJobSetupRequest } from '../../utils/quick-job-validation.utils';
 import { QuickJobSetupFunction } from '../../services/llm-functions/quick-job-setup.llm-functions';
@@ -260,4 +259,28 @@ companyRouter.post(`/job-listings/create-from-description`, async (req, res) => 
 
     // Return the result.
     res.send(response);
+});
+
+/** Creates a new contact, in a specified company, for a specified apollo contact ID. */
+companyRouter.post('/companies/:companyId/contacts/from-apollo/:apolloId', async (req, res) => {
+    // Get the IDs.
+    const { companyId, apolloId } = req.params;
+
+    // Validate the company ID.
+    if (!ObjectId.isValid(companyId)) {
+        res.sendStatus(400);
+        return;
+    }
+
+    // Convert the company ID.
+    const companyIdVal = new ObjectId(companyId);
+    // Create the contact from the Apollo ID.
+    try {
+        const contact = await companyService.createCompanyContactFromApolloId(companyIdVal, apolloId);
+        res.send(contact);
+    }
+    catch (err) {
+        console.error(`Error creating contact from Apollo ID ${apolloId} for company ${companyId}:`, err);
+        res.status(500).send(`Error creating contact from Apollo ID ${apolloId} for company ${companyId}.`);
+    }
 });
